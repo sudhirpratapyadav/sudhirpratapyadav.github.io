@@ -1,21 +1,18 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Display Text File on Webpage</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Text File Content SIgar</h1>
-    <pre>
-        <!-- add the path to your text file here -->
-        <!-- for example: if your text file is in a folder named 'data', and is named 'content.txt', the path would be 'data/content.txt' -->
-        <!-- note that the path is relative to the HTML file -->
-        <!-- also, replace 'username' with your Github username, and 'repository-name' with the name of your repository -->
-        <!-- the URL should look like this: https://raw.githubusercontent.com/username/repository-name/main/path/to/your/text/file.txt -->
-        <!-- replace 'main' with the name of your main branch, if it is not named 'main' -->
-        <!-- make sure to enclose the URL in single quotes -->
-        <!-- the 'pre' tag preserves the formatting of the text file -->
-        <!-- without it, the text may appear jumbled on the webpage -->
-        <?php echo htmlspecialchars(file_get_contents('melstudio.msugar.txt')); ?>
-    </pre>
-</body>
+    <pre id="text"></pre>
+    <script>
+      fetch("melstudio.msugar.txt")
+        .then((response) => response.text())
+        .then((text) => {
+          // display the contents of the text file in the 'pre' element
+          document.getElementById("text").textContent = text;
+        });
+    </script>
+  </body>
 </html>
