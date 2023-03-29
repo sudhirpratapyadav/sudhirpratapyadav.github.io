@@ -21,6 +21,51 @@
 
   <script>
 
+
+
+    const url = 'https://github.com/sudhirpratapyadav/sudhirpratapyadav.github.io/blob/main/melstudio.msugar.txt';
+    fetch(url)
+      .then(response => response.text())
+      .then(data => {
+
+        // const data = event.target.result; // Get the file data as a string
+        const lines = data.split('\n'); // Split the file data by line
+
+        const dateTime = [];
+        const levels = [];
+
+        // Iterate over each line and split the data by tab
+        lines.forEach(function(line) {
+          const parts = line.trim().split('\t');
+          const levelsValue = parseInt(parts[2]);
+
+          // Check if levels is an integer before adding to arrays
+          if (Number.isInteger(levelsValue)) {
+            // Concatenate the date and time into a single string
+            const date = parts[0];
+            const time = parts[1];
+            const dateTimeString = `${date} ${time}`;
+
+            // Add the data to the corresponding array
+            dateTime.push(dateTimeString);
+            levels.push(levelsValue);
+          }
+        });
+
+        // Reverse the order of items in both arrays
+        dateTime.reverse();
+        levels.reverse();
+
+        // console.log(dateTime, levels); // Do something with the data
+        plotChart(dateTime, levels)
+
+      })
+      .catch(error => console.error(error));
+
+
+
+
+
     // Attach an event listener to the file input element
     const fileInput = document.getElementById('file-input');
     fileInput.addEventListener('change', handleFileSelect, false);
