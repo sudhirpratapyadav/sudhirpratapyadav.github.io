@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Line Chart Example</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    canvas {
+      display: block;
+      margin: 0 auto;
+      max-width: 800px;
+    }
+
+    canvas#line-chart {
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="line-chart"></canvas>
+  <input type="file" id="file-input">
+
+  <script>
+
+    // Attach an event listener to the file input element
+    const fileInput = document.getElementById('file-input');
+    fileInput.addEventListener('change', handleFileSelect, false);
+
+
+    // Define a callback function to handle the file data
+    function handleFileSelect(event) {
+      const file = event.target.files[0]; // Get the selected file
+      const reader = new FileReader(); // Create a new file reader
+
+      // Define a callback function to handle the file reader result
+      reader.onload = function(event) {
+        const data = event.target.result; // Get the file data as a string
+        const lines = data.split('\n'); // Split the file data by line
+
+        const dateTime = [];
+        const levels = [];
+
+        // Iterate over each line and split the data by tab
+        lines.forEach(function(line) {
+          const parts = line.trim().split('\t');
+          const levelsValue = parseInt(parts[2]);
+
+          // Check if levels is an integer before adding to arrays
+          if (Number.isInteger(levelsValue)) {
+            // Concatenate the date and time into a single string
+            const date = parts[0];
+            const time = parts[1];
+            const dateTimeString = `${date} ${time}`;
+
+            // Add the data to the corresponding array
+            dateTime.push(dateTimeString);
+            levels.push(levelsValue);
+          }
+        });
+
+        // Reverse the order of items in both arrays
+        dateTime.reverse();
+        levels.reverse();
+
+        // console.log(dateTime, levels); // Do something with the data
+        plotChart(dateTime, levels)
+      };
+
+      // Read the selected file as text
+      reader.readAsText(file);
+    }
+
+
+
+    function plotChart(X, Y) {
+
+      const labels = X;
+      const values = Y;
+      const avgValue = values.reduce((acc, curr) => acc + curr, 0) / values.length;
+      const avgValues = Array(values.length).fill(avgValue);
+      windowSize = 7;
+      const movAvgValues = getMovingAverages(values, windowSize);
+
+      // console.log(labels);
+      // console.log(values);
+      // console.log(avgValues);
+      // console.log(movAvgValues);
+
+      const config = {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Average Glucose Level',
+              data: movAvgValues,
+              fill: false,
+              borderColor: 'rgb(255, 165, 0)',
+              tension: 0.1
+            },
+            // {
+            //   label: 'Average Value',
+            //   data: avgValues,
+            //   fill: false,
+            //   borderColor: 'rgb(255, 99, 132)',
+            //   tension: 0.1
+            // },
+            {
+              label: 'Glucose Level',
+              data: values,
+              fill: false,
+              borderColor: 'rgb(75, 192, 192)',
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Line Chart Example'
+            }
+          },
+          scales: {
+            x: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Date and Time'
+              }
+            },
+            y: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Value'
+              }
+            }
+          }
+        }
+      };
+
+      const ctx = document.getElementById('line-chart').getContext('2d');
+      const chart = new Chart(ctx, config);
+    }
+
+    function getMovingAverages(values, windowSize) {
+      const movAvgValues = [];
+      for (let i = 0; i < values.length; i++) {
+        if (i < windowSize - 1) {
+          movAvgValues.push(values[i]);
+        } else {
+          const sum = values.slice(i - windowSize + 1, i + 1).reduce((acc, curr) => acc + curr, 0);
+          const avg = sum / windowSize;
+          movAvgValues.push(avg);
+        }
+      }
+      return movAvgValues;
+    }
+
+  </script>
+</body>
+</html>
