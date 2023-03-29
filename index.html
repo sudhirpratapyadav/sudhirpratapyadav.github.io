@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <title>Diabetes Chart RJ</title>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+  <title>Diabetes Chart</title>
   <style>
     canvas {
       display: block;
@@ -19,6 +19,8 @@
   <canvas id="line-chart"></canvas>
   <input type="file" id="file-input">
   <p id="msg"></p>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     const base64 = "RGF0ZQlUaW1lCUJsb29kIGdsdWNvc2UgbGV2ZWxzLCBtZy9kTC4JCjI5LU1hcgkwNzo1Mgk5NQkKMjgtTWFyCTIwOjE1CTEyMgkKMjgtTWFyCTEzOjExCTIwMAkKMjgtTWFyCTA3OjExCTEwOAkKMjctTWFyCTIyOjQ1CTgzCQoyNy1NYXIJMjE6MDEJMTI0CQoyNy1NYXIJMTM6MTYJMTY1CQoyNy1NYXIJMDY6NTIJODgJCjI2LU1hcgkyMjo0OAkxNTgJCjI2LU1hcgkyMDozMAkxMzAJCjI2LU1hcgkxMjo1MAkxOTEJCjI2LU1hcgkwNzoyNwkxNDQJCjI1LU1hcgkyMToyMAkxMDkJCjI1LU1hcgkyMDowMgkyNDkJCjI1LU1hcgkxMjoxMwkxMzQJCjI1LU1hcgkwOTowMAkxMzIJCjI0LU1hcgkyMjozMAkxNDUJCjI0LU1hcgkyMToyNwkyMTcJCjI0LU1hcgkxMTozNQkyMTEJCjI0LU1hcgkwNzozMAkxMTAJCjIzLU1hcgkyMjozMAkxMzAJCjIzLU1hcgkyMDozMAkyMDQJCjIzLU1hcgkxMjozMAkxNDUJCjIyLU1hcgkyMDozMAkxNjEJCjIyLU1hcgkxMjozMAkxMzAJCjIyLU1hcgkwNzozMAk5NQkKMjEtTWFyCTIyOjMwCTEyNgkKMjEtTWFyCTIwOjMwCTE5NAkKMjEtTWFyCTEyOjMwCTExNQkKMjEtTWFyCTA3OjMwCTEyNwkKMjAtTWFyCTIwOjMwCTIxNgkKMjAtTWFyCTEyOjMwCTE1NwkKMjAtTWFyCTA3OjMwCTE3OQkKMTktTWFyCTIwOjMwCTEyOAkKMTktTWFyCTEyOjMwCTE3NwkKMTktTWFyCTA3OjMwCTkzCQoxOC1NYXIJMjA6MzAJMTU4CQoxOC1NYXIJMTI6MzAJMTMyCQoxOC1NYXIJMDc6MzAJMTU2CQoxNy1NYXIJMjI6MzAJMTU2CQoxNy1NYXIJMjA6MzAJMTg5CQoxNy1NYXIJMTI6MzAJOTUJCjE3LU1hcgkwNzozMAk4OAkKMTYtTWFyCTIyOjMwCTExMQkKMTYtTWFyCTIwOjMwCTI0MAkKMTYtTWFyCTEyOjMwCTc2CQoxNi1NYXIJMDc6MzAJMjA1CQoxNS1NYXIJMjI6MzAJMTYxCQoxNS1NYXIJMjA6MzAJMTQ2CQoxNS1NYXIJMTI6MzAJMTY3CQoxNS1NYXIJMDc6MzAJMTQ0CQoxNC1NYXIJMjI6MzAJMjY4CQoxNC1NYXIJMjA6MzAJMTI4CQoxNC1NYXIJMTI6MzAJODMJCjE0LU1hcgkwNzozMAkxNjkJCjEzLU1hcgkyMjozMAkxOTQJCjEzLU1hcgkyMDozMAkyNjMJCjEzLU1hcgkxMjozMAkyODEJCjEzLU1hcgkwNzozMAkxMTYJCjEyLU1hcgkyMjozMAkyMjkJCjEyLU1hcgkyMDozMAkyMDYJCjEyLU1hcgkxMjozMAkxODQJCjEyLU1hcgkwNzozMAkxNTMJCjExLU1hcgkyMjozMAkyMzkJCjExLU1hcgkyMDozMAkyMjUJ";
