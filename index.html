@@ -125,7 +125,7 @@
       const values = Y;
       const avgValue = values.reduce((acc, curr) => acc + curr, 0) / values.length;
       const avgValues = Array(values.length).fill(avgValue);
-      windowSize = 15;
+      windowSize = 5;
       const movAvgValues = getMovingAverages(values, windowSize);
 
       // console.log(labels);
