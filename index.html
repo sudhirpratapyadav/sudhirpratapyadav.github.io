@@ -1,211 +1,121 @@
-<!DOCTYPE html>
-<html>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
 <head>
-  <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
-  <title>Diabetes Chart</title>
-  <style>
-    canvas {
-      display: block;
-      margin: 0 auto;
-      max-width: 800px;
-    }
+     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-    canvas#line-chart {
-      height: 400px;
-    }
-  </style>
+     <title>One Page Resume</title>
+
+     <style type="text/css">
+        * { margin: 0; padding: 0; }
+        body { font: 16px Helvetica, Sans-Serif; line-height: 24px; background: url(images/noise.jpg); }
+        .clear { clear: both; }
+        #page-wrap { width: 800px; margin: 40px auto 60px; }
+        #pic { float: right; margin: -30px 0 0 0; }
+        h1 { margin: 0 0 16px 0; padding: 0 0 16px 0; font-size: 42px; font-weight: bold; letter-spacing: -2px; border-bottom: 1px solid #999; }
+        h2 { font-size: 20px; margin: 0 0 6px 0; position: relative; }
+        h2 span { position: absolute; bottom: 0; right: 0; font-style: italic; font-family: Georgia, Serif; font-size: 16px; color: #999; font-weight: normal; }
+        p { margin: 0 0 16px 0; }
+        a { color: #999; text-decoration: none; border-bottom: 1px dotted #999; }
+        a:hover { border-bottom-style: solid; color: black; }
+        ul { margin: 0 0 32px 17px; }
+        #objective { width: 500px; float: left; }
+        #objective p { font-family: Georgia, Serif; font-style: italic; color: #666; }
+        dt { font-style: italic; font-weight: bold; font-size: 18px; text-align: right; padding: 0 26px 0 0; width: 150px; float: left; height: 100px; border-right: 1px solid #999;  }
+        dd { width: 600px; float: right; }
+        dd.clear { float: none; margin: 0; height: 15px; }
+     </style>
 </head>
+
 <body>
-  <canvas id="line-chart"></canvas>
-  <input type="file" id="file-input">
-  <p id="msg"></p>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-    const base64 = "RGF0ZQlUaW1lCUJsb29kIGdsdWNvc2UgbGV2ZWxzLCBtZy9kTC4JCkFwciA0CTIwOjI2CTE3OQkKQXByIDQJMTA6MTIJMTI0CQpBcHIgMwkyMjoxMgkxNjAJCkFwciAzCTIwOjE5CTE0NwkKQXByIDMJMTI6NDIJODMJCkFwciAzCTA3OjE0CTE1MgkKQXByIDIJMjM6MDAJMTE3CQpBcHIgMgkxOTo1OAkyNTQJCkFwciAyCTEyOjQwCTEzNgkKQXByIDIJMDc6MDcJODkJCkFwciAxCTIyOjMxCTEyNgkKQXByIDEJMTk6MTIJMjcxCQpBcHIgMQkxMjoyOQkxMTIJCkFwciAxCTA3OjExCTEwMAkKTWFyIDMxCTIyOjM3CTIwNgkKTWFyIDMxCTIwOjMxCTE4OQkKTWFyIDMxCTEzOjUxCTE2NgkKTWFyIDMxCTA2OjM2CTEwNAkKTWFyIDMwCTIyOjQ5CTExOQkKTWFyIDMwCTIwOjMxCTExNQkKTWFyIDMwCTEyOjE3CTE5NQkKTWFyIDMwCTA2OjIxCTE4MQkKTWFyIDI5CTIyOjMxCTYwCQpNYXIgMjkJMjA6MjYJMTY2CQpNYXIgMjkJMTU6MTIJMTcyCQpNYXIgMjkJMDc6NTIJOTUJCk1hciAyOAkyMDoxNQkxMjIJCk1hciAyOAkxMzoxMQkyMDAJCk1hciAyOAkwNzoxMQkxMDgJCk1hciAyNwkyMjo0NQk4MwkKTWFyIDI3CTIxOjAxCTEyNAkKTWFyIDI3CTEzOjE2CTE2NQkKTWFyIDI3CTA2OjUyCTg4CQpNYXIgMjYJMjI6NDgJMTU4CQpNYXIgMjYJMjA6MzAJMTMwCQpNYXIgMjYJMTI6NTAJMTkxCQpNYXIgMjYJMDc6MjcJMTQ0CQpNYXIgMjUJMjE6MjAJMTA5CQpNYXIgMjUJMjA6MDIJMjQ5CQpNYXIgMjUJMTI6MTMJMTM0CQpNYXIgMjUJMDk6MDAJMTMyCQpNYXIgMjQJMjI6MzAJMTQ1CQpNYXIgMjQJMjE6MjcJMjE3CQpNYXIgMjQJMTE6MzUJMjExCQpNYXIgMjQJMDc6MzAJMTEwCQpNYXIgMjMJMjI6MzAJMTMwCQpNYXIgMjMJMjA6MzAJMjA0CQpNYXIgMjMJMTI6MzAJMTQ1CQpNYXIgMjIJMjA6MzAJMTYxCQpNYXIgMjIJMTI6MzAJMTMwCQpNYXIgMjIJMDc6MzAJOTUJCk1hciAyMQkyMjozMAkxMjYJCk1hciAyMQkyMDozMAkxOTQJCk1hciAyMQkxMjozMAkxMTUJCk1hciAyMQkwNzozMAkxMjcJCk1hciAyMAkyMDozMAkyMTYJCk1hciAyMAkxMjozMAkxNTcJCk1hciAyMAkwNzozMAkxNzkJCk1hciAxOQkyMDozMAkxMjgJCk1hciAxOQkxMjozMAkxNzcJCk1hciAxOQkwNzozMAk5MwkKTWFyIDE4CTIwOjMwCTE1OAkKTWFyIDE4CTEyOjMwCTEzMgkKTWFyIDE4CTA3OjMwCTE1NgkKTWFyIDE3CTIyOjMwCTE1NgkKTWFyIDE3CTIwOjMwCTE4OQkKTWFyIDE3CTEyOjMwCTk1CQpNYXIgMTcJMDc6MzAJODgJCk1hciAxNgkyMjozMAkxMTEJCk1hciAxNgkyMDozMAkyNDAJCk1hciAxNgkxMjozMAk3NgkKTWFyIDE2CTA3OjMwCTIwNQkKTWFyIDE1CTIyOjMwCTE2MQkKTWFyIDE1CTIwOjMwCTE0NgkKTWFyIDE1CTEyOjMwCTE2NwkKTWFyIDE1CTA3OjMwCTE0NAkKTWFyIDE0CTIyOjMwCTI2OAkKTWFyIDE0CTIwOjMwCTEyOAkKTWFyIDE0CTEyOjMwCTgzCQpNYXIgMTQJMDc6MzAJMTY5CQpNYXIgMTMJMjI6MzAJMTk0CQpNYXIgMTMJMjA6MzAJMjYzCQpNYXIgMTMJMTI6MzAJMjgxCQpNYXIgMTMJMDc6MzAJMTE2CQpNYXIgMTIJMjI6MzAJMjI5CQpNYXIgMTIJMjA6MzAJMjA2CQpNYXIgMTIJMTI6MzAJMTg0CQpNYXIgMTIJMDc6MzAJMTUzCQpNYXIgMTEJMjI6MzAJMjM5CQpNYXIgMTEJMjA6MzAJMjI1CQ==";
-    const url = `data:text/plain;base64,${base64}`;
+    <div id="page-wrap">
     
-    // const url = 'https://filebin.net/ewof3vxr4074t8j9/melstudio.msugar.txt';
-    fetch(url)
-      .then(response => response.text())
-      .then(data => {
+        <img src="images/cthulu.png" alt="Photo of Cthulu" id="pic" />
+    
+        <div id="contact-info" class="vcard">
+        
+            <!-- Microformats! -->
+        
+            <h1 class="fn">C'thulhu</h1>
+        
+            <p>
+                Cell: <span class="tel">555-666-7777</span><br />
+                Email: <a class="email" href="mailto:greatoldone@lovecraft.com">greatoldone@lovecraft.com</a>
+            </p>
+        </div>
+                
+        <div id="objective">
+            <p>
+                I am an outgoing and energetic (ask anybody) young professional, seeking a 
+                career that fits my professional skills, personality, and murderous tendencies. 
+                My squid-like head is a masterful problem solver and inspires fear in who gaze upon it. 
+                I can bring world domination to your organization. 
+            </p>
+        </div>
+        
+        <div class="clear"></div>
+        
+        <dl>
+            <dd class="clear"></dd>
+            
+            <dt>Education</dt>
+            <dd>
+                <h2>Withering Madness University - Planet Vhoorl</h2>
+                <p><strong>Major:</strong> Public Relations<br />
+                   <strong>Minor:</strong> Scale Tending</p>
+            </dd>
+            
+            <dd class="clear"></dd>
+            
+            <dt>Skills</dt>
+            <dd>
+                <h2>Office skills</h2>
+                <p>Office and records management, database administration, event organization, customer support, travel coordination</p>
+                
+                <h2>Computer skills</h2>
+                <p>Microsoft productivity software (Word, Excel, etc), Adobe Creative Suite, Windows</p>
+            </dd>
+            
+            <dd class="clear"></dd>
+            
+            <dt>Experience</dt>
+            <dd>
+                <h2>Doomsday Cult <span>Leader/Overlord - Baton Rogue, LA - 1926-2010</span></h2>
+                <ul>
+                    <li>Inspired and won highest peasant death competition among servants</li>
+                    <li>Helped coordinate managers to grow cult following</li>
+                    <li>Provided untimely deaths to all who opposed</li>
+                </ul>
+                
+                <h2>The Watering Hole <span>Bartender/Server - Milwaukee, WI - 2009</span></h2>
+                <ul>
+                    <li>Worked on grass-roots promotional campaigns</li>
+                    <li>Reduced theft and property damage percentages</li>
+                    <li>Janitorial work, Laundry</li>
+                </ul> 
+            </dd>
+            
+            <dd class="clear"></dd>
+            
+            <dt>Hobbies</dt>
+            <dd>World Domination, Deep Sea Diving, Murder Most Foul</dd>
+            
+            <dd class="clear"></dd>
+            
+            <dt>References</dt>
+            <dd>Available on request</dd>
+            
+            <dd class="clear"></dd>
+        </dl>
+        
+        <div class="clear"></div>
+    
+    </div>
 
-        // const data = event.target.result; // Get the file data as a string
-        const lines = data.split('\n'); // Split the file data by line
-
-        const dateTime = [];
-        const levels = [];
-
-        // Iterate over each line and split the data by tab
-        lines.forEach(function(line) {
-          const parts = line.trim().split('\t');
-          const levelsValue = parseInt(parts[2]);
-
-          // Check if levels is an integer before adding to arrays
-          if (Number.isInteger(levelsValue)) {
-            // Concatenate the date and time into a single string
-            const date = parts[0];
-            const time = parts[1];
-            const dateTimeString = `${date} ${time}`;
-
-            // Add the data to the corresponding array
-            dateTime.push(dateTimeString);
-            levels.push(levelsValue);
-          }
-        });
-
-        // Reverse the order of items in both arrays
-        dateTime.reverse();
-        levels.reverse();
-
-        // console.log(dateTime, levels); // Do something with the data
-        plotChart(dateTime, levels)
-
-      })
-      .catch(error => console.error(error));
-
-
-
-
-
-    // Attach an event listener to the file input element
-    const fileInput = document.getElementById('file-input');
-    fileInput.addEventListener('change', handleFileSelect, false);
-
-
-    // Define a callback function to handle the file data
-    function handleFileSelect(event) {
-      const file = event.target.files[0]; // Get the selected file
-      const reader = new FileReader(); // Create a new file reader
-
-      // Define a callback function to handle the file reader result
-      reader.onload = function(event) {
-        const data = event.target.result; // Get the file data as a string
-        const lines = data.split('\n'); // Split the file data by line
-
-        const dateTime = [];
-        const levels = [];
-
-        // Iterate over each line and split the data by tab
-        lines.forEach(function(line) {
-          const parts = line.trim().split('\t');
-          const levelsValue = parseInt(parts[2]);
-
-          // Check if levels is an integer before adding to arrays
-          if (Number.isInteger(levelsValue)) {
-            // Concatenate the date and time into a single string
-            const date = parts[0];
-            const time = parts[1];
-            const dateTimeString = `${date} ${time}`;
-
-            // Add the data to the corresponding array
-            dateTime.push(dateTimeString);
-            levels.push(levelsValue);
-          }
-        });
-
-        // Reverse the order of items in both arrays
-        dateTime.reverse();
-        levels.reverse();
-
-        // console.log(dateTime, levels); // Do something with the data
-        plotChart(dateTime, levels)
-      };
-
-      // Read the selected file as text
-      reader.readAsText(file);
-    }
-
-
-
-    function plotChart(X, Y) {
-
-      const labels = X;
-      const values = Y;
-      const avgValue = values.reduce((acc, curr) => acc + curr, 0) / values.length;
-      const avgValues = Array(values.length).fill(avgValue);
-      windowSize = 7;
-      const movAvgValues = getMovingAverages(values, windowSize);
-
-      // console.log(labels);
-      // console.log(values);
-      // console.log(avgValues);
-      // console.log(movAvgValues);
-
-      const config = {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'Average Glucose Level',
-              data: movAvgValues,
-              fill: false,
-              borderColor: 'rgb(255, 165, 0)',
-              tension: 0.1
-            },
-            // {
-            //   label: 'Average Value',
-            //   data: avgValues,
-            //   fill: false,
-            //   borderColor: 'rgb(255, 99, 132)',
-            //   tension: 0.1
-            // },
-            {
-              label: 'Glucose Level',
-              data: values,
-              fill: false,
-              borderColor: 'rgb(75, 192, 192)',
-              tension: 0.1
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: {
-              display: true,
-              text: 'Glucose Levels'
-            }
-          },
-          scales: {
-            x: {
-              display: true,
-              title: {
-                display: true,
-                text: 'Date and Time'
-              }
-            },
-            y: {
-              display: true,
-              title: {
-                display: true,
-                text: 'Value'
-              }
-            }
-          }
-        }
-      };
-
-      const ctx = document.getElementById('line-chart').getContext('2d');
-      const chart = new Chart(ctx, config);
-    }
-
-    function getMovingAverages(values, windowSize) {
-      const movAvgValues = [];
-      for (let i = 0; i < values.length; i++) {
-        if (i < windowSize - 1) {
-          movAvgValues.push(values[i]);
-        } else {
-          const sum = values.slice(i - windowSize + 1, i + 1).reduce((acc, curr) => acc + curr, 0);
-          const avg = sum / windowSize;
-          movAvgValues.push(avg);
-        }
-      }
-      return movAvgValues;
-    }
-
-  </script>
 </body>
+
 </html>
