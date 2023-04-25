@@ -1,121 +1,662 @@
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
 
-<head>
-     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-     <title>One Page Resume</title>
+    <title>One Page Resume</title>
 
-     <style type="text/css">
-        * { margin: 0; padding: 0; }
-        body { font: 16px Helvetica, Sans-Serif; line-height: 24px; background: url(images/noise.jpg); }
-        .clear { clear: both; }
-        #page-wrap { width: 800px; margin: 40px auto 60px; }
-        #pic { float: right; margin: -30px 0 0 0; }
-        h1 { margin: 0 0 16px 0; padding: 0 0 16px 0; font-size: 42px; font-weight: bold; letter-spacing: -2px; border-bottom: 1px solid #999; }
-        h2 { font-size: 20px; margin: 0 0 6px 0; position: relative; }
-        h2 span { position: absolute; bottom: 0; right: 0; font-style: italic; font-family: Georgia, Serif; font-size: 16px; color: #999; font-weight: normal; }
-        p { margin: 0 0 16px 0; }
-        a { color: #999; text-decoration: none; border-bottom: 1px dotted #999; }
-        a:hover { border-bottom-style: solid; color: black; }
-        ul { margin: 0 0 32px 17px; }
-        #objective { width: 500px; float: left; }
-        #objective p { font-family: Georgia, Serif; font-style: italic; color: #666; }
-        dt { font-style: italic; font-weight: bold; font-size: 18px; text-align: right; padding: 0 26px 0 0; width: 150px; float: left; height: 100px; border-right: 1px solid #999;  }
-        dd { width: 600px; float: right; }
-        dd.clear { float: none; margin: 0; height: 15px; }
-     </style>
-</head>
+    <style type="text/css">
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font: 16px Helvetica, Sans-Serif;
+        line-height: 24px;
+        background: url(images/noise.jpg);
+      }
+      .clear {
+        clear: both;
+      }
+      #page-wrap {
+        width: 800px;
+        margin: 40px auto 60px;
+      }
 
-<body>
+      #pic {
+        float: right;
+        margin: -20px 30px 0 0;
+        border: 10px solid white;
+        width: 27%;
+        height: 27%;
+        /* box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3); */
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        transition: all 0.3s ease;
+        transform: rotate(-3deg); /* Added */
+      }
 
+      /* #pic:hover {
+        transform: translateY(-5px) rotate(-3deg);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+      }  */
+
+
+      .award{
+        font-family: Georgia, Serif;
+        font-style: italic;
+        color: #666;
+      }
+
+      h1 {
+        margin: 0 0 10px 0;
+        padding: 0 0 16px 0;
+        font-size: 42px;
+        font-weight: bold;
+        letter-spacing: -2px;
+        border-bottom: 1px solid #999;
+      }
+      h2 {
+        font-size: 20px;
+        position: relative;
+      }
+      h2 span {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        font-style: italic;
+        font-family: Georgia, Serif;
+        font-size: 16px;
+        color: #999;
+        font-weight: normal;
+      }
+      a {
+        color: #999;
+        text-decoration: none;
+        border-bottom: 1px dotted #999;
+      }
+      a:hover {
+        border-bottom-style: solid;
+        color: black;
+      }
+      ul {
+        margin: 0 0 32px 17px;
+      }
+      #objective {
+        width: 500px;
+        float: left;
+      }
+      #objective p {
+        font-family: Georgia, Serif;
+        font-style: italic;
+        color: #666;
+      }
+      dt {
+        font-style: italic;
+        font-weight: bold;
+        font-size: 18px;
+        text-align: right;
+        padding: 0 26px 0 0;
+        width: 150px;
+        float: left;
+        height: 100px;
+        border-right: 1px solid #999;
+      }
+      dd {
+        width: 600px;
+        float: right;
+      }
+      dd.clear {
+        float: none;
+        margin: 0;
+        height: 15px;
+      }
+
+      .black-button {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 15px;
+        background-color: rgb(40, 40, 40);
+        color: white;
+        text-decoration: none;
+        /* transition: all 0.3s ease-in-out; */
+      }
+
+      .black-button:hover {
+        /* background-color: #333; */
+        background-color: black;
+        color: white;
+        box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+        transform: translateY(-1px);
+      }
+
+      .black-button i {
+        margin-right: 5px;
+      }
+
+      .contact-icons {
+        margin-bottom: 5px;
+        /* border: 2px solid black; */
+      }
+
+      .vcard {
+        margin-bottom: 5px;
+        /* border: 2px solid black; */
+      }
+
+
+    </style>
+  </head>
+
+  <body>
     <div id="page-wrap">
-    
-        <img src="images/cthulu.png" alt="Photo of Cthulu" id="pic" />
-    
-        <div id="contact-info" class="vcard">
-        
-            <!-- Microformats! -->
-        
-            <h1 class="fn">C'thulhu</h1>
-        
-            <p>
-                Cell: <span class="tel">555-666-7777</span><br />
-                Email: <a class="email" href="mailto:greatoldone@lovecraft.com">greatoldone@lovecraft.com</a>
-            </p>
+      <img
+        src="images/profile_pic.jpg"
+        alt="Photo of Sudhir Pratap Yadav"
+        id="pic"
+      />
+
+      <div id="contact-info" class="vcard">
+        <!-- Microformats! -->
+
+        <h1 class="fn">Sudhir Pratap Yadav</h1>
+        <div class="contact-icons">
+          <a
+            href="https://github.com/sudhirpratapyadav/"
+            target="_blank"
+            class="black-button"
+            ><i class="fab ai-github"></i>Github
+          </a>
+          <a
+            href="https://github.com/sudhirpratapyadav/sudhirpratapyadav.github.io/blob/main/files/CV_Sudhir.pdf"
+            target="_blank"
+            class="black-button"
+          >
+            <i class="fa-solid fa-file-arrow-down"></i>CV
+          </a>
+
+          <a
+            href="https://www.linkedin.com/in/sudhir-yadav-4a3b36b0/"
+            target="_blank"
+            class="black-button"
+          >
+            <i class="fa-brands fa-linkedin"></i>Linkedin
+          </a>
         </div>
-                
-        <div id="objective">
-            <p>
-                I am an outgoing and energetic (ask anybody) young professional, seeking a 
-                career that fits my professional skills, personality, and murderous tendencies. 
-                My squid-like head is a masterful problem solver and inspires fear in who gaze upon it. 
-                I can bring world domination to your organization. 
-            </p>
+        <div>
+          <p>
+            Phone: <span class="tel">(+91)-637-698-4160</span><br />
+            Email:
+            <a class="email" href="mailto:yadav.1@iitj.ac.in"
+              >yadav.1@iitj.ac.in</a
+            >
+          </p>
         </div>
-        
-        <div class="clear"></div>
-        
-        <dl>
-            <dd class="clear"></dd>
-            
-            <dt>Education</dt>
-            <dd>
-                <h2>Withering Madness University - Planet Vhoorl</h2>
-                <p><strong>Major:</strong> Public Relations<br />
-                   <strong>Minor:</strong> Scale Tending</p>
-            </dd>
-            
-            <dd class="clear"></dd>
-            
-            <dt>Skills</dt>
-            <dd>
-                <h2>Office skills</h2>
-                <p>Office and records management, database administration, event organization, customer support, travel coordination</p>
-                
-                <h2>Computer skills</h2>
-                <p>Microsoft productivity software (Word, Excel, etc), Adobe Creative Suite, Windows</p>
-            </dd>
-            
-            <dd class="clear"></dd>
-            
-            <dt>Experience</dt>
-            <dd>
-                <h2>Doomsday Cult <span>Leader/Overlord - Baton Rogue, LA - 1926-2010</span></h2>
-                <ul>
-                    <li>Inspired and won highest peasant death competition among servants</li>
-                    <li>Helped coordinate managers to grow cult following</li>
-                    <li>Provided untimely deaths to all who opposed</li>
-                </ul>
-                
-                <h2>The Watering Hole <span>Bartender/Server - Milwaukee, WI - 2009</span></h2>
-                <ul>
-                    <li>Worked on grass-roots promotional campaigns</li>
-                    <li>Reduced theft and property damage percentages</li>
-                    <li>Janitorial work, Laundry</li>
-                </ul> 
-            </dd>
-            
-            <dd class="clear"></dd>
-            
-            <dt>Hobbies</dt>
-            <dd>World Domination, Deep Sea Diving, Murder Most Foul</dd>
-            
-            <dd class="clear"></dd>
-            
-            <dt>References</dt>
-            <dd>Available on request</dd>
-            
-            <dd class="clear"></dd>
-        </dl>
-        
-        <div class="clear"></div>
-    
+      </div>
+
+      <div id="objective">
+        <p>
+          I am on the path of discovering
+          <a
+            href="https://www.sriramanamaharshi.org/wp-content/uploads/2012/12/who_am_I.pdf"
+            ><b>who am I</b></a
+          >
+          by creating robots. I hypothesize, we (Humans) are what can't be
+          automated. Therefore, my efforts are towards creating
+          <b>intelligent autonomous robots</b> so we can be free of mundane and
+          focus on that which is truly important (and fulfilling).
+        </p>
+      </div>
+
+      <div class="clear"></div>
+
+      <dl>
+        <dd class="clear"></dd>
+
+        <dt>Education</dt>
+        <dd>
+          <h2>
+            Indian Institute of Technology (IIT) Jodhpur
+            <span>May 2014 - May 2018</span>
+          </h2>
+          <h2> <small>B.Tech. in Electrical Engineering</small></h2>
+          <p class="award">Academic Distinction Award (2016-17)</p>  
+        </dd>
+
+        <dd class="clear"></dd>
+
+        <dt>Technical Skills</dt>
+        <dd>
+          <h2>Software (Languages, Frameworks and Tools)</h2>
+          <p>
+            Python, Javascript, C++, Matlab, php, Pytorch, Tensorflow, ROS,
+            Gazebo, PyBullet, GPU Server (A100)
+          </p><br>
+
+          <h2>Hardware (Robots)</h2>
+          <p>
+            UR5, Kinova, Turtle Bot arm, TAL Brabo Industrial Robot, Quadcopter,
+            Humanoid robot, Quadraped robot, P3DX robot, several hand-made
+            robots
+          </p><br>
+
+          <h2>Hardware (Embedded)</h2>
+          <p>
+            Intel realsense camera, Kinect camera, Motioin Capture System, IMU,
+            GPS, Lidar, Dynamixel Motors, Arduino, RaspberryPi, UP square board
+          </p>
+        </dd>
+
+        <dd class="clear"></dd>
+
+        <dt>Experience</dt>
+        <dd>
+          <h2>Research Engineer <span>September 2021 - January 2023</span></h2>
+          <h2>
+            <small
+              >Vision based Autonomous Systems Lab - TIH iHub Drishti</small
+            >
+          </h2>
+          <ul>
+            <li>
+              Successfully setup vision-based robotics laboratory by designing
+              the lab space, planning the nec- essary components, conducting
+              thorough market research for appropriate robots and equipment, and
+              coordinating the procurement and installation.
+            </li>
+            <li>
+              ”Learning Vision-based Robotic Manipulation Tasks Sequentially in
+              Offline Reinforcement Learning Settings.” Sudhir Pratap Yadav,
+              Rajendra Nagar, and Suril V. Shah. arXiv preprint arXiv:2301.13450
+              (2023).
+              <a
+                href="https://arxiv.org/pdf/2301.13450.pdf"
+                target="_blank"
+                class="black-button"
+                ><i class="fas fa-file-pdf"></i>Pre-print
+              </a>
+              <a
+                href="https://github.com/sudhirpratapyadav/sac-cql-si"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-github"></i>Code
+              </a>
+              <a
+                href="https://arxiv.org/abs/2301.13450"
+                target="_blank"
+                class="black-button"
+                ><i class="ai ai-arxiv"></i>arXiv
+              </a>
+            </li>
+          </ul>
+
+          <h2>
+            Robotics Software Engineering Intern
+            <span>May 2017 - July 2017</span>
+          </h2>
+          <h2><small>TCS Innovation Lab</small></h2>
+          <ul>
+            <li>
+              Developed ROS interface for 5-DOF TAL BRABO Industrial robot arm.
+              Robot was hacked to be controlled via Arduino as original
+              controller was closed source. A visual-servoing pipline was
+              developed to demonstrate proper working of interface.
+            </li>
+            <li>
+              <a
+                href="https://github.com/sudhirpratapyadav/TAL_BRABO/blob/master/Documentation%20of%20%20ROS%20interface%20for%20TAL_BRABO.pdf"
+                target="_blank"
+                class="black-button"
+                ><i class="fas fa-file-pdf"></i>Documentation
+              </a>
+              <a
+                href="https://github.com/sudhirpratapyadav/TAL_BRABO/"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-github"></i>Code
+              </a>
+            </li>
+          </ul>
+
+          <h2>
+            Robotics Research and Development Intern
+            <span>May 2016 - June 2016</span>
+          </h2>
+          <h2>
+            <small>Robotics Research Centre - IIIT Hyderabad</small>
+          </h2>
+          <ul>
+            <li>
+              Developed kinematic model of 26-DOF humanoid. Implemented static
+              balance by calculating ZMP,COM and using force sensors.
+            </li>
+          </ul>
+        </dd>
+
+        <dd class="clear"></dd>
+
+        <dt>Projects</dt>
+        <dd>
+          <h2>
+            Vision based control of UR5 robotic arm using Deep RL
+            <span>July 2017 - May 2018</span>
+          </h2>
+          <h2><small>Robotics Lab IIT Jodhpur — Dr. Suril V. Shah</small></h2>
+          <ul>
+            <li>
+              Visual Servoing for Eye-in-Hand Robotic Manipulator using Deep
+              Deterministic Policy Gradients (DDPG). Aim was to train UR5 arm
+              for visual-servoing a specific object of certain colour. ROS was
+              used to control UR5 robot while RL agent was trained using
+              TORCH(LUA) on simulator GAZEEBO.
+            </li>
+            <li>
+              <a
+                href="https://github.com/sudhirpratapyadav/Vision-UR5-Deep-RL/blob/main/Documentation%20-%20Vision%20Based%20control%20of%20UR5%20robotic%20arm%20using%20Deep%20RL.pdf"
+                target="_blank"
+                class="black-button"
+                ><i class="fas fa-file-pdf"></i>Documentation
+              </a>
+              <a
+                href="https://github.com/sudhirpratapyadav/Vision-UR5-Deep-RL"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-github"></i>Code
+              </a>
+            </li>
+          </ul>
+
+          <h2>
+            Quadruped Navigation using RL
+            <span>Dec 2016 - May 2017</span>
+          </h2>
+          <h2><small>Robotics Lab IIT Jodhpur — Dr. Suril V. Shah</small></h2>
+          <ul>
+            <li>
+              Main focus of this project was to make quadruped learn to walk on
+              terrain using TD learning. The Kinematic model of quadruped and RL
+              agent were developed in C++.
+            </li>
+            <li>
+              <a
+                href="https://github.com/sudhirpratapyadav/Quadruped-Navigation-RL/blob/main/Documentation%20-%20Qudaruped%20Navigation%20using%20RL.pdf"
+                target="_blank"
+                class="black-button"
+                ><i class="fas fa-file-pdf"></i>Documentation
+              </a>
+              <a
+                href="https://github.com/sudhirpratapyadav/Quadruped-Navigation-RL"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-github"></i>Code
+              </a>
+            </li>
+          </ul>
+
+          <h2>
+            Simulating Autonomous Mini-Helicopter
+            <span>July 2016 - Dec 2016</span>
+          </h2>
+          <h2><small>Robotics Lab IIT Jodhpur — Dr. Suril V. Shah</small></h2>
+          <ul>
+            <li>
+              Design and development of autonomous mini helicopter to carry 2.6
+              kg nuclear radiation sensor in Emergency Scenario in desert area.
+              A very accurate simulation of the helicopter was developed in
+              matlab and PID controller was used to control its trajectory.
+            </li>
+          </ul>
+
+          <h2>
+            Quadcopter trajectory tracking
+            <span>June 2016 - July 2016</span>
+          </h2>
+          <h2><small>Robotics Lab IIT Jodhpur — Dr. Suril V. Shah</small></h2>
+          <ul>
+            <li>
+              Implemented PID control on quadcopter for making it track
+              different trajectories. State feedback was taken using VICON
+              motion capture system and quadcopter was controlled through ROS.
+            </li>
+            <li>
+              <a
+                href="https://github.com/sudhirpratapyadav/PID-control-of-Quadcopter/blob/main/Quadcopter.mp4"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-youtube"></i>Video
+              </a>
+            </li>
+          </ul>
+
+          <h2>
+            Control of P3DX and Mapping
+            <span>June 2016 - July 2016</span>
+          </h2>
+          <h2><small>Robotics Lab IIT Jodhpur — Dr. Suril V. Shah</small></h2>
+          <ul>
+            <li>
+              The P3DX robot was operated using ROS using PID contoller. Kinect
+              was used as depth sensor for building a map of a corridor using
+              the Occupancy Grid mapping algorithm implement in MATLAB.
+            </li>
+            <li>
+              <a
+                href="https://github.com/sudhirpratapyadav/P3DX-Mapping/blob/main/Documentation%20-%20Control%20of%20P3DX%20and%20Mappping.pdf"
+                target="_blank"
+                class="black-button"
+                ><i class="fas fa-file-pdf"></i>Documentation
+              </a>
+              <a
+                href="https://github.com/sudhirpratapyadav/P3DX-Mapping"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-github"></i>Code
+              </a>
+              <a
+                href="https://github.com/sudhirpratapyadav/P3DX-Mapping/blob/main/Result%20Videos/Control%20of%20P3DX.mp4"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-youtube"></i>Video
+              </a>
+            </li>
+          </ul>
+
+          <h2>
+            Gait Planning Of Quadruped
+            <span>Jan 2016 - May 2016</span>
+          </h2>
+          <h2><small>Robotics Lab IIT Jodhpur — Dr. Suril V. Shah</small></h2>
+          <ul>
+            <li>
+              Developed a kinematic simulation of quadruped in MATLAB for
+              walking using crawl gait. Crawl gait was also implemented on real
+              quadruped robot.
+            </li>
+            <li>
+              <a
+                href="https://github.com/sudhirpratapyadav/Gait-Planning-Quadruped"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-github"></i>Code
+              </a>
+            </li>
+          </ul>
+        </dd>
+
+        <dd class="clear"></dd>
+
+        <dt>Side Fun Projects</dt>
+        <dd>
+          <h2>
+            Robotics Lab VR Tour
+            <span>2023</span>
+          </h2>
+          <ul>
+            <li>
+              Developed a kinematic simulation of quadruped in MATLAB for
+              walking using crawl gait. Crawl gait was also implemented on real
+              quadruped robot.
+            </li>
+            <li>
+              <a
+                href="https://github.com/sudhirpratapyadav/roboticslab.github.io"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-github"></i>Code
+              </a>
+            </li>
+          </ul>
+
+          <h2>
+            IITJ Nerfs
+            <span>2022</span>
+          </h2>
+          <ul>
+            <li>
+              Developed a kinematic simulation of quadruped in MATLAB for
+              walking using crawl gait. Crawl gait was also implemented on real
+              quadruped robot.
+            </li>
+            <li>
+              <a href="" target="_blank" class="black-button">
+                <i class="fab fa-youtube"></i>Coming Soon
+              </a>
+            </li>
+          </ul>
+
+          <h2>
+            Playing 2048 game using R
+            <span>2017</span>
+          </h2>
+          <ul>
+            <li>
+              Playing 2048 game using RL (2017)) Game created in C++ and python
+              and solved using TD-learning
+            </li>
+            <li>
+              <a
+                href="https://github.com/sudhirpratapyadav/Playing-2048-using-RL"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-github"></i>Code
+              </a>
+            </li>
+          </ul>
+
+          <h2>
+            Unblock-me puzzle
+            <span>2014</span>
+          </h2>
+          <ul>
+            <li>
+              Vision based detection of game state and automatically solving the
+              puzzle.
+            </li>
+            <li>
+              <a
+                href="https://github.com/sudhirpratapyadav/Unblock-Me-Solver"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-github"></i>Code
+              </a>
+            </li>
+          </ul>
+        </dd>
+
+        <dd class="clear"></dd>
+
+        <dt>Contributing back to Community</dt>
+        <dd>
+          <h2>
+            ROS Workshop
+            <span>2022</span>
+          </h2>
+          <ul>
+            <li>
+              Conducted a small workshop on Indtroduction to ROS (Robot
+              Operating System)
+            </li>
+            <li>
+              <a
+                href="https://github.com/sudhirpratapyadav/ros_workshop/blob/main/README.md"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fab fa-markdown"></i>Content
+              </a>
+            </li>
+          </ul>
+
+          <h2>
+            Mentor on Coursera
+            <span>2017</span>
+          </h2>
+          <ul>
+            <li>
+              Given opportunity to be mentor of the course on Robot Estimation
+              and Learning
+            </li>
+            <li>
+              <a
+                href="https://coursera.org/share/e1573e7bc31b30aa4e2f132db6254ba3"
+                target="_blank"
+                class="black-button"
+              >
+                <i class="fa-solid fa-award"></i>Certificate
+              </a>
+            </li>
+          </ul>
+
+          <h2>
+            Head (2015), Mentor (2016) Robotics Club
+            <span>2022</span>
+          </h2>
+          <ul>
+            <li>
+              Mentored students and took few lecture series so to strengthen
+              robotics culture in IITJ
+            </li>
+          </ul>
+
+          <h2>
+            Volunteer Parivartan Group
+            <span>2014-2017</span>
+          </h2>
+          <ul>
+            <li>
+              Group was focused on social service. My group was given
+              opportunity to teach school students who could not afford tution.
+            </li>
+          </ul>
+        </dd>
+
+        <dd class="clear"></dd>
+      </dl>
+
+      <div class="clear"></div>
     </div>
-
-</body>
-
+  </body>
 </html>
