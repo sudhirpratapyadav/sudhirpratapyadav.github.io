@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notes Converter</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    padding: 20px;
+  }
+  table {
+    margin: auto;
+    border-collapse: collapse;
+    border: 1px solid black;
+  }
+  th, td {
+    border: 1px solid black;
+    padding: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Notes Converter</h1>
+  <label for="inputNotes">Enter Notes:</label>
+  <input type="text" id="inputNotes" placeholder="Each note separated by space" />
+  <button onclick="convertToIndian()">Convert to Indian Sargam</button>
+  <button onclick="convertToWestern()">Convert to Western Notes</button>
+  <p id="outputNotes"></p>
+</div>
+<div class="container">
+  <h2>Relationship between Indian and Western Notes</h2>
+  <table>
+    <tr>
+      <th>Indian Sargam</th>
+      <th>Western Notes</th>
+    </tr>
+    <tr>
+      <td>S</td>
+      <td>C</td>
+    </tr>
+    <tr>
+      <td>r</td>
+      <td>C#</td>
+    </tr>
+    <tr>
+      <td>R</td>
+      <td>D</td>
+    </tr>
+    <tr>
+      <td>g</td>
+      <td>D#</td>
+    </tr>
+    <tr>
+      <td>G</td>
+      <td>E</td>
+    </tr>
+    <tr>
+      <td>M</td>
+      <td>F</td>
+    </tr>
+    <tr>
+      <td>m</td>
+      <td>F#</td>
+    </tr>
+    <tr>
+      <td>P</td>
+      <td>G</td>
+    </tr>
+    <tr>
+      <td>d</td>
+      <td>G#</td>
+    </tr>
+    <tr>
+      <td>D</td>
+      <td>A</td>
+    </tr>
+    <tr>
+      <td>n</td>
+      <td>A#</td>
+    </tr>
+    <tr>
+      <td>N</td>
+      <td>B</td>
+    </tr>
+  </table>
+</div>
+<script>
+  const indianToWesternNotes = {
+    "S": "C",
+    "r": "C#",
+    "R": "D",
+    "g": "D#",
+    "G": "E",
+    "M": "F",
+    "m": "F#",
+    "P": "G",
+    "d": "G#",
+    "D": "A",
+    "n": "A#",
+    "N": "B",
+  };
+
+  const westernToIndianSargam = {
+    "C": "S",
+    "C#": "r",
+    "D": "R",
+    "D#": "g",
+    "E": "G",
+    "F": "M",
+    "F#": "m",
+    "G": "P",
+    "G#": "d",
+    "A": "D",
+    "A#": "n",
+    "B": "N",
+  };
+
+  function convertToIndian() {
+    const inputNotes = document.getElementById("inputNotes").value;
+    const notesArray = inputNotes.split(" ");
+    const sargamArray = [];
+
+    notesArray.forEach(note => {
+      const sargamNote = westernToIndianSargam[note];
+      if (sargamNote) {
+        sargamArray.push(sargamNote);
+      } else {
+        sargamArray.push("?");
+      }
+    });
+
+    const outputNotes = document.getElementById("outputNotes");
+    outputNotes.textContent = "Indian Sargam: " + sargamArray.join(" ");
+  }
+
+  function convertToWestern() {
+    const inputNotes = document.getElementById("inputNotes").value;
+    const notesArray = inputNotes.split(" ");
+    const westernArray = [];
+
+    notesArray.forEach(note => {
+      const westernNote = indianToWesternNotes[note];
+      if (westernNote) {
+        westernArray.push(westernNote);
+      } else {
+        westernArray.push("?");
+      }
+    });
+
+    const outputNotes = document.getElementById("outputNotes");
+    outputNotes.textContent = "Western Notes: " + westernArray.join(" ");
+  }
+</script>
+</body>
+</html>
