@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timer with Animation</title>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    #canvasContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        height: 100vh;
+    }
+
+    canvas {
+        border: 2px solid black;
+    }
+</style>
+</head>
+<body>
+
+<div id="canvasContainer">
+    <canvas id="canvas"></canvas>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const totalTimeSeconds = 10; // 10 seconds
+    const deltaTimeSeconds = 0.1; // 0.1 second (100 milliseconds)
+
+    const totalAngle = 360; // Total angle in degrees
+    const deltaAngle = totalAngle / (totalTimeSeconds / deltaTimeSeconds); // Calculate delta angle based on delta time
+    const arcRanges = [0, 48, 240, 336, 360] //starting from 0
+
+    let centerX = canvas.width / 2;
+    let centerY = canvas.height / 2;
+    let radius = Math.min(canvas.width, canvas.height) / 2;
+
+
+    let currentAngle = 0; // Angle from top
+    let timer = null;
+
+    function resizeCanvas() {
+        const minDimension = Math.min(window.innerWidth, window.innerHeight)*0.9;
+        canvas.width = minDimension;
+        canvas.height = minDimension;
+
+        centerX = canvas.width / 2;
+        centerY = canvas.height / 2;
+        radius = Math.min(canvas.width, canvas.height) / 2;
+    }
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Function to draw an arc
+    function drawArc(startAngle, endAngle, fillColor, strokeColor) {
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY)
+        ctx.arc(centerX, centerY, radius, (270+startAngle) * Math.PI / 180, (270+endAngle) * Math.PI / 180);
+        ctx.fillStyle = fillColor;
+        ctx.strokeStyle = strokeColor;
+        ctx.fill();
+        ctx.stroke();
+    }
+
+    // Function to draw the line and circle initially
+    function initialDraw() {
+        drawArc(0, 360, 'white', 'black');
+        for (let i = 1; i < arcRanges.length; i++) {
+            if (i==1)
+                drawArc(arcRanges[i-1], arcRanges[i], 'red', 'black');
+            else
+                drawArc(arcRanges[i-1], arcRanges[i], 'white', 'black');
+        }
+    }
+
+    // Function to start the timer
+    function startTimer() {
+        clearInterval(timer);
+        currentAngle = 0; // Reset angle to start from top
+        timer = setInterval(rotate, deltaTimeSeconds * 1000); // Convert delta time to milliseconds
+    }
+
+    // Function to rotate the line
+    function rotate() {
+        currentAngle += deltaAngle; // Rotate deltaAngle degrees per deltaTime seconds
+        if (currentAngle >= totalAngle) currentAngle = 0; // Reset angle after one complete rotation
+
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 1; i < arcRanges.length; i++) {
+            if (currentAngle >= arcRanges[i-1] && currentAngle < arcRanges[i])
+            {
+                drawArc(arcRanges[i-1], currentAngle, 'white', 'black');
+                drawArc(currentAngle, arcRanges[i], 'red', 'black');
+            }
+            else
+                drawArc(arcRanges[i-1], arcRanges[i], 'white', 'black');
+        }
+    }
+
+    // Initial drawing
+    initialDraw();
+
+    // Start the timer automatically
+    startTimer();
+</script>
+
+</body>
+</html>
