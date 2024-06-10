@@ -18,6 +18,14 @@
         align-items: center;
         width: 100vw;
         height: 100vh;
+        position: relative;
+    }
+
+    #circleCount {
+        position: absolute; /* Add this */
+        top: 0px; /* Add this */
+        right: 200px; /* Add this */
+        font-size: 200px; /* Add this */
     }
 
 </style>
@@ -26,6 +34,7 @@
 
 <div id="canvasContainer">
     <canvas id="canvas"></canvas>
+    <div id="circleCount">0</div> 
 </div>
 
 <script>
@@ -46,6 +55,7 @@
 
     let currentAngle = 0; // Angle from top
     let timer = null;
+    let circleCount = 0;
 
     function resizeCanvas() {
         const minDimension = Math.min(window.innerWidth, window.innerHeight)*0.98;
@@ -97,14 +107,25 @@
     // Function to start the timer
     function startTimer() {
         clearInterval(timer);
-        currentAngle = 0; // Reset angle to start from top
+        circleCount = 0;
+        currentAngle = 0;
+        document.getElementById('circleCount').innerText = `${circleCount}`;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        initialDraw();
         timer = setInterval(rotate, deltaTimeSeconds * 1000); // Convert delta time to milliseconds
     }
 
     // Function to rotate the line
     function rotate() {
         currentAngle += deltaAngle; // Rotate deltaAngle degrees per deltaTime seconds
-        if (currentAngle >= totalAngle) currentAngle = 0; // Reset angle after one complete rotation
+        if (currentAngle >= totalAngle)
+        {
+            currentAngle = 0; // Reset angle after one complete rotation
+
+            // Update and display circle count
+            circleCount++;
+            document.getElementById('circleCount').innerText = `${circleCount}`;
+        }
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 1; i < arcRanges.length; i++) {
@@ -118,11 +139,17 @@
         }
     }
 
-    // Initial drawing
-    initialDraw();
-
     // Start the timer automatically
     startTimer();
+
+    // Reset the page when spacebar is pressed
+    document.addEventListener('keydown', function(event) {
+        if (event.keyCode === 32) {
+            // window.location.reload();
+            startTimer();
+        }
+    });
+
 </script>
 
 </body>
