@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robotics Startup Market Research — India</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+
+  :root {
+    --ink: #1a1a2e;
+    --body-text: #2c3e50;
+    --muted: #5d6d7e;
+    --paper: #ffffff;
+    --paper-2: #f7f9fc;
+    --paper-3: #edf2f7;
+    --sidebar-bg: #1e3a5f;
+    --sidebar-bg-hover: #264d7a;
+    --sidebar-text: #b8cce4;
+    --sidebar-active-bg: #2e6da4;
+    --sidebar-active: #ffffff;
+    --accent: #2e6da4;        /* primary blue */
+    --accent-dark: #1a4a7a;
+    --accent-light: #e8f0f9;
+    --accent-2: #0077b6;      /* info blue */
+    --accent-3: #1a7a4a;      /* green */
+    --accent-3-light: #eaf5ee;
+    --accent-4: #6c3483;      /* purple */
+    --orange: #e67e22;
+    --orange-light: #fef5ec;
+    --danger: #c0392b;
+    --danger-light: #fdf0ef;
+    --rule: #dce6f0;
+    --table-head: #1e3a5f;
+    --table-stripe: #f0f4f9;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --mono: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+    --sidebar-w: 260px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--paper-2);
+    color: var(--body-text);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14.5px;
+    line-height: 1.65;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    background: var(--sidebar-bg);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 2rem;
+  }
+
+  #sidebar::-webkit-scrollbar { width: 4px; }
+  #sidebar::-webkit-scrollbar-thumb { background: #2e6da4; border-radius: 2px; }
+
+  .sidebar-brand {
+    padding: 1.6rem 1.4rem 1.2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    background: #16304f;
+  }
+
+  .sidebar-brand .brand-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7aafd4;
+    margin-bottom: 0.4rem;
+  }
+
+  .sidebar-brand .brand-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1.35;
+  }
+
+  .sidebar-brand .brand-sub {
+    font-size: 11.5px;
+    color: #7aafd4;
+    margin-top: 0.3rem;
+  }
+
+  .sidebar-nav {
+    padding: 0.75rem 0;
+    flex: 1;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #5a8ab0;
+    padding: 1.2rem 1.4rem 0.4rem;
+  }
+
+  .sidebar-nav a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.45rem 1.4rem;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 12.5px;
+    line-height: 1.4;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+
+  .sidebar-nav a .nav-num {
+    font-size: 10px;
+    color: #4a7a9b;
+    min-width: 1.4rem;
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+
+  .sidebar-nav a:hover {
+    color: #ffffff;
+    background: rgba(255,255,255,0.06);
+    border-left-color: #5a9fd4;
+  }
+
+  .sidebar-nav a.active {
+    color: #ffffff;
+    border-left-color: #5ab4ff;
+    background: var(--sidebar-active-bg);
+    font-weight: 500;
+  }
+
+  .sidebar-nav a.active .nav-num { color: #9dd4ff; }
+
+  .sidebar-status {
+    margin: 1rem 1.2rem;
+    padding: 0.65rem 0.9rem;
+    background: rgba(26,122,74,0.25);
+    border: 1px solid rgba(80,200,130,0.3);
+    border-radius: 5px;
+    font-size: 11px;
+    color: #7de8b0;
+    line-height: 1.5;
+  }
+
+  /* ── MAIN CONTENT ── */
+  #main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    max-width: 100%;
+    background: var(--paper);
+  }
+
+  .page-header {
+    background: var(--sidebar-bg);
+    color: #ffffff;
+    padding: 2.8rem 3rem 2.5rem;
+    border-bottom: 4px solid #2e6da4;
+  }
+
+  .page-header::before { display: none; }
+  .page-header::after { display: none; }
+
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7aafd4;
+    margin-bottom: 0.7rem;
+  }
+
+  .header-title {
+    font-family: var(--serif);
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 0.3rem;
+    color: #ffffff;
+  }
+
+  .header-subtitle {
+    font-family: var(--sans);
+    font-size: 1rem;
+    font-style: normal;
+    color: #9bbdd9;
+    margin-bottom: 1.4rem;
+    font-weight: 400;
+  }
+
+  .product-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .ptag {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .ptag-mobile { background: #1565c0; color: #ffffff; }
+  .ptag-arm { background: #b84c00; color: #ffffff; }
+  .ptag-drone { background: #1a6b3c; color: #ffffff; }
+  .ptag-quad { background: #6a1fa8; color: #ffffff; }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    padding: 0.5rem 0.9rem;
+    font-size: 12px;
+    color: #c5e8d0;
+    line-height: 1.4;
+  }
+
+  /* ── CONTENT SECTIONS ── */
+  .content { padding: 0; }
+
+  section {
+    padding: 2.5rem 3rem;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper);
+  }
+
+  section:nth-child(even) { background: #fafcff; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--rule);
+  }
+
+  .section-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffffff;
+    background: var(--accent);
+    border-radius: 3px;
+    padding: 0.15rem 0.45rem;
+    min-width: 1.8rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  h2.section-title {
+    font-family: var(--serif);
+    font-size: 1.45rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  h3.subsection-title {
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 2rem 0 0.9rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  h4.mini-title {
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 1.25rem 0 0.6rem;
+  }
+
+  p { margin-bottom: 0.9rem; color: var(--body-text); }
+
+  /* ── QUICK SUMMARY ── */
+  .opportunity-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--body-text);
+    border-left: 4px solid var(--accent);
+    padding: 0.6rem 1.1rem;
+    background: var(--accent-light);
+    margin-bottom: 0.75rem;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .stat-highlight {
+    font-weight: 700;
+    color: var(--accent-dark);
+  }
+
+  .product-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .product-card {
+    background: var(--paper);
+    border-radius: 6px;
+    padding: 1.2rem 1.3rem;
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+
+  .product-card:hover { box-shadow: var(--shadow); }
+
+  .product-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+
+  .card-mobile::before { background: #1565c0; }
+  .card-arm::before { background: #b84c00; }
+  .card-drone::before { background: #1a6b3c; }
+  .card-quad::before { background: #6a1fa8; }
+
+  .card-rank {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+  }
+
+  .card-mobile .card-rank { color: #1565c0; }
+  .card-arm .card-rank { color: #b84c00; }
+  .card-drone .card-rank { color: #1a6b3c; }
+  .card-quad .card-rank { color: #6a1fa8; }
+
+  .card-name {
+    font-family: var(--sans);
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+
+  .card-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 0.7rem;
+    margin-top: 1.25rem;
+  }
+
+  .insight-item {
+    background: #f0f4f9;
+    border: 1px solid #c8d8ec;
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 0.9rem 1rem;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--body-text);
+  }
+
+  .insight-item strong { color: var(--ink); }
+
+  /* ── TABLES ── */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1rem 0;
+    border-radius: 6px;
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow-sm);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead tr {
+    background: var(--table-head);
+    color: #ffffff;
+  }
+
+  thead th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #c5daf0;
+  }
+
+  tbody tr { border-bottom: 1px solid var(--rule); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--table-stripe); }
+  tbody tr:hover { background: #e8f0f9; }
+
+  td {
+    padding: 0.65rem 1rem;
+    color: var(--body-text);
+    vertical-align: top;
+  }
+
+  td strong { font-weight: 600; color: var(--ink); }
+
+  td .price { font-family: var(--mono); font-size: 12px; color: #1a5fa0; font-weight: 600; }
+  td .note { font-size: 12px; color: var(--muted); }
+
+  /* ── BLOCKQUOTES / CALLOUTS ── */
+  .callout {
+    background: #fef9ec;
+    border-left: 4px solid #d4940a;
+    border-radius: 0 5px 5px 0;
+    padding: 1rem 1.3rem;
+    margin: 1.25rem 0;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #3d2e00;
+  }
+
+  .callout.danger {
+    background: var(--danger-light);
+    border-left-color: var(--danger);
+    color: #4a1010;
+  }
+
+  .callout.info {
+    background: var(--accent-light);
+    border-left-color: var(--accent);
+    color: #0d2a47;
+  }
+
+  .callout.success {
+    background: var(--accent-3-light);
+    border-left-color: var(--accent-3);
+    color: #0d2a1c;
+  }
+
+  .callout-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+    opacity: 0.65;
+  }
+
+  /* ── PAIN POINTS ── */
+  .pain-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  .pain-list li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 0.75rem 0.9rem;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--body-text);
+  }
+
+  .pain-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffffff;
+    background: var(--accent);
+    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .switch-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0.75rem 0;
+  }
+
+  .switch-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 13.5px;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--rule);
+    color: var(--body-text);
+  }
+
+  .switch-list li::before {
+    content: '✓';
+    color: var(--accent-3);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ── MARKET SIZING ── */
+  .tam-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+
+  .tam-card {
+    border-radius: 6px;
+    padding: 1.3rem 1.2rem;
+    text-align: center;
+    border: 1px solid transparent;
+  }
+
+  .tam-tam { background: var(--table-head); color: #ffffff; border-color: #16304f; }
+  .tam-sam { background: #1e4976; color: #c5daf0; border-color: #163a5f; }
+  .tam-som1 { background: #1a5c38; color: #a8e6c8; border-color: #124028; }
+  .tam-som2 { background: #e67e22; color: #ffffff; border-color: #c96a10; }
+
+  .tam-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 0.5rem;
+  }
+
+  .tam-value {
+    font-family: var(--serif);
+    font-size: 1.7rem;
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 0.4rem;
+  }
+
+  .tam-desc {
+    font-size: 11px;
+    opacity: 0.7;
+    line-height: 1.4;
+  }
+
+  /* ── DECISION CHAIN ── */
+  .decision-chain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0;
+    margin: 1.25rem 0;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .chain-step {
+    flex: 1;
+    min-width: 130px;
+    padding: 1rem 0.9rem;
+    text-align: center;
+    font-size: 12.5px;
+    line-height: 1.4;
+    border-right: 1px solid var(--rule);
+    background: var(--paper);
+  }
+
+  .chain-step:last-child { border-right: none; }
+
+  .chain-step .step-role {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+
+  .chain-step .step-name {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 13px;
+  }
+
+  .chain-step .step-action {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  .chain-step:nth-child(1) { border-top: 3px solid #1565c0; }
+  .chain-step:nth-child(2) { border-top: 3px solid var(--orange); }
+  .chain-step:nth-child(3) { border-top: 3px solid var(--accent); }
+  .chain-step:nth-child(4) { border-top: 3px solid var(--accent-3); }
+
+  /* ── PRICING TABLE SPECIAL ── */
+  .cheaper-tag {
+    display: inline-block;
+    background: #e8f5ee;
+    color: #1a5c38;
+    border: 1px solid #b0d9c0;
+    border-radius: 3px;
+    padding: 0.15rem 0.45rem;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ── PREMIUM FEATURES ── */
+  .premium-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0.9rem 0;
+  }
+
+  .premium-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 0.65rem 0.9rem;
+    font-size: 13.5px;
+    color: var(--body-text);
+  }
+
+  .premium-value {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    background: #fff8e6;
+    color: #7a4e00;
+    border: 1px solid #e8c860;
+    border-radius: 3px;
+    padding: 0.15rem 0.45rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  /* ── RISKS ── */
+  .risk-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0.9rem 0;
+  }
+
+  .risk-list li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    font-size: 13.5px;
+    padding: 0.7rem 0.9rem;
+    background: #fdf5f5;
+    border: 1px solid #e8c0c0;
+    border-left: 3px solid var(--danger);
+    border-radius: 0 5px 5px 0;
+    color: var(--body-text);
+  }
+
+  .risk-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffffff;
+    background: var(--danger);
+    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── ADVANTAGES ── */
+  .adv-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0.9rem 0;
+  }
+
+  .adv-list li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    font-size: 13.5px;
+    padding: 0.7rem 0.9rem;
+    background: var(--accent-3-light);
+    border: 1px solid #c0dece;
+    border-left: 3px solid var(--accent-3);
+    border-radius: 0 5px 5px 0;
+    color: var(--body-text);
+  }
+
+  .adv-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffffff;
+    background: var(--accent-3);
+    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── INSTITUTION TAGS ── */
+  .inst-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    margin: 1px;
+    background: var(--accent-light);
+    color: var(--accent-dark);
+    border: 1px solid #c0d8f0;
+  }
+
+  .tier2-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.9rem 0;
+  }
+
+  .tier2-chip {
+    background: var(--paper-3);
+    border: 1px solid #c8d8ec;
+    border-radius: 3px;
+    padding: 0.3rem 0.75rem;
+    font-size: 12.5px;
+    color: var(--body-text);
+    font-weight: 500;
+  }
+
+  /* ── DEMAND SIGNALS ── */
+  .signal-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.9rem 0;
+  }
+
+  .signal-list li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    font-size: 13.5px;
+    padding: 0.75rem 0.9rem;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    color: var(--body-text);
+    line-height: 1.55;
+  }
+
+  .signal-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  /* ── MARKET GAP VISUAL ── */
+  .gap-visual {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1.4rem;
+    margin: 1.25rem 0;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .gap-row { margin-bottom: 1.2rem; }
+  .gap-row:last-child { margin-bottom: 0; }
+
+  .gap-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .gap-bar-row {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .gap-segment {
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10.5px;
+    font-weight: 500;
+    border-radius: 3px;
+    white-space: nowrap;
+    padding: 0 8px;
+    color: #ffffff;
+  }
+
+  .seg-edu { background: #5d7a94; }
+  .seg-gap { background: #e67e22; animation: pulse 2s ease-in-out infinite; }
+  .seg-import { background: #2e6da4; }
+  .seg-ind { background: #1e3a5f; }
+
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.75; } }
+
+  /* ── RANK BADGES ── */
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .rank-1 { background: #1565c0; color: #fff; }
+  .rank-2 { background: #b84c00; color: #fff; }
+  .rank-3 { background: #1a6b3c; color: #fff; }
+  .rank-4 { background: #6a1fa8; color: #fff; }
+
+  .opp-table td:first-child { vertical-align: middle; }
+
+  /* ── FOOTER ── */
+  .page-footer {
+    padding: 1.5rem 3rem;
+    background: #16304f;
+    color: #7aafd4;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    border-top: 2px solid #2e6da4;
+  }
+
+  .page-footer .footer-title { color: #c5daf0; font-weight: 500; }
+
+  /* ── MISC ── */
+  .label-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    padding: 0.12rem 0.4rem;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .label-ros2 { background: #e0eef9; color: #1565c0; border: 1px solid #a8cdf0; }
+  .label-gem { background: var(--accent-3-light); color: #1a5c38; border: 1px solid #a8d9c0; }
+  .label-india { background: #fef2ec; color: #b84c00; border: 1px solid #f0c8a8; }
+  .label-eol { background: #fdf0ef; color: #a02010; border: 1px solid #e0b0a8; }
+
+  ul.plain-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0.75rem 0;
+  }
+
+  ul.plain-list li {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 13.5px;
+    color: var(--body-text);
+    line-height: 1.55;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  ul.plain-list li::before {
+    content: '▸';
+    color: var(--accent);
+    flex-shrink: 0;
+    font-size: 10px;
+    margin-top: 3px;
+  }
+
+  /* ── TIMING SIGNALS ── */
+  .timing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 0.75rem;
+    margin: 0.9rem 0;
+  }
+
+  .timing-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 0.9rem 1rem;
+    border-top: 3px solid var(--accent);
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--body-text);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ── CITATIONS ── */
+  .cite {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--accent);
+    vertical-align: super;
+    line-height: 1;
+    margin-left: 1px;
+    text-decoration: none;
+    font-family: var(--mono);
+  }
+  .cite:hover { text-decoration: underline; color: var(--accent-dark); }
+
+  #sources { background: #f7f9fc; }
+
+  .sources-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .source-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .source-group-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .source-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--body-text);
+  }
+
+  .source-item:last-child { border-bottom: none; }
+
+  .source-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffffff;
+    background: var(--accent);
+    border-radius: 3px;
+    padding: 0.1rem 0.35rem;
+    flex-shrink: 0;
+    min-width: 2rem;
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  .source-body { flex: 1; }
+  .source-body .src-title { font-weight: 500; color: var(--ink); }
+  .source-body a { color: var(--accent); text-decoration: none; font-size: 12px; }
+  .source-body a:hover { text-decoration: underline; }
+  .source-body .src-pub { color: var(--muted); font-size: 12px; }
+
+  .citation-note {
+    background: #fff8e6;
+    border: 1px solid #e8c860;
+    border-radius: 5px;
+    padding: 0.8rem 1rem;
+    font-size: 12.5px;
+    color: #4a3a00;
+    line-height: 1.55;
+    margin-top: 1.5rem;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    #sidebar { display: none; }
+    #main { margin-left: 0; }
+    .page-header { padding: 2rem 1.5rem; }
+    section { padding: 2rem 1.5rem; }
+    .page-footer { padding: 1.25rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-label">Market Research</div>
+    <div class="brand-title">Robotics Startup<br>India Academic</div>
+    <div class="brand-sub">Updated 2026-03-28</div>
+  </div>
+  <div class="sidebar-status">✅ Phases 1–4 Complete<br>All sections populated</div>
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Sections</div>
+    <a href="#summary"><span class="nav-num">00</span> Quick Summary</a>
+    <a href="#s1"><span class="nav-num">01</span> Indian Competitors</a>
+    <a href="#s2"><span class="nav-num">02</span> Global Players in India</a>
+    <a href="#s3"><span class="nav-num">03</span> Customer Segments & Pain Points</a>
+    <a href="#s4"><span class="nav-num">04</span> Market Sizing</a>
+    <a href="#s5"><span class="nav-num">05</span> Pricing Intelligence</a>
+    <a href="#s6"><span class="nav-num">06</span> Buying Process & Procurement</a>
+    <a href="#s7"><span class="nav-num">07</span> Technology Trends</a>
+    <a href="#s8"><span class="nav-num">08</span> Grant & Funding Landscape</a>
+    <a href="#s9"><span class="nav-num">09</span> Key Institutions to Target</a>
+    <a href="#s10"><span class="nav-num">10</span> Strategic Gaps & Opportunities</a>
+    <a href="#s11"><span class="nav-num">11</span> Demand Signals</a>
+    <a href="#sources"><span class="nav-num">REF</span> Sources &amp; Citations</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="header-eyebrow">Robotics Startup · India · Academic &amp; Research Segment</div>
+    <h1 class="header-title">Robotics Startup<br>Market Research</h1>
+    <div class="header-subtitle">India — Academic &amp; Research Segment</div>
+    <div class="product-tags">
+      <span class="ptag ptag-mobile">Mobile Robot</span>
+      <span class="ptag ptag-arm">Robotic Arm</span>
+      <span class="ptag ptag-drone">Quadcopter</span>
+      <span class="ptag ptag-quad">Quadruped</span>
+    </div>
+    <div class="status-badge">
+      ✅ Phases 1–4 Complete · 2026-03-28 · Competitor landscape, pain points, pricing, procurement intelligence, market sizing, technology trends all populated.
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- QUICK SUMMARY -->
+    <section id="summary">
+      <div class="section-header">
+        <span class="section-num">00</span>
+        <h2 class="section-title">Quick Summary — The Core Opportunity</h2>
+      </div>
+
+      <p class="opportunity-text">
+        Indian universities and research labs are spending real money on robotics hardware — but the market is almost entirely served by <strong>imports</strong> (with duties, delays, and no local support) or <strong>DIY builds</strong> (slow, expensive in researcher time). <em>No Indian company is building research-grade robot platforms for this segment.</em>
+      </p>
+
+      <p class="opportunity-text">
+        The Indian educational robot market is growing at <span class="stat-highlight">32% CAGR</span> (<span class="stat-highlight">$38M → $189M by 2030</span>)<a href="#ref-1" class="cite">[1]</a>. Funded government hubs (IHFC <span class="stat-highlight">₹170Cr</span><a href="#ref-2" class="cite">[2]</a>, ARTPARK<a href="#ref-23" class="cite">[23]</a>, CAMRAS) are actively buying equipment. ROSCon India drew <span class="stat-highlight">500+ attendees</span><a href="#ref-3" class="cite">[3]</a>. The community is real, funded, and underserved for hardware.
+      </p>
+
+      <h3 class="subsection-title">The Four Products, Ranked by Opportunity</h3>
+      <div class="product-cards">
+        <div class="product-card card-mobile">
+          <div class="card-rank">Rank 1 · Mobile Robot</div>
+          <div class="card-name">Mobile Robot</div>
+          <div class="card-desc">Largest addressable base (teaching + research + AI labs). TurtleBot3 is the default but has known limits; TB4 supply uncertain after iRobot bankruptcy<a href="#ref-4" class="cite">[4]</a>. Clear ₹1.5–3L gap where no good Indian option exists<a href="#ref-10" class="cite">[10]</a>. ROS2 Nav2 stack is mature — build on it.</div>
+        </div>
+        <div class="product-card card-arm">
+          <div class="card-rank">Rank 2 · Robotic Arm</div>
+          <div class="card-name">Robotic Arm</div>
+          <div class="card-desc">Huge demand from control labs, AI manipulation research, teaching labs. Dynamixel servos are available in India<a href="#ref-5" class="cite">[5]</a>. No Indian 5–6 DOF ROS2 arm exists at ₹1.5–3L<a href="#ref-10" class="cite">[10]</a>. G-ARM paper (2025) confirms global academic demand<a href="#ref-6" class="cite">[6]</a>.</div>
+        </div>
+        <div class="product-card card-drone">
+          <div class="card-rank">Rank 3 · Quadcopter</div>
+          <div class="card-name">Quadcopter</div>
+          <div class="card-desc">DJI API is locked; no Indian open-SDK research drone for academia. DGCA compliance is complexity but also a moat. IHFC specifically funds drone research.</div>
+        </div>
+        <div class="product-card card-quad">
+          <div class="card-rank">Rank 4 · Quadruped</div>
+          <div class="card-name">Quadruped</div>
+          <div class="card-desc">Unitree Go2 available via FlySpark (₹3.5–4L) but SDK-limited and Chinese<a href="#ref-7" class="cite">[7]</a>. Galgotias incident shows universities want quadrupeds but can't call the robot their own if it's Unitree<a href="#ref-8" class="cite">[8]</a>. Highest aspirational demand; most complex to build; best for later.</div>
+        </div>
+      </div>
+
+      <h3 class="subsection-title">Key Confirmed Insights</h3>
+      <div class="insights-grid">
+        <div class="insight-item"><strong>The gap is real and acknowledged</strong> — ROSCon India 2025 had a dedicated panel on "Hardware Challenges Faced by Indian Startups"<a href="#ref-3" class="cite">[3]</a></div>
+        <div class="insight-item"><strong>Government procurement preference</strong> for Indian vendors — Make in India policy is explicit; GeM registration is the unlock<a href="#ref-9" class="cite">[9]</a></div>
+        <div class="insight-item"><strong>Price sweet spot:</strong> ₹1.5–3L for arm and mobile robot; ₹3–6L for drone; ₹4–8L for quadruped<a href="#ref-10" class="cite">[10]</a></div>
+        <div class="insight-item"><strong>ROS2 is non-negotiable</strong> — ROS1 EOL'd in May 2025; any new product must be ROS2-native<a href="#ref-11" class="cite">[11]</a></div>
+        <div class="insight-item"><strong>First reference customers matter most</strong> — One IISc or IIT Bombay lab using your product is worth 10 smaller college sales for credibility</div>
+        <div class="insight-item"><strong>Deferred payment terms are essential</strong> — Government labs cannot pay in advance; must accommodate institutional billing<a href="#ref-12" class="cite">[12]</a></div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: INDIAN COMPETITORS -->
+    <section id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Competitor Landscape — Indian Players</h2>
+      </div>
+
+      <h3 class="subsection-title">Direct Indian Competitors</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Company</th><th>HQ</th><th>Products</th><th>Target Market</th><th>Price Range</th><th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Nex Robotics</strong></td><td>IIT Bombay ecosystem</td><td>Educational robots (FireBird, Pluto drone)</td><td>Teaching labs, colleges</td><td><span class="price">₹5K–₹1.5L</span></td><td class="note">Most widely known in Indian colleges; FireBird VI is staple in labs</td></tr>
+            <tr><td><strong>e-Yantra (IIT Bombay)</strong></td><td>Mumbai</td><td>Educational robot kits, curriculum</td><td>Teaching labs (govt subsidized)</td><td><span class="price">Subsidized/free</span></td><td class="note">Not commercial; competition for mindshare, not revenue</td></tr>
+            <tr><td><strong>Gridbots</strong></td><td>Ahmedabad</td><td>Industrial arms, mobile robots</td><td>Industrial + some R&amp;D</td><td><span class="price">₹5L–₹50L</span></td><td class="note">Primarily industrial; less academic focus</td></tr>
+            <tr><td><strong>Systemantics</strong></td><td>Bangalore</td><td>Industrial collaborative arms</td><td>Industry/large R&amp;D</td><td><span class="price">₹10L–₹50L+</span></td><td class="note">India's most serious industrial arm maker; not academic-focused</td></tr>
+            <tr><td><strong>GreyOrange</strong></td><td>Gurgaon/Singapore</td><td>Warehouse logistics robots</td><td>Enterprise logistics</td><td><span class="price">Not in academic market</span></td><td class="note">No academic product</td></tr>
+            <tr><td><strong>Addverb (Reliance)</strong></td><td>Noida</td><td>Trakr 2.0 quadruped, warehouse robots</td><td>Industrial inspection, logistics</td><td><span class="price">Enterprise pricing</span></td><td class="note">Reliance-backed; 20kg payload; NOT targeting academic market<a href="#ref-15" class="cite">[15]</a></td></tr>
+            <tr><td><strong>Armatrix</strong></td><td>Bangalore</td><td>Snake/hyper-redundant arms</td><td>Industrial hazardous inspection</td><td><span class="price">$2.1M pre-seed</span></td><td class="note">IIT founders; NOT academic market<a href="#ref-13" class="cite">[13]</a></td></tr>
+            <tr><td><strong>Sakar Robotics</strong></td><td>Pune (IIT Palakkad spinout)</td><td>Mobile manipulator (SakarBot), ROS2 platform</td><td>Industry: railways, biotech</td><td><span class="price">$122K, 7-person team</span></td><td class="note">ROS2-native; borderline competitor for manipulation research<a href="#ref-14" class="cite">[14]</a></td></tr>
+            <tr><td><strong>NMotion (Nawe Robotics)</strong></td><td>India</td><td>Indigenous actuators &amp; motor controllers</td><td>Research + industry components</td><td><span class="price">Early stage</span></td><td class="note">Potential supply chain partner OR future competitor</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Indian Distributors / Importers of Research Robots</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Distributor</th><th>Products</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>FlySpark India</strong></td><td>Unitree Go2 Edu (₹3.5–4L), Unitree Go1</td><td class="note">Pan-India delivery, GST invoice, 1-yr warranty<a href="#ref-7" class="cite">[7]</a></td></tr>
+            <tr><td><strong>Roboworks</strong></td><td>AgileX, Unitree B2, mobile platforms</td><td class="note">Online store; no clear India support team</td></tr>
+            <tr><td><strong>ThinkRobotics</strong></td><td>Educational kits, Arduino-based robots</td><td class="note">Online marketplace; not research-grade</td></tr>
+            <tr><td><strong>Robocraze</strong></td><td>Educational, component-level</td><td class="note">GeM registered vendor; low-end only</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-label">Key Insight</div>
+        The only distributor meaningfully serving research labs is FlySpark (Unitree only) and grey-market AgileX importers. No one provides full-stack support (hardware + ROS2 setup + service) for Indian labs. <strong>This is the gap.</strong>
+      </div>
+
+      <h3 class="subsection-title">Key Observations</h3>
+      <ul class="plain-list">
+        <li>No Indian company currently sells a research-grade mobile robot (ROS2-native, open architecture) to universities at a competitive price point.</li>
+        <li>Nex Robotics dominates the low-end educational market but their products are considered outdated (FireBird is ROS1-era at best).</li>
+        <li>e-Yantra's reach is wide (~3,000 colleges) but it is a subsidized educational program, not a commercial competitor.</li>
+        <li>The research-grade segment is almost entirely served by imports, creating clear opportunity.</li>
+      </ul>
+    </section>
+
+    <!-- SECTION 2: GLOBAL COMPETITORS -->
+    <section id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Competitor Landscape — Global Players in India</h2>
+      </div>
+
+      <h3 class="subsection-title">Mobile Robots</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Product</th><th>Price (INR landed)</th><th>ROS2</th><th>India Presence</th><th>Pain Points</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>TurtleBot3 (Robotis)</strong></td><td><span class="price">₹1.2L–₹2L</span></td><td><span class="label-tag label-ros2">Yes (official)</span></td><td>Via local vendors</td><td class="note">Limited payload; fragile; no local repair</td></tr>
+            <tr><td><strong>Clearpath Jackal</strong></td><td><span class="price">₹8L–₹15L</span></td><td><span class="label-tag label-ros2">Yes</span></td><td>No India distributor</td><td class="note">Very expensive; customs issues; 8–12 week delivery</td></tr>
+            <tr><td><strong>Clearpath Husky</strong></td><td><span class="price">₹15L–₹25L</span></td><td><span class="label-tag label-ros2">Yes</span></td><td>No India distributor</td><td class="note">Overkill for most labs; same customs issues</td></tr>
+            <tr><td><strong>AgileX Scout Mini</strong></td><td><span class="price">₹3L–₹6L</span></td><td><span class="label-tag label-eol">Partial</span></td><td>Grey-market imports</td><td class="note">Docs sparse; support non-existent in India</td></tr>
+            <tr><td><strong>AgileX Ranger Mini</strong></td><td><span class="price">₹4L–₹8L</span></td><td><span class="label-tag label-eol">Partial</span></td><td>Grey-market imports</td><td class="note">ROS1 primarily; ROS2 community-maintained</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Robotic Arms</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Product</th><th>Price (INR landed)</th><th>ROS2</th><th>India Presence</th><th>Pain Points</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Robotis OpenMANIPULATOR-X</strong></td><td><span class="price">₹60K–₹1.2L</span></td><td><span class="label-tag label-ros2">Yes (MoveIt2)</span></td><td>Local vendors</td><td class="note">4-DOF only; low payload (500g); good for teaching</td></tr>
+            <tr><td><strong>Trossen ViperX / PincherX</strong></td><td><span class="price">₹1.5L–₹4L</span></td><td><span class="label-tag label-ros2">Yes</span></td><td>No India office</td><td class="note">Import lead time; customs duty adds 20–30%</td></tr>
+            <tr><td><strong>Universal Robots UR3/UR5</strong></td><td><span class="price">₹12L–₹30L</span></td><td><span class="label-tag label-ros2">Yes</span></td><td>Has India office</td><td class="note">Out of reach for most research budgets</td></tr>
+            <tr><td><strong>Franka Emika Panda</strong></td><td><span class="price">₹25L–₹40L</span></td><td><span class="label-tag label-ros2">Yes</span></td><td>No India office</td><td class="note">Too expensive; discontinued (now FR3)</td></tr>
+            <tr><td><strong>Kinova Gen3 Lite</strong></td><td><span class="price">₹8L–₹15L</span></td><td><span class="label-tag label-ros2">Yes</span></td><td>No India office</td><td class="note">Expensive; software bugs reported</td></tr>
+            <tr><td><strong>myCobot (Elephant Robotics)</strong></td><td><span class="price">₹80K–₹1.8L</span></td><td><span class="label-tag label-eol">Partial</span></td><td>Some Flipkart/Amazon</td><td class="note">Weak for real research; educational grade</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Quadrupeds</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Product</th><th>Price (INR landed)</th><th>ROS2</th><th>India Presence</th><th>Pain Points</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Unitree Go1</strong></td><td><span class="price">₹4L–₹7L</span></td><td><span class="label-tag label-eol">Community SDK</span></td><td>Very limited</td><td class="note">SDK locked; import permissions issues</td></tr>
+            <tr><td><strong>Unitree Go2</strong></td><td><span class="price">₹5L–₹10L</span></td><td><span class="label-tag label-eol">Partial official</span></td><td>Very limited</td><td class="note">Newer; community still maturing</td></tr>
+            <tr><td><strong>Unitree B2</strong></td><td><span class="price">₹20L–₹40L</span></td><td><span class="label-tag label-ros2">Yes</span></td><td>No</td><td class="note">Research-grade but very expensive</td></tr>
+            <tr><td><strong>Boston Dynamics Spot</strong></td><td><span class="price">₹50L–₹80L+</span></td><td><span class="label-tag label-ros2">Yes</span></td><td>No India office</td><td class="note">Aspirational; only DRDO/ISRO-scale budgets</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Quadcopters / Drones (Research-grade)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Product</th><th>Price (INR)</th><th>ROS2/PX4</th><th>India Presence</th><th>Pain Points</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>DJI Matrice 300/350</strong></td><td><span class="price">₹8L–₹15L</span></td><td><span class="label-tag label-eol">Partial (SDK limited)</span></td><td>Strong (DJI India)</td><td class="note">API locked; no low-level control access</td></tr>
+            <tr><td><strong>Holybro X500 / S500</strong></td><td><span class="price">₹50K–₹1.5L</span></td><td><span class="label-tag label-ros2">Yes (PX4/ArduPilot)</span></td><td>Component level</td><td class="note">DIY; no support</td></tr>
+            <tr><td><strong>ModalAI VOXL</strong></td><td><span class="price">₹3L–₹6L</span></td><td><span class="label-tag label-ros2">Yes</span></td><td>No India presence</td><td class="note">US export; expensive</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout danger">
+        <div class="callout-label">Key Observations</div>
+        DJI dominance in drones is a problem for researchers — locked API means no ROS2 control, no low-level flight access. Unitree is the only affordable quadruped, but SDK is limited. TurtleBot3 is the de facto teaching standard but has known limitations. <strong>No global player has a meaningful India service presence</strong> except DJI and Universal Robots. Import lead time is consistently 6–12 weeks.
+      </div>
+    </section>
+
+    <!-- SECTION 3: SEGMENTS & PAIN POINTS -->
+    <section id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Customer Segments &amp; Pain Points</h2>
+      </div>
+
+      <h3 class="subsection-title">Segment Overview</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Segment</th><th>Who</th><th>Size</th><th>Budget</th><th>Best Product Fit</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Teaching Labs</strong></td><td>UG/PG labs, dept-mandated</td><td>Large (~500–800 labs)</td><td><span class="price">₹1–5L</span></td><td>Arm (3-5 DOF), simple mobile robot</td></tr>
+            <tr><td><strong>Research Labs</strong></td><td>PhD/MTech research, faculty grants</td><td>Medium (~150–300 active)</td><td><span class="price">₹5–25L</span></td><td>All products; highest willingness</td></tr>
+            <tr><td><strong>AI / CV Labs</strong></td><td>Deep learning, perception, embodied AI</td><td>Growing fast (~100–200)</td><td><span class="price">₹5–20L</span></td><td>Mobile robot, quadrotor, quadruped</td></tr>
+            <tr><td><strong>Control Systems Labs</strong></td><td>Control theory, trajectory planning</td><td>Medium (~100–200)</td><td><span class="price">₹3–15L</span></td><td>Arm, quadruped</td></tr>
+            <tr><td><strong>Aerial / UAV Labs</strong></td><td>Autonomous flight, swarm systems</td><td>Small but growing (~50–100)</td><td><span class="price">₹2–10L</span></td><td>Quadcopter</td></tr>
+            <tr><td><strong>Defence R&amp;D (DRDO)</strong></td><td>Defence research, field robots</td><td>Small but high-value</td><td><span class="price">₹20L–Cr</span></td><td>Mobile, quadruped</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Universal Pain Points</h3>
+      <ul class="pain-list">
+        <li><span class="pain-num">1</span><span><strong>Import delays</strong> — 6–16 weeks lead time for foreign platforms. Lab schedules get disrupted. Thesis timelines slip.</span></li>
+        <li><span class="pain-num">2</span><span><strong>No local support or spare parts</strong> — When something breaks, it's months of back-and-forth with overseas vendors. Lab work stops.</span></li>
+        <li><span class="pain-num">3</span><span><strong>Import duty burden</strong> — 18–28% additional cost. A $2,000 robot becomes ₹2.5L+ after duties.</span></li>
+        <li><span class="pain-num">4</span><span><strong>Poor or outdated documentation</strong> — Many platforms ship with docs clearly not written for the ROS2 era.</span></li>
+        <li><span class="pain-num">5</span><span><strong>ROS2 support gaps</strong> — Many platforms still official ROS1; ROS2 support is community-maintained and inconsistent.</span></li>
+        <li><span class="pain-num">6</span><span><strong>TurtleBot3 payload limitations</strong> — 15kg robot with ~1.8kg payload is a constant frustration for sensor integration.</span></li>
+        <li><span class="pain-num">7</span><span><strong>No Indian mid-tier mobile robot</strong> — Gap between cheap educational bots (under ₹50K) and expensive research-grade imports (above ₹5L).</span></li>
+        <li><span class="pain-num">8</span><span><strong>Dynamixel servo monopoly</strong> — When they fail, only Robotis can supply replacements. Delivery from Korea takes weeks.</span></li>
+        <li><span class="pain-num">9</span><span><strong>No affordable 6-DOF research arm from India</strong> — OpenMANIPULATOR-X is 4-DOF; next step up costs ₹5L+ imported.</span></li>
+        <li><span class="pain-num">10</span><span><strong>SDK access restrictions</strong> — Unitree locks down low-level control; researchers wanting to experiment with gaits hit walls.</span></li>
+        <li><span class="pain-num">11</span><span><strong>DJI API lockdown</strong> — Most researchers want open SDK / ROS2 integration; DJI forbids it on consumer/prosumer line.</span></li>
+        <li><span class="pain-num">12</span><span><strong>DGCA regulations</strong> — India's drone regulations add compliance burden. Research drones need specific category approvals.</span></li>
+      </ul>
+
+      <h3 class="subsection-title">What Customers Would Switch For</h3>
+      <ul class="switch-list">
+        <li>Local repair and spare parts within 1 week</li>
+        <li>ROS2-native out of the box (not community-patched)</li>
+        <li>Price 30–50% lower than comparable import (after duties)</li>
+        <li>Active Indian company they can call and WhatsApp</li>
+        <li>Training workshops at their campus or nearby city</li>
+      </ul>
+    </section>
+
+    <!-- SECTION 4: MARKET SIZING -->
+    <section id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Market Sizing</h2>
+      </div>
+
+      <h3 class="subsection-title">Institution Count (Bottom-Up Base)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Institution Type</th><th>Total Count</th><th>With Active Robotics Labs (est.)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>IITs (old + new)</td><td>23</td><td>~23 (all have robotics research)</td></tr>
+            <tr><td>NITs</td><td>31</td><td>~25–28</td></tr>
+            <tr><td>IIITs</td><td>25</td><td>~15–20</td></tr>
+            <tr><td>IISc + IISERs</td><td>8</td><td>~8</td></tr>
+            <tr><td>BITS campuses</td><td>4</td><td>~4</td></tr>
+            <tr><td>Top private universities</td><td>~20 key ones</td><td>~15</td></tr>
+            <tr><td>Other private engineering colleges</td><td>~3,500 total</td><td>~200–400</td></tr>
+            <tr><td>DRDO labs</td><td>52</td><td>~20 relevant</td></tr>
+            <tr><td>ISRO centres</td><td>13</td><td>~5–8 relevant</td></tr>
+            <tr><td>CSIR labs</td><td>38</td><td>~10–15 relevant</td></tr>
+            <tr style="font-weight:700; background: rgba(240,168,48,0.08);"><td><strong>Total Addressable Institutions</strong></td><td><strong>—</strong></td><td><strong>~350–550</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">TAM / SAM / SOM</h3>
+      <div class="tam-cards">
+        <div class="tam-card tam-tam">
+          <div class="tam-label">TAM — Total Addressable Market</div>
+          <div class="tam-value">₹40 Cr/yr</div>
+          <div class="tam-desc">500 labs × ₹8L avg annual spend on robot platforms in Indian academia</div>
+        </div>
+        <div class="tam-card tam-sam">
+          <div class="tam-label">SAM — Serviceable Addressable Market</div>
+          <div class="tam-value">₹9.6 Cr/yr</div>
+          <div class="tam-desc">TAM × 40% product fit × 60% open to Indian vendors</div>
+        </div>
+        <div class="tam-card tam-som1">
+          <div class="tam-label">SOM — Year 1–2 Target</div>
+          <div class="tam-value">₹50L–1Cr</div>
+          <div class="tam-desc">5% SAM capture · 10–20 labs/year at ₹3–5L avg</div>
+        </div>
+        <div class="tam-card tam-som2">
+          <div class="tam-label">SOM — Year 3–5 Target</div>
+          <div class="tam-value">₹1.5Cr–2Cr</div>
+          <div class="tam-desc">15–20% SAM capture as brand establishes credibility</div>
+        </div>
+      </div>
+
+      <h3 class="subsection-title">Market Timing Signals</h3>
+      <div class="timing-grid">
+        <div class="timing-card"><strong><span class="label-tag label-eol">ROS1 EOL May 2025</span></strong> — Creates replacement cycle. Labs still on ROS1 need to migrate. New purchases will almost certainly be ROS2.</div>
+        <div class="timing-card"><strong>National Robotics Mission</strong> (proposed MeitY/DST) — If passed, could create significant additional public funding for lab equipment.</div>
+        <div class="timing-card"><strong><span class="label-tag label-gem">Make in India</span></strong> — Increasing policy bias toward domestic vendors in government procurement (GeM portal).</div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: PRICING INTELLIGENCE -->
+    <section id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Pricing Intelligence</h2>
+      </div>
+
+      <h3 class="subsection-title">Import vs. Indian Price Points</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Product</th><th>Import Cost (landed)</th><th>Target Indian Price</th><th>Price Gap</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Mobile robot (research, ROS2)</td><td><span class="price">₹3L–₹8L</span></td><td><span class="price">₹1.5L–₹3L</span></td><td><span class="cheaper-tag">40–60% cheaper</span></td></tr>
+            <tr><td>Robotic arm (5–6 DOF, research)</td><td><span class="price">₹2.5L–₹8L</span></td><td><span class="price">₹1.2L–₹3L</span></td><td><span class="cheaper-tag">40–60% cheaper</span></td></tr>
+            <tr><td>Quadcopter (research, open SDK)</td><td><span class="price">₹1.5L–₹4L</span></td><td><span class="price">₹80K–₹2L</span></td><td><span class="cheaper-tag">30–50% cheaper</span></td></tr>
+            <tr><td>Quadruped</td><td><span class="price">₹5L–₹15L</span></td><td><span class="price">₹3L–₹8L</span></td><td><span class="cheaper-tag">30–40% cheaper</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Price Sensitivity by Segment</h3>
+      <ul class="plain-list">
+        <li><strong>Teaching labs:</strong> Price is primary criterion (₹1L is psychological barrier for many)</li>
+        <li><strong>Research labs:</strong> Quality + documentation + support matter more than price alone</li>
+        <li><strong>Government labs (DRDO/ISRO):</strong> Price matters less; compliance and delivery certainty matter more</li>
+        <li><strong>Private universities:</strong> Fastest buyers, most price-flexible if quality is demonstrated</li>
+      </ul>
+
+      <h3 class="subsection-title">Premium Features Customers Will Pay For</h3>
+      <ul class="premium-list">
+        <li><span>Plug-and-play ROS2 — saves days of setup</span><span class="premium-value">+₹20–30K premium</span></li>
+        <li><span>Guaranteed 2-day spare parts delivery</span><span class="premium-value">+₹15–25K premium</span></li>
+        <li><span>Training workshop at their campus</span><span class="premium-value">₹10–20K included value</span></li>
+        <li><span>1-year warranty with India-based service</span><span class="premium-value">+₹20–40K premium</span></li>
+        <li><span>Simulation model (Gazebo/MuJoCo URDF) included</span><span class="premium-value">+₹10K premium</span></li>
+      </ul>
+    </section>
+
+    <!-- SECTION 6: BUYING PROCESS -->
+    <section id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Buying Process &amp; Procurement</h2>
+      </div>
+
+      <h3 class="subsection-title">Procurement Pathways</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Institution Type</th><th>Procurement Method</th><th>Formal Process Threshold</th><th>Timeline</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>IITs / NITs</strong></td><td>GeM portal preferred; else 3-quote system</td><td>Tender for &gt;₹2L typically</td><td>4–12 weeks</td></tr>
+            <tr><td><strong>Private universities</strong></td><td>Internal PO; PI discretion up to ₹5L often</td><td>Varies by finance dept</td><td>1–4 weeks</td></tr>
+            <tr><td><strong>DRDO / ISRO</strong></td><td>Formal tender; vendor registration required</td><td>All purchases</td><td>3–6 months</td></tr>
+            <tr><td><strong>Smaller private colleges</strong></td><td>PI's personal discretion for small amounts</td><td>&lt;₹50K often no process</td><td>Days to 2 weeks</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Decision Chain</h3>
+      <div class="decision-chain">
+        <div class="chain-step">
+          <div class="step-role">Step 1</div>
+          <div class="step-name">PhD Student / Lab Engineer</div>
+          <div class="step-action">Identifies need &amp; researches options</div>
+        </div>
+        <div class="chain-step">
+          <div class="step-role">Step 2</div>
+          <div class="step-name">Professor / PI</div>
+          <div class="step-action">Validates technical fit, approves shortlist</div>
+        </div>
+        <div class="chain-step">
+          <div class="step-role">Step 3</div>
+          <div class="step-name">Department Head</div>
+          <div class="step-action">Signs off for large purchases</div>
+        </div>
+        <div class="chain-step">
+          <div class="step-role">Step 4</div>
+          <div class="step-name">Finance / Purchase Office</div>
+          <div class="step-action">Issues PO, processes payment</div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-label">Key Insight</div>
+        The PhD student or lab engineer is the <strong>technical decision-maker</strong> (they decide what's worth recommending). The Professor is the <strong>budget authority</strong>. Both must be convinced.
+      </div>
+
+      <h3 class="subsection-title">GeM Portal — <span class="label-tag label-gem">Critical Action Item</span></h3>
+      <ul class="plain-list">
+        <li>Government e-Marketplace (GeM) is mandatory for central govt institutions above ~₹25K<a href="#ref-9" class="cite">[9]</a></li>
+        <li>Being registered on GeM is a <strong>prerequisite</strong> for selling to IITs, NITs, DRDO, ISRO<a href="#ref-9" class="cite">[9]</a></li>
+        <li>Registration process: GSTIN + company registration + product listing + inspection</li>
+        <li><strong>Action item: Register on GeM as early as possible — even pre-revenue</strong></li>
+      </ul>
+    </section>
+
+    <!-- SECTION 7: TECHNOLOGY TRENDS -->
+    <section id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Technology Trends</h2>
+      </div>
+
+      <div class="callout success">
+        <div class="callout-label">ROS2 Migration</div>
+        <strong>ROS1 Noetic reached EOL May 2025</strong><a href="#ref-11" class="cite">[11]</a> — all new deployments should be ROS2. Dominant distros: <strong>Humble Hawksbill</strong> (LTS, EOL 2027) and <strong>Jazzy Jalisco</strong> (LTS, EOL 2029). MoveIt2 (arm planning) is now production-ready. Nav2 (mobile navigation) is stable and well-documented. Indian labs are lagging on migration — a ROS2-native product points in the right direction.
+      </div>
+
+      <h3 class="subsection-title">Simulation Stack</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Simulator</th><th>Status</th><th>Indian Lab Adoption</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Gazebo Classic</strong></td><td><span class="label-tag label-eol">EOL (maintenance mode)</span></td><td>Widely used but fading</td></tr>
+            <tr><td><strong>Gz Sim (Ignition/Harmonic)</strong></td><td><span class="label-tag label-ros2">Active, ROS2 native</span></td><td>Low-moderate adoption</td></tr>
+            <tr><td><strong>NVIDIA Isaac Sim</strong></td><td>Growing fast</td><td>Low (needs RTX GPU)</td></tr>
+            <tr><td><strong>MuJoCo</strong></td><td>Growing fast</td><td>Low-moderate; growing with RL research</td></tr>
+            <tr><td><strong>Webots</strong></td><td>Open source</td><td>Low; used in some teaching</td></tr>
+            <tr><td><strong>PyBullet</strong></td><td>Lightweight, Python-native</td><td>Moderate in AI/ML labs</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info">
+        <div class="callout-label">Recommendation</div>
+        Ship <strong>Gazebo/Gz Sim URDFs + MuJoCo models</strong>. Isaac Sim is aspirational for now — most Indian labs don't have RTX GPUs.
+      </div>
+
+      <h3 class="subsection-title">Compute Platforms</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Platform</th><th>Status</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>NVIDIA Jetson Orin Nano / NX</strong></td><td>Current standard</td><td><span class="price">₹15K–40K</span>; good for edge AI</td></tr>
+            <tr><td><strong>Raspberry Pi 5</strong></td><td>Popular for budget builds</td><td>8GB RAM; sufficient for Nav2</td></tr>
+            <tr><td><strong>Intel NUC / x86 mini PC</strong></td><td>Used in larger mobile robots</td><td>Higher power draw</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4 class="mini-title">Sensor Trends</h4>
+      <ul class="plain-list">
+        <li><strong>Intel RealSense discontinued</strong> (D400 series) — labs looking for alternatives: OAK-D (Luxonis), ZED2 (Stereolabs), Astra Pro</li>
+        <li><strong>LiDAR options expanding:</strong> RPLIDAR A2/S2 (budget, ₹8–15K), Livox Mid-360 (quality, ₹40K), Ouster (expensive)</li>
+        <li><strong>IMU quality matters:</strong> labs doing SLAM complain about IMU drift in budget platforms</li>
+      </ul>
+
+      <h4 class="mini-title">Actuator Trends</h4>
+      <ul class="plain-list">
+        <li><strong>Dynamixel (Robotis)</strong> — still dominant for research arms. X-series (XL430, XM430, XH540) most common</li>
+        <li><strong>ODrive / VESC controllers</strong> for BLDC motors in mobile robot wheels</li>
+        <li><strong>Quasi-Direct Drive (QDD) actuators</strong> — emerging for quadrupeds (similar to MIT Mini Cheetah design)</li>
+      </ul>
+    </section>
+
+    <!-- SECTION 8: GRANTS & FUNDING -->
+    <section id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">Grant &amp; Funding Landscape</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Body</th><th>Scheme</th><th>Typical Grant</th><th>Cycle</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>DST-SERB</strong></td><td>Core Research Grant (CRG)</td><td><span class="price">₹20L–2Cr</span></td><td>Annual (Nov–Jan deadline)</td><td class="note">Most common for faculty; equipment component</td></tr>
+            <tr><td><strong>DST</strong></td><td>IRHPA (equipment grants)</td><td><span class="price">₹50L–5Cr</span></td><td>Irregular</td><td class="note">Specifically for research equipment</td></tr>
+            <tr><td><strong>DRDO</strong></td><td>Academia Interface (DRDO-ER&amp;IPR)</td><td><span class="price">₹50L–5Cr</span></td><td>Rolling</td><td class="note">Defence application focus</td></tr>
+            <tr><td><strong>ISRO</strong></td><td>RESPOND Scheme</td><td><span class="price">₹20L–1Cr</span></td><td>Annual</td><td class="note">Space + autonomous systems focus</td></tr>
+            <tr><td><strong>AICTE</strong></td><td>Research Promotion Scheme (RPS)</td><td><span class="price">₹5L–30L</span></td><td>Annual</td><td class="note">For AICTE-affiliated colleges</td></tr>
+            <tr><td><strong>MeitY</strong></td><td>AI/ML grants, TIDE 2.0</td><td><span class="price">₹10L–50L</span></td><td>Irregular</td><td class="note">AI focus; robotics if justified</td></tr>
+            <tr><td><strong>Private univ. internal R&amp;D</strong></td><td>Varies by institution</td><td><span class="price">₹2L–20L</span></td><td>Annual internal</td><td class="note">Fastest to access</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Strategic Implications</h3>
+      <ul class="plain-list">
+        <li>Labs that received DST grants in 2024–2025 are likely in their <strong>equipment-buying window now</strong></li>
+        <li>DRDO and ISRO grants specifically value Indian vendors — Make in India preference is explicit</li>
+        <li>Private universities have faster internal cycles — good for early sales</li>
+        <li>Most grants allow <strong>equipment as 20–40% of budget</strong> — significant equipment purchasing power</li>
+      </ul>
+    </section>
+
+    <!-- SECTION 9: KEY INSTITUTIONS -->
+    <section id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Key Institutions to Target</h2>
+      </div>
+
+      <h3 class="subsection-title">Tier 1 — IITs &amp; IISc</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Institution</th><th>Known Lab / Group</th><th>Product Relevance</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>IIT Bombay</strong></td><td>SynergyLab, Robotics Lab (Prof Shital Chiddarwar)</td><td><span class="ptag ptag-arm" style="font-size:10px;padding:2px 8px;">Arm</span> <span class="ptag ptag-mobile" style="font-size:10px;padding:2px 8px;">Mobile</span> <span class="ptag ptag-quad" style="font-size:10px;padding:2px 8px;">Quadruped</span></td></tr>
+            <tr><td><strong>IIT Delhi</strong></td><td>Robotics &amp; AI Lab, SCAI, IHFC hub</td><td>All products</td></tr>
+            <tr><td><strong>IIT Madras</strong></td><td>Robotics Lab, IITM-Pravartak (AI)</td><td><span class="ptag ptag-mobile" style="font-size:10px;padding:2px 8px;">Mobile</span> <span class="ptag ptag-quad" style="font-size:10px;padding:2px 8px;">Quadruped</span></td></tr>
+            <tr><td><strong>IIT Kanpur</strong></td><td>Intelligent Systems Lab, Prof. Ashish Dutta</td><td><span class="ptag ptag-arm" style="font-size:10px;padding:2px 8px;">Arm</span> <span class="ptag ptag-mobile" style="font-size:10px;padding:2px 8px;">Mobile</span></td></tr>
+            <tr><td><strong>IIT Kharagpur</strong></td><td>CORS, Robotics Lab</td><td>All products</td></tr>
+            <tr><td><strong>IIT Hyderabad</strong></td><td>Robotics Research Centre</td><td><span class="ptag ptag-mobile" style="font-size:10px;padding:2px 8px;">Mobile</span> <span class="ptag ptag-quad" style="font-size:10px;padding:2px 8px;">Quadruped</span></td></tr>
+            <tr><td><strong>IISc Bangalore</strong></td><td>IISC Robotics Lab, RRC, ARTPARK</td><td>All products — <strong>highest research grade</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Tier 2 — NITs + Top Private</h3>
+      <div class="tier2-grid">
+        <span class="tier2-chip">NIT Trichy</span>
+        <span class="tier2-chip">NIT Warangal</span>
+        <span class="tier2-chip">BITS Pilani</span>
+        <span class="tier2-chip">Amrita University</span>
+        <span class="tier2-chip">VIT Vellore</span>
+        <span class="tier2-chip">Manipal Institute of Technology</span>
+      </div>
+
+      <h3 class="subsection-title">Defence &amp; Space (Long-cycle, High Value)</h3>
+      <div class="tier2-grid">
+        <span class="tier2-chip">DRDO – CAIR (AI &amp; Robotics)</span>
+        <span class="tier2-chip">DRDO – DEAL</span>
+        <span class="tier2-chip">DRDO – ADE (Aeronautical)</span>
+        <span class="tier2-chip">ISRO – SAC</span>
+        <span class="tier2-chip">ISRO – VSSC</span>
+        <span class="tier2-chip">CSIR-CEERI</span>
+        <span class="tier2-chip">CSIR-CMERI</span>
+      </div>
+    </section>
+
+    <!-- SECTION 10: STRATEGIC GAPS -->
+    <section id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">Strategic Gaps &amp; Opportunities</h2>
+      </div>
+
+      <div class="callout" style="font-size: 1.05rem; padding: 1.4rem 1.8rem;">
+        <div class="callout-label">Core Gap</div>
+        No Indian company currently offers a <strong>research-grade, ROS2-native, well-documented robot platform</strong> with <strong>local support and spare parts</strong> at a <strong>price below comparable imports</strong>. This gap exists across all four product categories.
+      </div>
+
+      <h3 class="subsection-title">Product Opportunity Ranking</h3>
+      <div class="table-wrap">
+        <table class="opp-table">
+          <thead>
+            <tr><th>Rank</th><th>Product</th><th>Rationale</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="rank-badge rank-1">1</span></td><td><strong>Mobile Robot</strong></td><td>Largest demand base; TurtleBot replacement opportunity; ROS2 nav stack is mature; lower complexity than legged robots</td></tr>
+            <tr><td><span class="rank-badge rank-2">2</span></td><td><strong>Robotic Arm</strong></td><td>High demand in teaching and control labs; no Indian 6-DOF arm at research price point; Dynamixel-based design is proven</td></tr>
+            <tr><td><span class="rank-badge rank-3">3</span></td><td><strong>Quadcopter</strong></td><td>DJI API frustration is real; DGCA compliance is a moat; strong demand in AI/CV labs</td></tr>
+            <tr><td><span class="rank-badge rank-4">4</span></td><td><strong>Quadruped</strong></td><td>Highest aspirational demand; most complex to build; Unitree SDK frustration real; best for premium positioning</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Defensible Advantages for an Indian Startup</h3>
+      <ul class="adv-list">
+        <li><span class="adv-num">1</span><span><strong>Local support</strong> — Can WhatsApp, call, visit a lab within days. No foreign player can do this.</span></li>
+        <li><span class="adv-num">2</span><span><strong>ROS2 native from day one</strong> — Design for ROS2 Humble/Jazzy, not as an afterthought.</span></li>
+        <li><span class="adv-num">3</span><span><strong>Make in India procurement preference</strong> — Government labs actively want to buy Indian.</span></li>
+        <li><span class="adv-num">4</span><span><strong>Price</strong> — 30–50% cheaper than imports after accounting for duties and shipping.</span></li>
+        <li><span class="adv-num">5</span><span><strong>Customization</strong> — Can accommodate lab-specific modifications. Global players can't/won't.</span></li>
+        <li><span class="adv-num">6</span><span><strong>Academic cycle alignment</strong> — Understand DST/DRDO grant cycles; time outreach accordingly.</span></li>
+      </ul>
+
+      <h3 class="subsection-title">Key Risks</h3>
+      <ul class="risk-list">
+        <li><span class="risk-num">1</span><span><strong>Quality perception</strong> — Indian academic buyers may distrust domestic hardware. Need early reference customers at IISc, IIT Bombay.</span></li>
+        <li><span class="risk-num">2</span><span><strong>Manufacturer supply chain</strong> — Actuators (Dynamixel), compute (Jetson) are still imported; supply disruptions possible.</span></li>
+        <li><span class="risk-num">3</span><span><strong>Regulatory (drones)</strong> — DGCA type certification for research drones is non-trivial.</span></li>
+        <li><span class="risk-num">4</span><span><strong>GeM registration</strong> — Must be done early; takes 2–4 months.</span></li>
+        <li><span class="risk-num">5</span><span><strong>Bootstrap capital</strong> — Hardware startups need significant upfront capital for tooling, inventory.</span></li>
+      </ul>
+    </section>
+
+    <!-- SECTION 11: DEMAND SIGNALS -->
+    <section id="s11">
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <h2 class="section-title">Demand Signals from Online Sources</h2>
+      </div>
+
+      <h3 class="subsection-title">Key Findings (Phases 2–4 Research)</h3>
+      <ul class="signal-list">
+        <li><span class="signal-dot"></span><span><strong>Galgotias University incident (Feb 2026):</strong> University rebranded Unitree Go2 as "Orion" — expelled from AI Summit. Proves strong demand for quadrupeds in Indian universities, but pain around SDK, identity, and authenticity of Chinese imports.<a href="#ref-8" class="cite">[8]</a></span></li>
+        <li><span class="signal-dot"></span><span><strong>FlySpark India</strong> confirmed active Unitree distributor. Go2 Edu U1 at ₹3.5–4L with India warranty — market is being served by grey importers, not direct brand presence.<a href="#ref-7" class="cite">[7]</a></span></li>
+        <li><span class="signal-dot"></span><span><strong>IHFC (IIT Delhi) — ₹170Cr government hub</strong> actively funding cobotics research at 10 partner institutions. All are potential early customers for a startup.<a href="#ref-2" class="cite">[2]</a><a href="#ref-22" class="cite">[22]</a></span></li>
+        <li><span class="signal-dot"></span><span>Indian educational robot market: <strong>$38.3M in 2024 → $189.1M by 2030 (32% CAGR)</strong> — fastest growing robotics subsegment in India.<a href="#ref-1" class="cite">[1]</a></span></li>
+        <li><span class="signal-dot"></span><span>Indian robotics startups raised <strong>~$117M in 2024</strong> (up from $54M in 2023 and $28.8M in 2022) — sector is accelerating. Most focus on industrial/logistics; academic market underserved.<a href="#ref-19" class="cite">[19]</a></span></li>
+        <li><span class="signal-dot"></span><span><strong>ROSCon India 2025 (Dec 2025, COEP Pune)</strong> — 500+ tickets sold. Panel specifically on "Hardware Challenges Faced by Indian Startups" — confirms this is a known, acknowledged problem.<a href="#ref-3" class="cite">[3]</a></span></li>
+        <li><span class="signal-dot"></span><span><strong>IIT Delhi Robomuse 5.0:</strong> IITs building their own mobile robots (100kg payload, autonomous nav) in-house. Signal: if no suitable platform exists, labs will DIY. Be the alternative to DIY.</span></li>
+        <li><span class="signal-dot"></span><span><strong>TurtleBot4 supply uncertainty:</strong> iRobot bankruptcy causing TB4 supply/support hesitation — opening for an alternative to the de facto standard.<a href="#ref-4" class="cite">[4]</a></span></li>
+      </ul>
+
+      <h3 class="subsection-title">Online Pricing Intelligence — What Indian Labs Actually Pay</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Product</th><th>Source</th><th>Actual India Price (INR)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Unitree Go2 (entry)</td><td>FlySpark India</td><td><span class="price">₹2.5L–₹3.5L</span></td></tr>
+            <tr><td>Unitree Go2 Edu U1</td><td>FlySpark India</td><td><span class="price">₹3.5L–₹4L</span></td></tr>
+            <tr><td>Unitree Go1</td><td>Various importers</td><td><span class="price">₹6.5L–₹7.5L</span></td></tr>
+            <tr><td>AgileX Scout Mini</td><td>Roboworks</td><td><span class="price">~₹4L–₹6L (est.)</span></td></tr>
+            <tr><td>TurtleBot3</td><td>Local vendors</td><td><span class="price">₹1.2L–₹2L</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">The Market Gap — Visualized</h3>
+      <div class="gap-visual">
+        <div class="gap-row">
+          <div class="gap-label">Mobile Robots</div>
+          <div class="gap-bar-row">
+            <div class="gap-segment seg-edu" style="width:140px;">Educational ₹50K–₹2L</div>
+            <div class="gap-segment seg-gap" style="width:120px;">⚡ GAP ₹2–4L</div>
+            <div class="gap-segment seg-import" style="width:110px;">Imports ₹3L–₹7L</div>
+            <div class="gap-segment seg-ind" style="width:130px;">Industrial AMR ₹6L+</div>
+          </div>
+        </div>
+        <div class="gap-row">
+          <div class="gap-label">Robotic Arms</div>
+          <div class="gap-bar-row">
+            <div class="gap-segment seg-edu" style="width:80px;">DIY ₹5–30K</div>
+            <div class="gap-segment seg-edu" style="width:100px;">Edu ₹1.2–2L</div>
+            <div class="gap-segment seg-gap" style="width:120px;">⚡ GAP ₹1.5–3L</div>
+            <div class="gap-segment seg-import" style="width:110px;">Imports ₹2.5–8L</div>
+            <div class="gap-segment seg-ind" style="width:120px;">Industrial ₹12L+</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout success">
+        <div class="callout-label">Market Gap Confirmed</div>
+        Nothing in the <strong>₹2–4L range</strong> is specifically positioned for academic research with ROS2, SLAM, and sensor integration. Educational robots at sub-₹2L are too limited; industrial AMRs at ₹6L+ are overkill and not ROS2-native. <strong>This is the whitespace.</strong>
+      </div>
+    </section>
+
+    <!-- SOURCES -->
+    <section id="sources">
+      <div class="section-header">
+        <span class="section-num">REF</span>
+        <h2 class="section-title">Sources &amp; Citations</h2>
+      </div>
+      <p style="font-size:13px;color:#5d6d7e;margin-bottom:1.5rem;">All sources accessed March 2026. Numbered citations link back to inline markers throughout the document.</p>
+
+      <div class="source-group">
+        <div class="source-group-title">Market Data &amp; Research Reports</div>
+        <div class="source-item" id="ref-1">
+          <span class="source-num">1</span>
+          <div class="source-body">
+            <span class="src-title">India Educational Robot Market Size &amp; Outlook, 2025–2030</span> <span class="src-pub">— GrandView Research</span><br>
+            <a href="https://www.grandviewresearch.com/horizon/outlook/educational-robot-market/india" target="_blank" rel="noopener">grandviewresearch.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-24">
+          <span class="source-num">24</span>
+          <div class="source-body">
+            <span class="src-title">India Industrial Robots Market Size, Share &amp; Trends Report by 2033</span> <span class="src-pub">— Straits Research</span><br>
+            <a href="https://straitsresearch.com/report/industrial-robots-market/india" target="_blank" rel="noopener">straitsresearch.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-25">
+          <span class="source-num">25</span>
+          <div class="source-body">
+            <span class="src-title">Robotics — India Market Forecast</span> <span class="src-pub">— Statista</span><br>
+            <a href="https://www.statista.com/outlook/tmo/robotics/india" target="_blank" rel="noopener">statista.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-26">
+          <span class="source-num">26</span>
+          <div class="source-body">
+            <span class="src-title">India Robotic Arm Market Size, Share, and Analysis Report 2032</span> <span class="src-pub">— DataBridge Market Research</span><br>
+            <a href="https://www.databridgemarketresearch.com/reports/india-robotic-arm-market" target="_blank" rel="noopener">databridgemarketresearch.com ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="source-group">
+        <div class="source-group-title">Government &amp; Institutional Sources</div>
+        <div class="source-item" id="ref-2">
+          <span class="source-num">2</span>
+          <div class="source-body">
+            <span class="src-title">DST sanctions Rs. 170 crores to IIT Delhi to set up Technology Innovation Hub for Cobotics</span> <span class="src-pub">— IIT Delhi</span><br>
+            <a href="https://home.iitd.ac.in/news-dst.php" target="_blank" rel="noopener">home.iitd.ac.in ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-9">
+          <span class="source-num">9</span>
+          <div class="source-body">
+            <span class="src-title">Government e-Marketplace (GeM) — Procurement Policies and Vendor Registration Guidelines</span><br>
+            <a href="https://gem.gov.in" target="_blank" rel="noopener">gem.gov.in ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-17">
+          <span class="source-num">17</span>
+          <div class="source-body">
+            <span class="src-title">AICTE Annual Report 2023–24 — Institution count and lab data</span> <span class="src-pub">— AICTE</span><br>
+            <a href="https://www.aicte-india.org/" target="_blank" rel="noopener">aicte-india.org ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-18">
+          <span class="source-num">18</span>
+          <div class="source-body">
+            <span class="src-title">Research Grants — SERB / Anusandhan National Research Foundation</span><br>
+            <a href="https://serb.gov.in/page/research_grants" target="_blank" rel="noopener">serb.gov.in ↗</a> · <a href="https://dst.gov.in/sanctioned-projects" target="_blank" rel="noopener">dst.gov.in (sanctioned projects) ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-22">
+          <span class="source-num">22</span>
+          <div class="source-body">
+            <span class="src-title">IHFC Collaborates with 10 Leading Institutions to Launch Co-Innovation Centres</span> <span class="src-pub">— IIT Delhi</span><br>
+            <a href="https://home.iitd.ac.in/show.php?id=613&in_sections=News" target="_blank" rel="noopener">home.iitd.ac.in ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-23">
+          <span class="source-num">23</span>
+          <div class="source-body">
+            <span class="src-title">ARTPARK (IISc) — CAMRAS Initiative and ARTPARK Programme Details</span><br>
+            <a href="https://www.artpark.in/" target="_blank" rel="noopener">artpark.in ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="source-group">
+        <div class="source-group-title">Company &amp; Product Sources</div>
+        <div class="source-item" id="ref-4">
+          <span class="source-num">4</span>
+          <div class="source-body">
+            <span class="src-title">Research grade robot recommendations in 2026</span> <span class="src-pub">— Open Robotics Discourse</span><br>
+            <a href="https://discourse.openrobotics.org/t/research-grade-robot-recommendations-in-2026/52569" target="_blank" rel="noopener">discourse.openrobotics.org ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-5">
+          <span class="source-num">5</span>
+          <div class="source-body">
+            <span class="src-title">Dynamixel Smart Servo Motors</span> <span class="src-pub">— MG Super Labs &amp; Nex Robotics</span><br>
+            <a href="https://www.mgsuperlabs.co.in/estore/Motors/Smart-Servo-Motors/DYNAMIXEL" target="_blank" rel="noopener">mgsuperlabs.co.in ↗</a> · <a href="http://www.nex-robotics.com/products/robotis.html" target="_blank" rel="noopener">nex-robotics.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-7">
+          <span class="source-num">7</span>
+          <div class="source-body">
+            <span class="src-title">Unitree Go2 Edu U1 Robotic Dog — Research &amp; Defense</span> <span class="src-pub">— FlySpark India</span><br>
+            <a href="https://flyspark.in/product/unitree-go2-edu-u1-advanced-robotic-dog-quadruped-for-research-education-field-operations-flyspark/" target="_blank" rel="noopener">flyspark.in ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-10">
+          <span class="source-num">10</span>
+          <div class="source-body">
+            <span class="src-title">Mobile Robot &amp; Robotic Arm — Latest Price, Manufacturers &amp; Suppliers</span> <span class="src-pub">— IndiaMART</span><br>
+            <a href="https://dir.indiamart.com/impcat/mobile-robot.html" target="_blank" rel="noopener">Mobile Robots ↗</a> · <a href="https://dir.indiamart.com/impcat/robotic-arm.html" target="_blank" rel="noopener">Robotic Arms ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-11">
+          <span class="source-num">11</span>
+          <div class="source-body">
+            <span class="src-title">ROS Distributions — End of Life dates</span> <span class="src-pub">— Open Robotics / ROS Documentation</span><br>
+            <a href="https://wiki.ros.org/Distributions" target="_blank" rel="noopener">wiki.ros.org ↗</a> · <a href="https://wiki.ros.org/noetic" target="_blank" rel="noopener">ROS Noetic EOL ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-13">
+          <span class="source-num">13</span>
+          <div class="source-body">
+            <span class="src-title">Exclusive: Robotics Startup Armatrix Raises ₹18 Cr</span> <span class="src-pub">— Inc42 &amp; Outlook Business</span><br>
+            <a href="https://inc42.com/buzz/exclusive-wtfund-backed-deeptech-startup-armatrix-to-raise-inr-18-cr/" target="_blank" rel="noopener">inc42.com ↗</a> · <a href="https://www.outlookbusiness.com/deeptech/deep-tech-start-up-armatrix-raises-21mn-to-build-ai-native-snake-robots-for-industrial-use" target="_blank" rel="noopener">outlookbusiness.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-14">
+          <span class="source-num">14</span>
+          <div class="source-body">
+            <span class="src-title">Sakar Robotics — 2025 Company Profile, Team, Funding &amp; Competitors</span> <span class="src-pub">— Tracxn</span><br>
+            <a href="https://tracxn.com/d/companies/sakar-robotics/__b43_t_YXwlLrmhgA6TouKAJ2jqbkEZKSl3e-Sp_r638" target="_blank" rel="noopener">tracxn.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-15">
+          <span class="source-num">15</span>
+          <div class="source-body">
+            <span class="src-title">Addverb unveils Trakr 2.0, Brisk and HOCA at LogiMAT India 2025</span> <span class="src-pub">— CXOToday</span><br>
+            <a href="https://cxotoday.com/press-release/addverb-unveils-revolutionary-robotics-and-automation-solutions-with-indias-largest-quadruped-trakr-2-0-along-with-brisk-and-hoca-at-logimat-india-2025/" target="_blank" rel="noopener">cxotoday.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-29">
+          <span class="source-num">29</span>
+          <div class="source-body">
+            <span class="src-title">AgileX Scout Mini</span> <span class="src-pub">— Roboworks</span><br>
+            <a href="https://www.roboworks.net/store/p/scout-mini" target="_blank" rel="noopener">roboworks.net ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="source-group">
+        <div class="source-group-title">News &amp; Media Sources</div>
+        <div class="source-item" id="ref-8">
+          <span class="source-num">8</span>
+          <div class="source-body">
+            <span class="src-title">Indian university faces backlash for presenting Chinese robot as its own</span> <span class="src-pub">— Al Jazeera &amp; NBC News (Feb 2026)</span><br>
+            <a href="https://www.aljazeera.com/news/2026/2/18/indian-university-faces-backlash-for-presenting-chinese-robot-as-its-own" target="_blank" rel="noopener">aljazeera.com ↗</a> · <a href="https://www.nbcnews.com/world/asia/robotic-dog-made-china-gets-indian-university-kicked-ai-summit-rcna259682" target="_blank" rel="noopener">nbcnews.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-12">
+          <span class="source-num">12</span>
+          <div class="source-body">
+            <span class="src-title">GeM portal procurement guidelines; ThinkRobotics / researcher procurement conflict case (2025)</span><br>
+            <a href="https://gem.gov.in" target="_blank" rel="noopener">gem.gov.in ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-19">
+          <span class="source-num">19</span>
+          <div class="source-body">
+            <span class="src-title">Emerging and Inspiring India's Robotics Startups Revolutionizing 2025</span> <span class="src-pub">— TechGenyz (funding figures cross-referenced with Inc42 and YourStory)</span><br>
+            <a href="https://techgenyz.com/emerging-and-inspiring-indias-robotics-startups/" target="_blank" rel="noopener">techgenyz.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-20">
+          <span class="source-num">20</span>
+          <div class="source-body">
+            <span class="src-title">Do Indian startups have a right-to-win in robotics?</span> <span class="src-pub">— Operator Blog (August 2024)</span><br>
+            <a href="https://operator.blog/2024/08/12/do-indian-startups-have-a-right-to-win-in-robotics/" target="_blank" rel="noopener">operator.blog ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-21">
+          <span class="source-num">21</span>
+          <div class="source-body">
+            <span class="src-title">India's startups build humanoids with local code, globally sourced hardware</span> <span class="src-pub">— Business Standard (December 2025)</span><br>
+            <a href="https://www.business-standard.com/companies/start-ups/technology-indias-startups-build-humanoids-local-code-global-hardware-125122400897_1.html" target="_blank" rel="noopener">business-standard.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-27">
+          <span class="source-num">27</span>
+          <div class="source-body">
+            <span class="src-title">About ideaForge &amp; ideaForge Wins $11M Indian Military Drone Deal</span> <span class="src-pub">— ideaForge &amp; The Defense Post (November 2025)</span><br>
+            <a href="https://ideaforgetech.com/aboutus" target="_blank" rel="noopener">ideaforgetech.com ↗</a> · <a href="https://thedefensepost.com/2025/11/20/ideaforge-india-drone-contract/" target="_blank" rel="noopener">thedefensepost.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-28">
+          <span class="source-num">28</span>
+          <div class="source-body">
+            <span class="src-title">ideaForge and C-DAC Partner to Integrate Drone-as-a-Service Platform</span> <span class="src-pub">— Drone Life (December 2025)</span><br>
+            <a href="https://dronelife.com/2025/12/11/ideaforge-and-c-dac-partner-to-integrate-drone-as-a-service-platform-with-indias-emergency-response-system/" target="_blank" rel="noopener">dronelife.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-orf">
+          <span class="source-num">ORF</span>
+          <div class="source-body">
+            <span class="src-title">India's Robotics Opportunity: Global Ambition, Local Strength</span> <span class="src-pub">— ORF Online</span><br>
+            <a href="https://www.orfonline.org/expert-speak/india-s-robotics-opportunity-global-ambition-local-strength" target="_blank" rel="noopener">orfonline.org ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="source-group">
+        <div class="source-group-title">Academic &amp; Conference Sources</div>
+        <div class="source-item" id="ref-3">
+          <span class="source-num">3</span>
+          <div class="source-body">
+            <span class="src-title">ROSCon India 2025 — Official site; ARTPARK on X (500+ tickets); Open Robotics on X</span><br>
+            <a href="https://www.rosconindia.in/" target="_blank" rel="noopener">rosconindia.in ↗</a> · <a href="https://x.com/artparkindia/status/1986018152267018639" target="_blank" rel="noopener">@artparkindia ↗</a> · <a href="https://x.com/OpenRoboticsOrg/status/1960029254974161184" target="_blank" rel="noopener">@OpenRoboticsOrg ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-6">
+          <span class="source-num">6</span>
+          <div class="source-body">
+            <span class="src-title">G-ARM: An open-source and low-cost robotic arm integrated with ROS2 for educational purposes</span> <span class="src-pub">— Vega, Pérez. <em>Multimedia Tools and Applications</em>, Springer Nature, March 2025</span><br>
+            <a href="https://link.springer.com/article/10.1007/s11042-025-20748-8" target="_blank" rel="noopener">link.springer.com ↗</a>
+          </div>
+        </div>
+        <div class="source-item" id="ref-16">
+          <span class="source-num">16</span>
+          <div class="source-body">
+            <span class="src-title">Unitree Go1: Know Features and Price of China-Made Robotic Dog</span> <span class="src-pub">— LatestLY</span><br>
+            <a href="https://www.latestly.com/technology/unitree-go1-know-features-and-price-of-china-made-robotic-dog-7319261.html" target="_blank" rel="noopener">latestly.com ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="citation-note">
+        <strong>Citation note:</strong> Market data figures (TAM/SAM/SOM calculations in §04) are author estimates derived from publicly reported market research and institution count data. All figures should be validated against primary data from customer interviews before use in investor materials. Pricing figures are observed market prices as of Q1 2026 and subject to change.
+      </div>
+    </section>
+
+  </div><!-- .content -->
+
+  <footer class="page-footer">
+    <span class="footer-title">Robotics Startup Market Research — India Academic &amp; Research Segment</span>
+    <span>Living document · Updated 2026-03-28 · Phases 1–4 Complete</span>
+  </footer>
+
+</div><!-- #main -->
+
+<script>
+  // Sticky nav active state
+  const sections = document.querySelectorAll('section[id], header#__header');
+  const navLinks = document.querySelectorAll('#sidebar .sidebar-nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + entry.target.id) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
