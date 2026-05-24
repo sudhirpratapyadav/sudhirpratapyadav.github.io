@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reward Models — Survey</title>
+<style>
+  @page { size: A4; margin: 14mm 15mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 9.6pt; line-height: 1.42; color: #1a1a1a; margin: 0;
+  }
+  h1 { font-size: 17pt; margin: 0 0 2px; color: #111; }
+  h2 {
+    font-size: 11pt; margin: 17px 0 6px; padding-bottom: 3px;
+    border-bottom: 2px solid #2c3e50; color: #2c3e50;
+  }
+  h3 { font-size: 9.8pt; margin: 11px 0 3px; color: #34495e; }
+  p { margin: 4px 0; }
+  ul { margin: 4px 0; padding-left: 18px; }
+  li { margin: 2px 0; }
+  .sub { color: #666; font-size: 9pt; margin: 0 0 8px; }
+  table { border-collapse: collapse; width: 100%; margin: 6px 0; font-size: 9pt; }
+  th, td { border: 1px solid #cfd6dd; padding: 4px 7px; text-align: left; vertical-align: top; }
+  th { background: #2c3e50; color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #f4f6f8; }
+  .tag { font-weight: 700; color: #2c3e50; }
+  .note { font-size: 8.6pt; color: #666; font-style: italic; }
+  code { background: #eef1f4; padding: 1px 4px; border-radius: 3px; font-size: 8.8pt; }
+
+  .intro p { margin: 6px 0; }
+
+  /* methods tables (re-used styling from plan.html) */
+  table.methods { font-size: 7.8pt; }
+  table.methods th, table.methods td { padding: 3px 5px; }
+  table.methods th { font-size: 7.6pt; }
+  table.methods a { color: #1f6feb; text-decoration: none; }
+  table.methods tr:nth-child(even) td { background: #f4f6f8; }
+
+  /* category tag chips */
+  .mtag { display: inline-block; font-size: 6.8pt; font-weight: 700; padding: 1px 4px;
+          border-radius: 3px; color: #fff; white-space: nowrap; }
+  .m-vlm   { background: #2c3e50; }   /* VLM-as-reward */
+  .m-vid   { background: #6a4fa3; }   /* learned video reward */
+  .m-cls   { background: #c0651f; }   /* success classifier */
+  .m-pref  { background: #3a7d3a; }   /* preference / IRL */
+  .m-wm    { background: #1e6091; }   /* world-model reward */
+  .m-code  { background: #8a4f2c; }   /* LLM reward code */
+  .m-fm    { background: #b03060; }   /* FM / RLHF on VLA */
+  .m-scal  { background: #2c3e50; }   /* scalar BT RM */
+  .m-gen   { background: #6a4fa3; }   /* generative judge */
+  .m-mo    { background: #3a7d3a; }   /* multi-objective */
+  .m-pair  { background: #8a939b; }   /* pairwise */
+  .m-rbr   { background: #c0651f; }   /* rule-based / RLAIF */
+  .m-bench { background: #4a6d8c; }   /* benchmark */
+  .m-prm   { background: #8a4f2c; }   /* PRM */
+  .m-mm    { background: #b03060; }   /* multimodal PRM */
+  .m-img   { background: #2c3e50; }   /* T2I RM */
+  .m-tv    { background: #6a4fa3; }   /* T2V RM */
+  .m-3d    { background: #3a7d3a; }   /* 3D / motion RM */
+  .m-judge { background: #c0651f; }   /* MLLM-as-judge */
+
+  .stagebox { background: #f4f6f8; border-left: 4px solid #34495e; padding: 6px 11px; margin: 10px 0 4px; }
+  .stagebox b { color: #2c3e50; }
+  .sectionbox { background: #eef3f8; border-left: 4px solid #2c3e50; padding: 8px 12px; margin: 14px 0 6px; }
+  .sectionbox b { color: #2c3e50; font-size: 10pt; }
+
+  tr.pick td { background: #fff6e0 !important; }
+  tr.pick td:first-child { border-left: 3px solid #e0a420; }
+  .star { color: #e0a420; font-weight: 700; }
+  .nocode { color: #c0392b; font-weight: 700; }
+  .warn { color: #c0651f; }
+
+  /* recency badges */
+  .yr { display: inline-block; font-size: 6.8pt; font-weight: 700; padding: 1px 4px;
+        border-radius: 3px; color: #fff; white-space: nowrap; }
+  .y-26 { background: #c0392b; }
+  .y-25 { background: #c0651f; }
+  .y-24 { background: #3a7d3a; }
+  .y-old { background: #8a939b; }
+
+  .legend { font-size: 8.4pt; margin: 5px 0 0; }
+  .legend span { display: inline-block; margin-right: 14px; }
+
+  .toc { background: #f4f6f8; border: 1px solid #cfd6dd; padding: 8px 12px; margin: 10px 0; font-size: 9pt; column-count: 2; column-gap: 18px; }
+  .toc a { color: #1f6feb; text-decoration: none; }
+  .toc ol { margin: 0; padding-left: 18px; }
+</style>
+</head>
+<body>
+
+<h1>Reward Models — Survey</h1>
+<p class="sub">Categorized landscape · newest first within each category · primary focus: robotics · last updated May 2026</p>
+
+<div class="intro">
+  <p><b>Scope.</b> A categorized catalogue of reward models (RMs) across four families: (1) robotics &amp; embodied AI — the deepest section, (2) process reward models (PRMs) for reasoning, (3) LLM / RLHF reward models, (4) vision / multimodal generation RMs. Within each category entries are ordered newest first.</p>
+  <p><b>Recency weighting.</b> 2025–2026 entries get the most coverage; 2023–2024 covered well; 2021–2022 kept as low-density <i>reference baselines</i>. Watch-list rows are papers whose results look strongest but have no public code yet.</p>
+  <p><b>Legend.</b>
+    <span class="yr y-26">2026</span> latest &nbsp;
+    <span class="yr y-25">2025</span> &nbsp;
+    <span class="yr y-24">2024</span> &nbsp;
+    <span class="yr y-old">≤2023</span> &nbsp;·&nbsp;
+    <span class="star">★</span> = author-recommended first pick within the subsection &nbsp;·&nbsp;
+    <span class="nocode">⚠ no code</span> = paper / project only.
+  </p>
+</div>
+
+<div class="toc">
+  <ol>
+    <li><a href="#sec1">Robotics &amp; Embodied AI RMs</a>
+      <ol>
+        <li><a href="#sec1-1">VLM-as-reward (zero-shot &amp; fine-tuned)</a></li>
+        <li><a href="#sec1-2">Learned video / preference reward models</a></li>
+        <li><a href="#sec1-3">Success classifiers &amp; trajectory verifiers</a></li>
+        <li><a href="#sec1-4">Inverse RL / preference-based RL</a></li>
+        <li><a href="#sec1-5">World-model / value-function reward</a></li>
+        <li><a href="#sec1-6">LLM-generated reward code</a></li>
+        <li><a href="#sec1-7">Foundation-model RLHF for VLAs</a></li>
+        <li><a href="#sec1-bench">Benchmarks &amp; surveys (robotics)</a></li>
+      </ol>
+    </li>
+    <li><a href="#sec2">Process Reward Models (PRMs) — reasoning</a>
+      <ol>
+        <li><a href="#sec2-1">Math / reasoning PRMs</a></li>
+        <li><a href="#sec2-2">Generative / verifier-style PRMs</a></li>
+        <li><a href="#sec2-3">Code &amp; agent PRMs</a></li>
+        <li><a href="#sec2-4">Multimodal PRMs</a></li>
+        <li><a href="#sec2-bench">PRM benchmarks &amp; surveys</a></li>
+      </ol>
+    </li>
+    <li><a href="#sec3">LLM / RLHF Reward Models</a>
+      <ol>
+        <li><a href="#sec3-1">Scalar / Bradley–Terry RMs</a></li>
+        <li><a href="#sec3-2">Generative / LLM-as-judge RMs</a></li>
+        <li><a href="#sec3-3">Multi-objective / fine-grained RMs</a></li>
+        <li><a href="#sec3-4">Pairwise &amp; reward-free methods</a></li>
+        <li><a href="#sec3-5">Constitutional / rule-based / RLAIF</a></li>
+        <li><a href="#sec3-bench">RM benchmarks &amp; surveys</a></li>
+      </ol>
+    </li>
+    <li><a href="#sec4">Vision / Multimodal Generation RMs</a>
+      <ol>
+        <li><a href="#sec4-1">Text-to-image (T2I) RMs</a></li>
+        <li><a href="#sec4-2">Text-to-video (T2V) RMs</a></li>
+        <li><a href="#sec4-3">3D / motion RMs</a></li>
+        <li><a href="#sec4-4">MLLM-as-judge for generation</a></li>
+        <li><a href="#sec4-bench">Benchmarks (vision generation)</a></li>
+      </ol>
+    </li>
+    <li><a href="#cross">Cross-cutting trends &amp; reading list</a></li>
+  </ol>
+</div>
+
+<!-- ====================================================================== -->
+<!-- SECTION 1: ROBOTICS                                                    -->
+<!-- ====================================================================== -->
+
+<h2 id="sec1">1. Robotics &amp; Embodied AI Reward Models</h2>
+<p>
+  Reward models for robot learning split along two axes: <b>what they consume</b> (RGB frame, video, language, proprio, action) and <b>what they emit</b> (sparse success, dense scalar, preference, executable code, value function). The subsections below group by mechanism. Category chips used in tables:
+  <span class="mtag m-vlm">VLM</span> VLM-as-reward &nbsp;
+  <span class="mtag m-vid">VID</span> learned video RM &nbsp;
+  <span class="mtag m-cls">CLS</span> success classifier / verifier &nbsp;
+  <span class="mtag m-pref">PREF</span> preference-based RL &nbsp;
+  <span class="mtag m-wm">WM</span> world-model / value &nbsp;
+  <span class="mtag m-code">CODE</span> LLM-written reward code &nbsp;
+  <span class="mtag m-fm">RLHF</span> RLHF on VLA.
+</p>
+
+<!-- 1.1 VLM-as-reward -->
+<div class="stagebox" id="sec1-1">
+  <b>1.1 VLM-as-reward — zero-shot or fine-tuned VLMs scoring robot frames/videos.</b>
+  The dominant 2024–2026 pattern: take a pretrained vision-language model, feed it RGB + language goal, read out a scalar or preference. Sub-split between training-free prompting and lightweight fine-tunes.
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Code / link</th><th>Backbone</th><th>Reward output</th><th>Input</th><th>Training source</th><th>Notes</th></tr>
+  <tr class="pick"><td><span class="star">★</span>1</td><td><b>LRM (Large Reward Models)</b></td><td><span class="yr y-26">2026</span></td><td>Tsinghua + collab.</td><td><a href="https://yanru-wu.github.io/Large-Reward-Models/">project</a> · <a href="https://arxiv.org/abs/2603.16065">arXiv</a></td><td>Qwen3-VL 4B / 8B</td><td>Dense per-frame (process + completion + temporal contrastive)</td><td>RGB video + language</td><td>24 sources incl. OXE, HOI, sim</td><td>Online closed-loop policy refinement; <b>+13 pp real-robot success</b> in 30 RL iters. Strongest open robot RM at time of writing.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>2</td><td><b>RoboReward 4B / 8B</b></td><td><span class="yr y-26">2026</span></td><td>OpenReview team</td><td><a href="https://openreview.net/forum?id=iDmt7Tzmke">OpenReview</a> · <a href="https://arxiv.org/abs/2601.00675">arXiv</a></td><td>Qwen3-VL 4B / 8B</td><td>5-level end-of-episode progress</td><td>RGB rollout + task text</td><td>45 k scored episodes (OXE + RoboArena)</td><td>First general-purpose open robot RM that beats GPT-5 and Gemini-Robotics-ER on real-robot tasks. Ships RoboReward-Bench.</td></tr>
+  <tr><td>3</td><td><b>MARVL</b></td><td><span class="yr y-26">2026</span></td><td>arXiv 2602.15872</td><td><a href="https://arxiv.org/abs/2602.15872">arXiv</a></td><td>Fine-tuned VLM</td><td>Dense stage-projected scalar</td><td>RGB + language</td><td>Meta-World demos</td><td>Multi-stage subtask decomposition + task-direction projection; matches oracle dense reward.</td></tr>
+  <tr><td>4</td><td><b>TOPReward</b></td><td><span class="yr y-26">2026</span></td><td>TOPReward team</td><td><a href="https://github.com/TOPReward/TOPReward">GitHub</a> · <a href="https://topreward.github.io/webpage/">project</a></td><td>Qwen3-VL (frozen)</td><td>Dense scalar via internal token logit probabilities</td><td>RGB video + language</td><td>Zero-shot, no training</td><td>Bypasses text generation — reads progress from VLM logits. <b>0.947 VOC</b> on 130+ tasks.</td></tr>
+  <tr><td>5</td><td><b>T²-VLM</b> (training-free temporal RM)</td><td><span class="yr y-25">2025</span></td><td>arXiv 2507.04789</td><td><a href="https://arxiv.org/pdf/2507.04789">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>Frozen VLM + Bayesian tracker</td><td>Dense scalar (temporally smoothed)</td><td>RGB + language</td><td>Training-free</td><td>Bayesian smoothing over VLM scores → monotonic rewards. Pure prompting baseline.</td></tr>
+  <tr><td>6</td><td><b>GVL</b> (Generative Value Learning)</td><td><span class="yr y-25">2025</span></td><td>UPenn / DeepMind</td><td><a href="https://generative-value-learning.github.io/">project</a> · <a href="https://arxiv.org/abs/2411.04549">arXiv</a></td><td>Gemini-1.5-Pro</td><td>Dense % task-progress</td><td>Shuffled video frames + language</td><td>Zero-shot in-context</td><td>Reframes value estimation as frame-ordering. Scales to <b>300+ real-world tasks</b>. ICLR 2025.</td></tr>
+  <tr><td>7</td><td><b>PrefVLM</b></td><td><span class="yr y-25">2025</span></td><td>Ghosh et al.</td><td><a href="https://arxiv.org/abs/2502.01616">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>VLM + selective human label</td><td>Preference labels</td><td>RGB pairs + language</td><td>Meta-World + sparse human queries</td><td>Cuts human annotation <b>2×</b> via VLM filtering + inverse-dynamics adaptation.</td></tr>
+  <tr><td>8</td><td><b>IKER</b> (Iterative Keypoint Reward)</td><td><span class="yr y-25">2025</span></td><td>Patel et al.</td><td><a href="https://iker-robot.github.io/">project</a> · <a href="https://arxiv.org/abs/2502.08643">arXiv</a></td><td>GPT-4o + keypoint sampler</td><td>Python reward over keypoint geometry</td><td>RGB-D + language</td><td>Zero-shot</td><td>Real→sim→real loop with VLM-generated keypoint rewards. ICRA 2025.</td></tr>
+  <tr><td>9</td><td><b>ELEMENTAL</b></td><td><span class="yr y-25">2025</span></td><td>Ga Tech</td><td><a href="https://arxiv.org/abs/2411.18825">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>LLM + VLM</td><td>Reward function (mixed code + feature)</td><td>Demos + language</td><td>Few demos + iterative VLM</td><td>Visual demos + NL guidance overcome LLM-only feature balancing.</td></tr>
+  <tr><td>10</td><td><b>RL-VLM-F</b></td><td><span class="yr y-24">2024</span></td><td>Wang, Sun et al.</td><td><a href="https://arxiv.org/abs/2402.03681">arXiv</a></td><td>Gemini / GPT-4V</td><td>Preference → learned scalar</td><td>Image pairs + text goal</td><td>Zero-shot VLM prefs</td><td>Pairwise VLM prefs across rigid / articulated / deformable manipulation. ICML 2024.</td></tr>
+  <tr><td>11</td><td><b>FuRL</b></td><td><span class="yr y-24">2024</span></td><td>Fu et al.</td><td><a href="https://github.com/fuyw/FuRL">GitHub</a> · <a href="https://arxiv.org/abs/2406.00645">arXiv</a></td><td>LIV / VLM</td><td>Dense reward (fine-tuned)</td><td>RGB + text</td><td>Meta-World</td><td>Fixes VLM-reward misalignment via reward-alignment fine-tune + relay RL. ICML 2024.</td></tr>
+  <tr><td colspan="10" style="background:#eef1f4;font-weight:700;">Reference baselines — older, kept as historical anchors</td></tr>
+  <tr><td>R1</td><td><b>VLM-RM</b> (zero-shot)</td><td><span class="yr y-old">2023</span></td><td>DeepMind</td><td><a href="https://arxiv.org/abs/2312.09187">arXiv</a></td><td>CLIP / Flamingo</td><td>Sparse scalar</td><td>RGB + language</td><td>Zero-shot</td><td>Reference baseline — VLMs as direct RL reward without any training.</td></tr>
+  <tr><td>R2</td><td><b>LIV</b></td><td><span class="yr y-old">2023</span></td><td>UPenn / FAIR</td><td><a href="https://arxiv.org/pdf/2306.00958">arXiv</a></td><td>CLIP + VIP</td><td>Goal-conditioned value</td><td>RGB + language</td><td>EpicKitchens + robot</td><td>Multimodal value-implicit pretraining; widely cited dense-reward baseline. ICML 2023.</td></tr>
+  <tr><td>R3</td><td><b>RoboCLIP</b></td><td><span class="yr y-old">2023</span></td><td>USC</td><td><a href="https://sites.google.com/view/roboclip/home">project</a> · <a href="https://arxiv.org/abs/2310.07899">arXiv</a></td><td>S3D-CLIP</td><td>Cosine-similarity scalar</td><td>RGB video + language / demo</td><td>Zero-shot</td><td>One demo or text → reward. NeurIPS 2023.</td></tr>
+  <tr><td>R4</td><td><b>MineCLIP</b></td><td><span class="yr y-old">2022</span></td><td>NVIDIA (MineDojo)</td><td><a href="https://minedojo.org/">MineDojo</a></td><td>CLIP-ViT</td><td>Dense shaping scalar</td><td>RGB + text</td><td>YouTube Minecraft</td><td>Contrastive video-text reward in open-world env. NeurIPS 2022.</td></tr>
+</table>
+<p class="note">First pick: <b>LRM</b> for closed-loop RL fine-tuning, <b>RoboReward</b> for episode-level scoring, <b>TOPReward</b> if you want zero training.</p>
+
+<!-- 1.2 Learned video RMs -->
+<div class="stagebox" id="sec1-2">
+  <b>1.2 Learned video / preference reward models.</b>
+  Encoders trained explicitly to predict reward, progress, or preference from robot video — typically distilled or aligned beyond a frozen VLM.
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Code / link</th><th>Backbone</th><th>Reward output</th><th>Training source</th><th>Notes</th></tr>
+  <tr class="pick"><td><span class="star">★</span>1</td><td><b>ReWiND</b></td><td><span class="yr y-25">2025</span></td><td>USC LIRA</td><td><a href="https://rewind-reward.github.io/">project</a> · <a href="https://arxiv.org/abs/2505.10911">arXiv</a></td><td>Video-language transformer</td><td>Dense language-conditioned scalar</td><td>Small demo set; reverse-aug failures</td><td>Splits videos forward / reverse to synthesize failures. <b>5×</b> real-world bimanual gain. CoRL 2025 Oral + RSS Best Paper.</td></tr>
+  <tr><td>2</td><td><b>SARM</b> (Stage-Aware RM)</td><td><span class="yr y-25">2025</span></td><td>Stanford / Berkeley</td><td><a href="https://huggingface.co/docs/lerobot/en/sarm">LeRobot</a> · <a href="https://qianzhong-chen.github.io/sarm.github.io/">project</a> · <a href="https://arxiv.org/abs/2509.25358">arXiv</a></td><td>Video transformer</td><td>Stage + dense progress</td><td>Long-horizon manipulation demos</td><td>Joint stage + progress prediction. Native LeRobot integration. Handles T-shirt folding (variable duration).</td></tr>
+  <tr><td>3</td><td><b>VLAC</b> (Vision-Language-Action-Critic)</td><td><span class="yr y-25">2025</span></td><td>arXiv 2509.15937</td><td><a href="https://arxiv.org/abs/2509.15937">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>InternVL</td><td>Dense progress delta + done</td><td>Heterogeneous robot + human</td><td>Unified critic + policy; <b>30% → 90% real-world success in 200 episodes</b>.</td></tr>
+  <tr><td>4</td><td><b>GenFlowRL</b></td><td><span class="yr y-25">2025</span></td><td>Yu et al.</td><td><a href="https://colinyu1.github.io/genflowrl/">project</a> · <a href="https://arxiv.org/abs/2508.11049">arXiv</a></td><td>Stable Diffusion (flow gen)</td><td>Dense shaped reward (delta-flow matching)</td><td>Cross-embodiment demos</td><td>Object-centric flow as reward proxy. ICCV 2025.</td></tr>
+  <tr><td>5</td><td><b>TeViR</b></td><td><span class="yr y-25">2025</span></td><td>CAS</td><td><a href="https://arxiv.org/abs/2505.19769">arXiv</a></td><td>Text-to-video diffusion</td><td>Dense distance-to-goal</td><td>Pretrained T2V</td><td>Compares predicted vs observed images for dense rewards across 13 sim/real tasks.</td></tr>
+  <tr><td>6</td><td><b>REDS</b></td><td><span class="yr y-25">2025</span></td><td>Kim et al.</td><td><a href="https://github.com/csmile-1006/REDS_agent">GitHub</a> · <a href="https://changyeon.site/reds/">project</a></td><td>Video encoder + contrastive</td><td>Dense subtask-aligned reward</td><td>Action-free video segments</td><td>EPIC-distance aligned dense reward. ICLR 2025.</td></tr>
+  <tr><td>7</td><td><b>Video-Language Critic</b></td><td><span class="yr y-24">2024</span></td><td>Aalto / Manchester / Intel</td><td><a href="https://github.com/minttusofia/video_language_critic">GitHub</a> · <a href="https://arxiv.org/abs/2405.19988">arXiv</a></td><td>CLIP4Clip</td><td>Contrastive temporal scalar</td><td>Open X-Embodiment</td><td>2× sample efficiency on Meta-World via cross-embodiment RM. CoLLAs 2024.</td></tr>
+  <tr><td>8</td><td><b>Diffusion Reward</b></td><td><span class="yr y-24">2024</span></td><td>Huang et al.</td><td><a href="https://diffusion-reward.github.io/">project</a> · <a href="https://arxiv.org/pdf/2312.14134">arXiv</a></td><td>Conditional video diffusion</td><td>Dense −conditional-entropy</td><td>Expert task videos</td><td>Rewards expert-like behaviors via diffusion conditional entropy. ECCV 2024.</td></tr>
+  <tr><td>9</td><td><b>Video2Reward</b></td><td><span class="yr y-24">2024</span></td><td>arXiv 2412.05515</td><td><a href="https://arxiv.org/pdf/2412.05515">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>VLM + iterative refine</td><td>Reward code</td><td>Internet videos</td><td>Iterative VLM refinement of reward for legged-robot tasks from animal video.</td></tr>
+  <tr><td>R1</td><td><b>VIPER</b></td><td><span class="yr y-old">2023</span></td><td>Berkeley + DeepMind</td><td><a href="https://danijar.com/project/viper/">project</a> · <a href="https://arxiv.org/abs/2305.14343">arXiv</a></td><td>Autoregressive video transformer</td><td>Log-likelihood scalar</td><td>Expert videos</td><td>Reference baseline — video-prediction log-prob as reward across 28 tasks. NeurIPS 2023.</td></tr>
+</table>
+<p class="note">First pick: <b>ReWiND</b> (RSS Best Paper, ships failure-aware data). Strong alternative: <b>SARM</b> for long-horizon tasks where stages matter (e.g., pour-place).</p>
+
+<!-- 1.3 Success classifiers -->
+<div class="stagebox" id="sec1-3">
+  <b>1.3 Success classifiers &amp; trajectory verifiers.</b>
+  Score whole trajectories or detect task completion. Increasingly used as VLA verifiers at test time (the &ldquo;robot ORM&rdquo; pattern).
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Code / link</th><th>Backbone</th><th>Reward output</th><th>Input</th><th>Notes</th></tr>
+  <tr class="pick"><td><span class="star">★</span>1</td><td><b>Robometer</b></td><td><span class="yr y-26">2026</span></td><td>arXiv 2603.02115</td><td><a href="https://github.com/robometer/robometer">GitHub</a> · <a href="https://robometer.github.io/">project</a></td><td>Pretrained VLM</td><td>Dense per-frame + global preference</td><td>RGB + lang</td><td>Trained on <b>RBM-1M</b> (1M+ trajectories incl. failures); dual objective learns from suboptimal data. RSS 2026.</td></tr>
+  <tr><td>2</td><td><b>RoVer</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2510.10975</td><td><a href="https://arxiv.org/abs/2510.10975">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>Robot Process Reward Model</td><td>Scalar + action direction</td><td>VLA candidate actions</td><td>Test-time verifier for VLAs — plug-and-play on OpenVLA, π0, RDT.</td></tr>
+  <tr><td>3</td><td><b>WorldGym</b> (scalable video-world policy eval)</td><td><span class="yr y-25">2025</span></td><td>arXiv 2511.11520</td><td><a href="https://arxiv.org/html/2511.11520v3">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>Video world model + VLM</td><td>Reward + rollout</td><td>RGB + actions</td><td>MC rollouts inside world model with VLM as reward. Used for policy evaluation.</td></tr>
+  <tr><td>4</td><td><b>WorldEval</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2506.00613</td><td><a href="https://arxiv.org/html/2506.00613v1">arXiv</a></td><td>Video world model</td><td>Eval scoring</td><td>RGB + actions</td><td>Frames policy eval as world-model rollouts. Companion to WorldGym.</td></tr>
+  <tr><td>R1</td><td><b>SuccessVQA</b></td><td><span class="yr y-old">2023</span></td><td>Berkeley / DeepMind</td><td><a href="https://arxiv.org/abs/2303.07280">arXiv</a></td><td>Flamingo</td><td>Yes/no scalar</td><td>Clip + question</td><td>Reference baseline — success detection as VQA. ICML 2023.</td></tr>
+  <tr><td>R2</td><td><b>Concept2Robot</b></td><td><span class="yr y-old">2020/21</span></td><td>Stanford</td><td><a href="https://sites.google.com/view/concept2robot">project</a></td><td>Video action classifier (Sth-Sth)</td><td>Binary / score</td><td>RGB video</td><td>Reference baseline — Sth-Sth-V2 classifier as policy reward.</td></tr>
+  <tr><td>R3</td><td><b>VICE</b></td><td><span class="yr y-old">2019</span></td><td>Berkeley</td><td><a href="https://arxiv.org/abs/1904.07854">arXiv</a></td><td>CNN success classifier</td><td>Sparse binary</td><td>Goal images</td><td>Reference baseline — classifier-from-goal-examples as RL reward.</td></tr>
+</table>
+<p class="note">First pick: <b>Robometer</b> if you need to score real rollouts; <b>RoVer</b> as a test-time VLA verifier you can drop in over an existing policy.</p>
+
+<!-- 1.4 IRL / preference-based RL -->
+<div class="stagebox" id="sec1-4">
+  <b>1.4 Inverse RL / preference-based RL for robotics.</b>
+  Learn a scalar reward from human (or VLM) pairwise preferences over trajectories. The classical PbRL line, with 2024–2025 work adding multimodal / non-Markovian models.
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Method</th><th>Yr</th><th>Team</th><th>Code / link</th><th>RM architecture</th><th>Pref source</th><th>Notes</th></tr>
+  <tr class="pick"><td><span class="star">★</span>1</td><td><b>PRIMT</b></td><td><span class="yr y-25">2025</span></td><td>Purdue / IU / UIUC</td><td><a href="https://primt25.github.io/">project</a> · <a href="https://arxiv.org/abs/2509.15607">arXiv</a></td><td>VLM + LLM hybrid (neuro-symbolic)</td><td>Foresight + hindsight FM-synthesized</td><td>NeurIPS 2025 Oral. Counterfactual trajectory augmentation; cuts human cost dramatically.</td></tr>
+  <tr><td>2</td><td><b>ICPL</b></td><td><span class="yr y-24">2024</span></td><td>Yu et al.</td><td><a href="https://arxiv.org/abs/2410.17233">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>GPT-4 in-context</td><td>Few in-context human prefs</td><td><b>30×</b> fewer queries than classical PbRL. NeurIPS 2024.</td></tr>
+  <tr><td>3</td><td><b>PrefMMT</b></td><td><span class="yr y-24">2024</span></td><td>arXiv 2409.13683</td><td><a href="https://sites.google.com/view/prefmmt">project</a> · <a href="https://arxiv.org/abs/2409.13683">arXiv</a></td><td>Multimodal Transformer</td><td>D4RL + Meta-World</td><td>Hierarchical multimodal transformer for state-action preferences.</td></tr>
+  <tr><td>4</td><td><b>RIME</b></td><td><span class="yr y-24">2024</span></td><td>Cheng et al.</td><td><a href="https://arxiv.org/abs/2402.17257">arXiv</a></td><td>MLP reward + sample-selection</td><td>Noisy prefs</td><td>Warm-start discriminator → robust to label noise. ICML 2024.</td></tr>
+  <tr><td>5</td><td><b>IPL</b> (Inverse Preference Learning)</td><td><span class="yr y-old">2023</span></td><td>Stanford</td><td><a href="https://arxiv.org/abs/2305.15363">arXiv</a></td><td>Q-function only (no RM)</td><td>Offline pref pairs</td><td>Eliminates the reward model — Q encodes all reward info. NeurIPS 2023.</td></tr>
+  <tr><td>R1</td><td><b>Preference Transformer</b></td><td><span class="yr y-old">2023</span></td><td>KAIST</td><td><a href="https://arxiv.org/pdf/2303.00957">arXiv</a></td><td>Transformer over trajectories</td><td>Human prefs</td><td>Reference baseline — non-Markovian preference reward. ICLR 2023.</td></tr>
+  <tr><td>R2</td><td><b>SURF</b></td><td><span class="yr y-old">2022</span></td><td>Park et al.</td><td><a href="https://openreview.net/pdf?id=TfhfZLQ2EJO">OpenReview</a></td><td>MLP</td><td>Few labels + pseudo-labels</td><td>Reference baseline — semi-supervised PbRL. ICLR 2022.</td></tr>
+  <tr><td>R3</td><td><b>RUNE</b></td><td><span class="yr y-old">2022</span></td><td>Berkeley</td><td><a href="https://github.com/rll-research/rune">GitHub</a></td><td>MLP + uncertainty</td><td>Human prefs</td><td>Reference baseline — reward uncertainty as exploration bonus.</td></tr>
+  <tr><td>R4</td><td><b>PEBBLE</b></td><td><span class="yr y-old">2021</span></td><td>Berkeley</td><td>arXiv 2106.05091</td><td>MLP</td><td>Human prefs</td><td>Reference baseline — unsupervised pre-training + relabeling. ICML 2021.</td></tr>
+</table>
+<p class="note">2024–2025 trend: replace human teachers with VLM / LLM judges (PRIMT, ICPL) — the line between PbRL and §1.1 is collapsing.</p>
+
+<!-- 1.5 World model reward -->
+<div class="stagebox" id="sec1-5">
+  <b>1.5 World-model / value-function reward.</b>
+  Reward arrives from a learned world model — either an explicit value head, prediction error, or VLM scoring inside imagined rollouts.
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Code / link</th><th>Backbone</th><th>Reward output</th><th>Notes</th></tr>
+  <tr class="pick"><td><span class="star">★</span>1</td><td><b>V-JEPA 2 / 2-AC</b> (v2.1)</td><td><span class="yr y-26">2026</span></td><td>Meta FAIR</td><td><a href="https://github.com/facebookresearch/vjepa2">GitHub</a> · <a href="https://arxiv.org/abs/2506.09985">arXiv</a></td><td>V-JEPA video encoder</td><td>Implicit value via latent distance</td><td>1M+ hours internet video + 62 h robot. Zero-shot to new labs. Most mature open value-head world model.</td></tr>
+  <tr><td>2</td><td><b>World-VLA-Loop</b></td><td><span class="yr y-26">2026</span></td><td>arXiv 2602.06508</td><td><a href="https://arxiv.org/pdf/2602.06508">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>State-aware video world model</td><td>Joint future obs + reward</td><td>Closed-loop joint refinement of world model and VLA.</td></tr>
+  <tr><td>3</td><td><b>RoboScape-R</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2512.03556</td><td><a href="https://arxiv.org/abs/2512.03556">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>Embodied world model</td><td>"Endogenous" intrinsic reward from dynamics</td><td>Reward = world-model state-transition disagreement. <b>+37.5% OOD</b>.</td></tr>
+  <tr><td>4</td><td><b>VLA-RFT</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2510.00406</td><td><a href="https://arxiv.org/abs/2510.00406">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>World model simulator</td><td>Dense trajectory reward</td><td>RL fine-tuning of VLA inside data-driven world model; beats SFT in 400 steps.</td></tr>
+  <tr><td>5</td><td><b>GE-Sim 2.0</b> (Genie Envisioner)</td><td><span class="yr y-25">2025</span></td><td>AgiBot</td><td><a href="https://ge-sim-v2.github.io/">project</a> · <a href="https://arxiv.org/pdf/2508.05635">arXiv</a></td><td>Action-conditioned video diffusion + judge</td><td>World-judge reward</td><td>Integrated world-judge scores generated rollouts against task instructions.</td></tr>
+  <tr><td>R1</td><td><b>UniSim</b></td><td><span class="yr y-24">2024</span></td><td>Berkeley / DeepMind</td><td>arXiv 2310.06114</td><td>Video diffusion world sim</td><td>Reward + obs</td><td>Reference baseline — policy trained entirely in video world model; <b>81%</b> real-world transfer. ICLR 2024 Outstanding.</td></tr>
+</table>
+
+<!-- 1.6 LLM reward code -->
+<div class="stagebox" id="sec1-6">
+  <b>1.6 LLM-generated reward code.</b>
+  Use an LLM to <i>write</i> a Python reward function (and sometimes the environment). The Eureka family. Best fit when you have access to env source code or a structured state.
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Method</th><th>Yr</th><th>Team</th><th>Code / link</th><th>LLM</th><th>Output</th><th>Notes</th></tr>
+  <tr><td>1</td><td><b>STRIDE</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2502.04692</td><td><a href="https://arxiv.org/abs/2502.04692">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>GPT-4 + agentic engine</td><td>Reward code</td><td>Agentic reward design for humanoid locomotion; <b>2.5×</b> over Eureka.</td></tr>
+  <tr><td>2</td><td><b>REvolve</b></td><td><span class="yr y-24">2024</span></td><td>Örebro</td><td><a href="https://rishihazra.github.io/REvolve/">project</a> · <a href="https://arxiv.org/abs/2406.01309">arXiv</a></td><td>GPT-4 + evolutionary</td><td>Reward code (NL feedback in loop)</td><td>Tested on AD + humanoid + dex manipulation.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>3</td><td><b>EurekaVerse</b></td><td><span class="yr y-24">2024</span></td><td>UPenn</td><td><a href="https://www.seas.upenn.edu/~dineshj/publication/liang-2024-eurekaverse/">project</a></td><td>GPT-4</td><td>Reward + environment code</td><td>Generates curriculum + reward together. CoRL 2024.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>4</td><td><b>DrEureka</b></td><td><span class="yr y-24">2024</span></td><td>NVIDIA / UPenn</td><td><a href="https://github.com/eureka-research/DrEureka">GitHub</a> · <a href="https://arxiv.org/pdf/2406.01967">arXiv</a></td><td>GPT-4</td><td>Reward code + DR params</td><td>Joint reward + domain-randomization design for sim-to-real. RSS 2024.</td></tr>
+  <tr><td>5</td><td><b>Auto-MC-Reward</b></td><td><span class="yr y-24">2024</span></td><td>Li et al.</td><td><a href="https://yangxue.site/auto_mc-reward">project</a> · <a href="https://arxiv.org/abs/2312.09238">arXiv</a></td><td>GPT-4 (3-agent loop)</td><td>Dense reward code</td><td>Designer / Critic / Analyzer agents close the loop. CVPR 2024.</td></tr>
+  <tr><td>6</td><td><b>Text2Reward</b></td><td><span class="yr y-24">2024</span></td><td>HKU / NTU</td><td><a href="https://text-to-reward.github.io/">project</a> · <a href="https://arxiv.org/abs/2309.11489">arXiv</a></td><td>GPT-4</td><td>Dense Python reward</td><td>First free-form dense reward code synthesis; matches expert rewards on <b>13/17</b> tasks. ICLR 2024.</td></tr>
+  <tr><td>7</td><td><b>Eureka</b></td><td><span class="yr y-old">2023</span></td><td>NVIDIA / UPenn / Caltech</td><td><a href="https://eureka-research.github.io/">project</a> · <a href="https://arxiv.org/pdf/2310.12931">arXiv</a></td><td>GPT-4 (evolutionary)</td><td>Reward code</td><td>Beats human-engineered rewards on <b>83%</b> of 29 RL tasks across 10 morphologies. ICLR 2024 Oral.</td></tr>
+  <tr><td>R1</td><td><b>L2R</b> (Language to Reward)</td><td><span class="yr y-old">2023</span></td><td>Google DeepMind</td><td><a href="https://language-to-reward.github.io/">project</a> · <a href="https://arxiv.org/abs/2306.08647">arXiv</a></td><td>PaLM-2</td><td>Sparse reward template + MPC</td><td>Reference baseline — language → reward → MPC. CoRL 2023.</td></tr>
+</table>
+<p class="note">First pick depends on env: <b>DrEureka</b> if sim-to-real matters, <b>EurekaVerse</b> if you also want auto-generated environments.</p>
+
+<!-- 1.7 RLHF on VLAs -->
+<div class="stagebox" id="sec1-7">
+  <b>1.7 Foundation-model RLHF for VLAs.</b>
+  RL post-training of vision-language-action policies — the "RLHF for robots" frontier. Reward is supplied by a learned RM (§1.1–§1.3), verifiable env signal, or implicit preference.
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Method</th><th>Yr</th><th>Team</th><th>Code / link</th><th>Policy class</th><th>Reward signal</th><th>Notes</th></tr>
+  <tr><td>1</td><td><b>StARe-VLA</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2512.05107</td><td><a href="https://arxiv.org/pdf/2512.05107">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>VLA + stage-aware reward</td><td>Progressive stage reward</td><td>Progressive stage-aware reward for VLA training.</td></tr>
+  <tr><td>2</td><td><b>CO-RFT</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2508.02219</td><td><a href="https://arxiv.org/html/2508.02219">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>VLA + critic head</td><td>Q-value over chunked actions</td><td>Chunked offline RL fine-tuning of VLAs with critic head.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>3</td><td><b>RL-VLA empirical study</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2505.19789</td><td><a href="https://rlvla.github.io/">project</a> · <a href="https://arxiv.org/html/2505.19789v4">arXiv</a></td><td>RL on OpenVLA-class</td><td>Verifiable env reward</td><td>Shows RL &gt; SFT for VLA generalization in Execution / Semantics. Useful as recipe.</td></tr>
+  <tr><td>4</td><td><b>ManipLVM-R1</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2505.16517</td><td><a href="https://arxiv.org/pdf/2505.16517">arXiv</a> · <span class="nocode">⚠ no code</span></td><td>Large VLM + RL reasoning</td><td>Verifiable reward</td><td><b>+144% IoU</b> on affordance tasks via RL fine-tuning.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>5</td><td><b>GRAPE</b></td><td><span class="yr y-25">2025</span></td><td>aiming-lab</td><td><a href="https://github.com/aiming-lab/GRAPE">GitHub</a> · <a href="https://arxiv.org/abs/2411.19309">arXiv</a></td><td>OpenVLA + DPO</td><td>Implicit preference reward</td><td>Trajectory-level VLA preference alignment with VLM-generated stage constraints. Cleanest open RLHF-for-VLA recipe.</td></tr>
+  <tr><td>R1</td><td><b>RT-2</b></td><td><span class="yr y-old">2023</span></td><td>Google DeepMind</td><td><a href="https://arxiv.org/abs/2307.15818">arXiv</a></td><td>PaLI-X / PaLM-E VLA</td><td>(RL-fine-tunable; no explicit RM)</td><td>Reference baseline — the VLA paradigm that subsequent RL work builds on.</td></tr>
+</table>
+
+<!-- 1.B benchmarks & surveys robotics -->
+<div class="stagebox" id="sec1-bench">
+  <b>1.8 Benchmarks &amp; surveys (robotics).</b>
+</div>
+<table class="methods">
+  <tr><th>Item</th><th>Yr</th><th>Link</th><th>What it measures</th></tr>
+  <tr><td><b>RoboReward-Bench</b></td><td><span class="yr y-26">2026</span></td><td><a href="https://openreview.net/forum?id=iDmt7Tzmke">OpenReview</a> · <a href="https://arxiv.org/abs/2601.00675">arXiv</a></td><td>End-of-episode VLM-reward accuracy across 22 VLMs on real-robot tasks.</td></tr>
+  <tr><td><b>OpenGVL</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://github.com/budzianowski/opengvl">GitHub</a> · <a href="https://arxiv.org/abs/2509.17321">arXiv</a></td><td>VLM temporal progress prediction for data curation (human + robot embodiments).</td></tr>
+  <tr><td><b>RBM-1M</b> (Robometer dataset)</td><td><span class="yr y-26">2026</span></td><td><a href="https://robometer.github.io/">project</a></td><td>1M+ multi-embodiment trajectories incl. failures for reward training / eval.</td></tr>
+  <tr><td><b>RoboArena</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://arxiv.org/html/2506.18123v1">arXiv</a></td><td>Distributed real-world generalist-policy evaluation (used by RoboReward).</td></tr>
+  <tr><td><b>B-Pref</b></td><td><span class="yr y-old">2021</span></td><td><a href="https://github.com/rll-research/BPref">GitHub</a> · <a href="https://arxiv.org/abs/2111.03026">arXiv</a></td><td>PbRL benchmark with simulated irrational teachers. NeurIPS 2021.</td></tr>
+  <tr><td><i>Survey:</i> <b>RL of VLA Models</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://github.com/Denghaoyuan123/Awesome-RL-VLA">Awesome-RL-VLA</a> · <a href="https://www.techrxiv.org/users/934012/articles/1366553/">TechRxiv</a></td><td>Comprehensive survey of RL training of VLAs; explicit reward-modeling subsection.</td></tr>
+  <tr><td><i>Survey:</i> <b>Large VLM-based VLAs for Manipulation</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://arxiv.org/abs/2508.13073">arXiv</a></td><td>VLM-based RM shaping covered as core dimension.</td></tr>
+  <tr><td><i>Survey:</i> <b>Foundation Models for Robot Manipulation</b></td><td><span class="yr y-24">2024/25</span></td><td><a href="https://arxiv.org/abs/2404.18201">arXiv</a></td><td>Reward learning treated as one of the key categories.</td></tr>
+  <tr><td><i>Survey:</i> <b>World Model for Robot Learning</b></td><td><span class="yr y-26">2026</span></td><td><a href="https://ntumars.github.io/wm-robot-survey/">project</a> · <a href="https://arxiv.org/html/2605.00080v1">arXiv</a></td><td>Covers value / reward heads on world models.</td></tr>
+  <tr><td><i>List:</i> <b>Awesome-Embodied-VLA-VA-VLN</b></td><td>—</td><td><a href="https://github.com/jonyzhang2023/awesome-embodied-vla-va-vln">GitHub</a></td><td>Continuously updated index — useful tracker.</td></tr>
+</table>
+<p class="note">
+  <b>Blog / lab pages:</b>
+  <a href="https://blogs.nvidia.com/blog/eureka-robotics-research/">NVIDIA — Eureka</a> ·
+  <a href="https://rai-inst.com/resources/blog/corl-round-up/">RAI Institute — CoRL 2024 round-up</a> ·
+  <a href="https://robohub.org/teaching-robot-policies-without-new-demonstrations-interview-with-jiahui-zhang-and-jesse-zhang/">Robohub — ReWiND interview</a> ·
+  <a href="https://activemodels.ai/v-jepa-2-and-the-rise-of-world-models-a-practical-guide-for-robotics-and-agents/">ActiveModels — V-JEPA 2 guide</a>.
+</p>
+
+<!-- ====================================================================== -->
+<!-- SECTION 2: PRMs                                                        -->
+<!-- ====================================================================== -->
+
+<h2 id="sec2">2. Process Reward Models (PRMs) — reasoning</h2>
+<p>
+  PRMs score every intermediate step of a reasoning trajectory rather than only the final answer. 2024 was the breakout year (Math-Shepherd, OmegaPRM, ReST-MCTS); 2025 brought generative / verifier-style PRMs that "think before scoring"; 2026 expands to multimodal, code, and agent trajectories.
+</p>
+
+<!-- 2.1 Math PRMs -->
+<div class="stagebox" id="sec2-1">
+  <b>2.1 Math / reasoning PRMs.</b>
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Code / link</th><th>Base</th><th>Training</th><th>Notes</th></tr>
+  <tr class="pick"><td><span class="star">★</span>1</td><td><b>DeepSeekMath-V2</b></td><td><span class="yr y-26">2026</span></td><td>DeepSeek-AI</td><td><a href="https://arxiv.org/abs/2511.22570">arXiv</a></td><td>DeepSeek-V3-class</td><td>Verifier as central RM; verification-time scaling labels new hard proofs</td><td><b>Gold</b> on IMO 2025 / CMO 2024; <b>118/120 on Putnam 2024</b>.</td></tr>
+  <tr><td>2</td><td><b>R-PRM</b></td><td><span class="yr y-25">2025</span></td><td>NJU NLP</td><td><a href="https://github.com/NJUNLP/R-PRM">GitHub</a> · <a href="https://arxiv.org/abs/2503.21295">arXiv</a></td><td>Qwen2.5-Math</td><td>Cold-start CoT + self-evolving preference opt</td><td><b>+13.9 F1</b> on ProcessBench; EMNLP 2025.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>3</td><td><b>ThinkPRM</b></td><td><span class="yr y-25">2025</span></td><td>CMU</td><td><a href="https://github.com/mukhal/thinkprm">GitHub</a> · <a href="https://huggingface.co/launch/ThinkPRM-1.5B">HF</a> · <a href="https://arxiv.org/abs/2504.16828">arXiv</a></td><td>R1-Distill-Qwen 1.5B / 7B</td><td>Only <b>1k synthetic</b> verification CoTs</td><td>Extremely data-efficient generative PRM; scales by thinking longer.</td></tr>
+  <tr><td>4</td><td><b>GenPRM</b></td><td><span class="yr y-25">2025</span></td><td>Tsinghua</td><td><a href="https://arxiv.org/abs/2504.00891">arXiv</a></td><td>Qwen2.5-Math</td><td>CoT + executes verification <b>code</b></td><td>Scales test-time compute of PRMs themselves.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>5</td><td><b>Qwen2.5-Math-PRM 7B / 72B</b></td><td><span class="yr y-25">2025</span></td><td>Alibaba Qwen</td><td><a href="https://huggingface.co/Qwen/Qwen2.5-Math-PRM-7B">HF 7B</a> · <a href="https://huggingface.co/Qwen/Qwen2.5-Math-PRM-72B">HF 72B</a> · <a href="https://arxiv.org/abs/2501.07301">arXiv</a></td><td>Qwen2.5-Math</td><td>Hybrid MC + consensus filtering</td><td>Strongest open math PRM through most of 2025.</td></tr>
+  <tr><td>6</td><td><b>PRIME / Implicit PRM</b></td><td><span class="yr y-25">2025</span></td><td>Tsinghua + UIUC</td><td><a href="https://arxiv.org/abs/2502.01456">arXiv</a></td><td>Qwen2.5-Math-7B</td><td>Implicit PRM from ORM via log-likelihood ratios</td><td><b>26.7%</b> AIME pass@1 with only 10% of Qwen2.5-Math-Instruct's data.</td></tr>
+  <tr><td>7</td><td><b>PURE</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2504.15275</td><td><a href="https://arxiv.org/pdf/2504.15275">arXiv</a></td><td>Min-form credit assignment</td><td>Min-of-future-rewards</td><td>Eliminates reward hacking from summation-form credit; matches verifiable RL with 30% steps.</td></tr>
+  <tr><td>8</td><td><b>Skywork-o1-Open-PRM</b> (1.5B / 7B)</td><td><span class="yr y-24">2024</span></td><td>Skywork AI</td><td><a href="https://huggingface.co/Skywork/Skywork-o1-Open-PRM-Qwen-2.5-7B">HF</a> · <a href="https://github.com/SkyworkAI/skywork-o1-prm-inference">GitHub</a></td><td>Qwen2.5-Math-7B-Instruct</td><td>—</td><td>7B matches Qwen2.5-Math-RM-72B; <b>96.7% GSM8K</b> BoN.</td></tr>
+  <tr><td>9</td><td><b>AceMath-72B-RM</b></td><td><span class="yr y-24">2024</span></td><td>NVIDIA</td><td><a href="https://huggingface.co/nvidia/AceMath-72B-RM">HF</a> · <a href="https://research.nvidia.com/labs/adlr/acemath/">project</a></td><td>—</td><td>BT outcome RM + step data</td><td>SOTA on AceMath-RewardBench rm@8.</td></tr>
+  <tr><td>10</td><td><b>Math-PSA / OpenR</b></td><td><span class="yr y-24">2024</span></td><td>OpenR collab.</td><td><a href="https://arxiv.org/abs/2410.09671">arXiv</a></td><td>Qwen2.5-Math-7B-Instruct</td><td>PRM800K + Math-Shepherd + MATH-APS</td><td>Reference open-source framework for o1-style reasoning.</td></tr>
+  <tr><td>11</td><td><b>OmegaPRM</b></td><td><span class="yr y-24">2024</span></td><td>Google DeepMind</td><td><a href="https://arxiv.org/abs/2406.06592">arXiv</a></td><td>Gemini Pro</td><td>Divide-and-conquer MCTS auto-labels 1.5M steps</td><td>Lifted Gemini Pro to <b>69.4% MATH</b> (+36% rel).</td></tr>
+  <tr><td>12</td><td><b>ReST-MCTS*</b></td><td><span class="yr y-24">2024</span></td><td>THUDM</td><td><a href="https://github.com/THUDM/ReST-MCTS">GitHub</a> · <a href="https://arxiv.org/abs/2406.03816">arXiv</a></td><td>—</td><td>Tree-search probability of correct answer</td><td>Self-bootstrapping policy + PRM. NeurIPS 2024.</td></tr>
+  <tr><td>R1</td><td><b>Math-Shepherd</b></td><td><span class="yr y-old">2023</span></td><td>DeepSeek + PKU</td><td><a href="https://arxiv.org/abs/2312.08935">arXiv</a></td><td>Mistral-7B</td><td>MC rollout auto-annotation</td><td>Reference baseline — first widely-used automatic step-annotation.</td></tr>
+  <tr><td>R2</td><td><b>PRM800K</b> ("Let's Verify Step by Step")</td><td><span class="yr y-old">2023</span></td><td>OpenAI</td><td><a href="https://github.com/openai/prm800k">GitHub</a> · <a href="https://arxiv.org/abs/2305.20050">arXiv</a></td><td>—</td><td>Human-labeled 800K step-correctness</td><td>Reference baseline — the dataset that started the field.</td></tr>
+</table>
+
+<!-- 2.2 generative PRMs -->
+<div class="stagebox" id="sec2-2">
+  <b>2.2 Generative / verifier-style PRMs.</b>
+  Emit a verification chain-of-thought instead of a scalar — interpretable and harder to hack.
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Link</th><th>Distinctive idea</th></tr>
+  <tr><td>1</td><td><b>PathFinder-PRM</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2505.19706</td><td><a href="https://arxiv.org/pdf/2505.19706">arXiv</a></td><td>Error-aware hierarchical PRM — math vs consistency dimensions before scoring.</td></tr>
+  <tr><td>2</td><td><b>Dyve</b> (Think Fast and Slow)</td><td><span class="yr y-25">2025</span></td><td>Awesome-PRM list</td><td><a href="https://github.com/RyanLiu112/Awesome-Process-Reward-Models">list</a></td><td>Adaptive system-1 / system-2 verification per step.</td></tr>
+  <tr><td>3</td><td><b>Retrieval-Augmented PRM</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2502.14361</td><td><a href="https://arxiv.org/abs/2502.14361">arXiv</a></td><td>Two-stage retrieval of similar Q / steps → better OOD generalization.</td></tr>
+  <tr><td>4</td><td><b>AURORA</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2502.11520</td><td><a href="https://arxiv.org/abs/2502.11520">arXiv</a></td><td>Universal generative PRM; ensemble prompting + reverse verification; ships UniversalBench.</td></tr>
+  <tr><td>5</td><td><b>FreePRM</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2506.03570</td><td><a href="https://arxiv.org/pdf/2506.03570">arXiv</a></td><td>Label-free PRM from outcome signals; beats supervised Math-Shepherd by <b>+24 F1</b>.</td></tr>
+</table>
+
+<!-- 2.3 Code & agent PRMs -->
+<div class="stagebox" id="sec2-3">
+  <b>2.3 Code &amp; agent PRMs.</b>
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Link</th><th>Notes</th></tr>
+  <tr><td>1</td><td><b>SecCodePRM</b></td><td><span class="yr y-26">2026</span></td><td>CMU</td><td><a href="https://github.com/viviable/seccodeprm">GitHub</a> · <a href="https://arxiv.org/abs/2602.10418">arXiv</a></td><td>Step-level <b>security</b> scores; <b>+12%</b> over LLMxCPG static-analysis pipeline.</td></tr>
+  <tr><td>2</td><td><b>AgentPRM</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2511.08325</td><td><a href="https://arxiv.org/abs/2511.08325">arXiv</a></td><td>Step-wise promise + progress; TD-based labels. <b>&gt;8× compute-efficient</b> vs baselines.</td></tr>
+  <tr><td>3</td><td><b>SWE-PRM</b> ("Act Like You're Paying")</td><td><span class="yr y-25">2025</span></td><td>IBM</td><td><a href="https://arxiv.org/abs/2509.02360">arXiv</a></td><td>Taxonomy of agent inefficiencies. <b>SWE-bench Verified 40.0 → 50.6%</b>, $0.2 added cost/trajectory.</td></tr>
+  <tr><td>4</td><td><b>AgentRM</b></td><td><span class="yr y-25">2025</span></td><td>THUNLP</td><td><a href="https://github.com/thunlp/AgentRM">GitHub</a> · <a href="https://arxiv.org/abs/2502.18407">arXiv</a></td><td>Generalizable RM across 9 agent tasks (web, embodied, games, tools). ACL 2025.</td></tr>
+  <tr><td>5</td><td><b>CodePRM</b></td><td><span class="yr y-25">2025</span></td><td>ACL Findings</td><td><a href="https://aclanthology.org/2025.findings-acl.428/">ACL</a></td><td>Reasoning + execution feedback input; pairs with Generate-Verify-Refine decoding.</td></tr>
+</table>
+
+<!-- 2.4 Multimodal PRMs -->
+<div class="stagebox" id="sec2-4">
+  <b>2.4 Multimodal PRMs.</b>
+  Active 2025–2026 frontier.
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Link</th><th>Notes</th></tr>
+  <tr><td>1</td><td><b>VisualPRM-8B</b></td><td><span class="yr y-25">2025</span></td><td>Shanghai AI Lab / InternVL</td><td><a href="https://arxiv.org/abs/2503.10291">arXiv</a></td><td>Ships VisualPRM400K + <b>VisualProcessBench</b>. <b>+5.9 pts</b> on 7 multimodal benches on InternVL2.5-78B.</td></tr>
+  <tr><td>2</td><td><b>Athena-PRM</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2506.09532</td><td><a href="https://arxiv.org/abs/2506.09532">arXiv</a></td><td>SOTA on VisualProcessBench with just <b>5k samples</b>.</td></tr>
+  <tr><td>3</td><td><b>MM-PRM</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2505.13427</td><td><a href="https://arxiv.org/abs/2505.13427">arXiv</a></td><td>Multimodal PRM family.</td></tr>
+  <tr><td>4</td><td><b>VLPRM</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2509.23250</td><td><a href="https://arxiv.org/abs/2509.23250">arXiv</a></td><td>Vision-language PRM.</td></tr>
+</table>
+
+<div class="stagebox" id="sec2-bench">
+  <b>2.5 Benchmarks &amp; survey.</b>
+</div>
+<table class="methods">
+  <tr><th>Item</th><th>Yr</th><th>Link</th><th>Focus</th></tr>
+  <tr><td><b>PRMBench</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://github.com/ssmisya/PRMBench">GitHub</a> · <a href="https://arxiv.org/abs/2501.03124">arXiv</a></td><td>Fine-grained: simplicity / soundness / sensitivity. 83,456 step labels. ACL 2025.</td></tr>
+  <tr><td><b>ProcessBench</b> (Qwen)</td><td><span class="yr y-24">2024</span></td><td><a href="https://arxiv.org/abs/2412.06559">arXiv</a></td><td>First-error identification on 3.4k competition / olympiad problems.</td></tr>
+  <tr><td><b>VisualProcessBench</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://arxiv.org/abs/2503.10291">arXiv</a></td><td>Multimodal step verification.</td></tr>
+  <tr><td><b>Socratic-PRMBench</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://arxiv.org/html/2505.23474v1">arXiv</a></td><td>Reasoning-pattern coverage for PRMs.</td></tr>
+  <tr><td><b>MR-Ben</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://arxiv.org/abs/2406.13975">arXiv</a></td><td>Meta-reasoning across physics / chem / logic / code.</td></tr>
+  <tr><td><b>AceMath-RewardBench</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://huggingface.co/datasets/nvidia/AceMath-RewardBench">HF</a></td><td>Math reward-model leaderboard (rm@8).</td></tr>
+  <tr><td><i>Survey:</i> <b>Survey of Process Reward Models</b></td><td><span class="yr y-25">2025/26</span></td><td><a href="https://arxiv.org/abs/2510.08049">arXiv</a> · <a href="https://github.com/RyanLiu112/Awesome-Process-Reward-Models">Awesome-PRMs</a></td><td>Outcome → process supervision; notes length / verbosity hacking.</td></tr>
+  <tr><td><i>Insight:</i> <b>GRPO is Secretly a PRM</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://arxiv.org/abs/2509.21154">arXiv</a></td><td>Shows GRPO+ORM ≡ MC-based PRM-aware RL; proposes λ-GRPO to fix step-imbalance.</td></tr>
+</table>
+
+<!-- ====================================================================== -->
+<!-- SECTION 3: LLM / RLHF RMs                                              -->
+<!-- ====================================================================== -->
+
+<h2 id="sec3">3. LLM / RLHF Reward Models</h2>
+<p>
+  Reward models for aligning chat / instruction-following LLMs via RLHF, RLAIF, DPO, and best-of-N. 2024 saw open RMs catch up to closed labs; 2025 split into two frontiers — (a) scale-and-curate scalar RMs and (b) reasoning / generative critics — while RLVR (Tülu 3) and rule-based rewards increasingly <i>replace</i> learned RMs for verifiable tasks. Process / step-level RMs are covered separately in §2.
+</p>
+
+<!-- 3.1 scalar -->
+<div class="stagebox" id="sec3-1">
+  <b>3.1 Scalar / Bradley–Terry preference RMs.</b>
+  The classifier-style RM that dominates production RLHF pipelines.
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Code / link</th><th>Base</th><th>Output</th><th>Training data</th><th>Notes</th></tr>
+  <tr class="pick"><td><span class="star">★</span>1</td><td><b>Skywork-Reward-V2</b></td><td><span class="yr y-25">2025</span></td><td>Skywork AI / 2050 Research</td><td><a href="https://huggingface.co/Skywork/Skywork-Reward-V2-Qwen3-8B">HF</a> · <a href="https://github.com/SkyworkAI/Skywork-Reward-V2">GitHub</a> · <a href="https://arxiv.org/abs/2507.01352">arXiv</a></td><td>Llama-3.2 / Qwen3 0.6–8B</td><td>Scalar BT</td><td>SynPref-40M (26M curated pairs)</td><td>Top of RewardBench v1/v2, PPE, RM-Bench, RMB, JudgeBench. <b>1.7B model beats prior 70B SOTA.</b></td></tr>
+  <tr><td>2</td><td><b>Decision-Tree-Reward-Gemma-2-27B</b></td><td><span class="yr y-25">2025</span></td><td>RLHFlow</td><td><a href="https://rlhflow.github.io/posts/2025-01-22-decision-tree-reward-model/">blog</a> · <a href="https://huggingface.co/RLHFlow">HF</a></td><td>Gemma-2-27B</td><td>Multi-objective + tree gate</td><td>HelpSteer2 + Skywork-Reward-Gemma</td><td>Briefly <b>95.4% RewardBench SOTA</b>; interpretable decision paths.</td></tr>
+  <tr><td>3</td><td><b>INF-ORM-Llama3.1-70B</b></td><td><span class="yr y-25">2025</span></td><td>INF.AI</td><td><a href="https://huggingface.co/infly/INF-ORM-Llama3.1-70B">HF</a></td><td>Llama-3.1-70B-Instruct</td><td>Scalar (scaled BT)</td><td>INF-ORM-Pref-Magnitude-80K</td><td>Briefly #1 on RewardBench in early 2025 via magnitude-weighted BT.</td></tr>
+  <tr><td>4</td><td><b>Llama-3.1-Nemotron-70B-Reward</b></td><td><span class="yr y-24">2024</span></td><td>NVIDIA</td><td><a href="https://huggingface.co/nvidia/Llama-3.1-Nemotron-70B-Reward">HF</a> · <a href="https://arxiv.org/abs/2410.01257">arXiv</a></td><td>Llama-3.1-70B-Instruct</td><td>BT + SteerLM regression hybrid</td><td>HelpSteer2-Preference (10k pairs)</td><td>Powered Nemotron-70B-Instruct policy.</td></tr>
+  <tr><td>5</td><td><b>Skywork-Reward (v1)</b></td><td><span class="yr y-24">2024</span></td><td>Skywork AI</td><td><a href="https://huggingface.co/Skywork/Skywork-Reward-Llama-3.1-8B">HF</a> · <a href="https://github.com/SkyworkAI/Skywork-Reward">GitHub</a> · <a href="https://arxiv.org/abs/2410.18451">arXiv</a></td><td>Llama-3.1-8B / Gemma-2-27B</td><td>Scalar BT</td><td>Skywork-Reward-80K</td><td>"Bag of tricks" paper; canonical open RM baseline.</td></tr>
+  <tr><td>6</td><td><b>Athene-RM-70B / -8B</b></td><td><span class="yr y-24">2024</span></td><td>Nexusflow</td><td><a href="https://huggingface.co/Nexusflow/Athene-RM-70B">HF 70B</a></td><td>Llama-3-70B/8B-Instruct</td><td>Scalar BT</td><td>Curated Arena-style</td><td>Trained the Athene-70B policy that briefly matched GPT-4 on Arena.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>7</td><td><b>ArmoRM-Llama3-8B</b></td><td><span class="yr y-24">2024</span></td><td>RLHFlow / UIUC</td><td><a href="https://huggingface.co/RLHFlow/ArmoRM-Llama3-8B-v0.1">HF</a> · <a href="https://arxiv.org/abs/2406.12845">arXiv</a></td><td>Llama-3-8B</td><td>Multi-objective + MoE gate</td><td>UltraFeedback + HelpSteer + others</td><td><b>19 fine-grained objectives</b> with context-aware MoE gating. Long-time RewardBench leader; still a strong baseline.</td></tr>
+  <tr><td>8</td><td><b>InternLM2-Reward (1.8B / 7B / 20B)</b></td><td><span class="yr y-24">2024</span></td><td>Shanghai AI Lab</td><td><a href="https://huggingface.co/internlm/internlm2-20b-reward">HF</a></td><td>InternLM2-Chat-SFT</td><td>Scalar BT</td><td>2.4M EN+ZH pairs</td><td>Strong bilingual RM family.</td></tr>
+  <tr><td>9</td><td><b>GRM-Llama3-8B</b></td><td><span class="yr y-24">2024</span></td><td>Ray2333 et al.</td><td><a href="https://huggingface.co/Ray2333/GRM-Llama3-8B-rewardmodel-ft">HF</a> · <a href="https://arxiv.org/abs/2406.10216">arXiv</a></td><td>Llama-3-8B</td><td>Scalar + generative regularization</td><td>UltraFeedback + Unified-Feedback</td><td>SFT-regularization mitigates reward hacking.</td></tr>
+  <tr><td>10</td><td><b>Eurus-RM-7B</b></td><td><span class="yr y-24">2024</span></td><td>OpenBMB / Tsinghua</td><td><a href="https://github.com/OpenBMB/Eurus">GitHub</a> · <a href="https://arxiv.org/abs/2404.02078">arXiv</a></td><td>Mistral-7B</td><td>Scalar BT</td><td>UltraInteract + UltraFeedback + UltraSafety</td><td>RM specialized for reasoning / code preferences.</td></tr>
+  <tr><td>R1</td><td><b>Starling-RM-7B-alpha</b></td><td><span class="yr y-old">2023</span></td><td>Berkeley NEST</td><td><a href="https://huggingface.co/berkeley-nest/Starling-RM-7B-alpha">HF</a> · <a href="https://starling.cs.berkeley.edu/">project</a></td><td>Llama-2-7B</td><td>K-wise scalar</td><td>Nectar (183k prompts, GPT-4)</td><td>Reference baseline — popular early open RM.</td></tr>
+  <tr><td>R2</td><td><b>UltraRM-13B</b></td><td><span class="yr y-old">2023</span></td><td>OpenBMB / Tsinghua</td><td><a href="https://huggingface.co/openbmb/UltraRM-13b">HF</a> · <a href="https://arxiv.org/abs/2310.01377">arXiv</a></td><td>Llama-2-13B</td><td>Scalar BT</td><td>UltraFeedback + HH-RLHF + SHP + summarization</td><td>Reference baseline — basis for many follow-ups.</td></tr>
+  <tr><td>R3</td><td><b>OpenAssistant RM</b> (DeBERTa-v3)</td><td><span class="yr y-old">2023</span></td><td>LAION / OA</td><td><a href="https://huggingface.co/OpenAssistant/reward-model-deberta-v3-large-v2">HF</a></td><td>DeBERTa-v3-large (435M)</td><td>Scalar BT</td><td>OA + WebGPT + summary</td><td>Reference baseline — first broadly-used small drop-in scorer.</td></tr>
+</table>
+<p class="note">First pick: <b>Skywork-Reward-V2</b> if SOTA matters; <b>ArmoRM</b> if multi-objective interpretability matters; <b>Nemotron-70B-Reward</b> if you're already in the NVIDIA stack.</p>
+
+<!-- 3.2 Generative judges -->
+<div class="stagebox" id="sec3-2">
+  <b>3.2 Generative / LLM-as-a-judge RMs.</b>
+  Produce a critique + verdict in natural language; scale with inference-time compute.
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Code / link</th><th>Base</th><th>Output</th><th>Notes</th></tr>
+  <tr><td>1</td><td><b>J1</b> (Llama-8B / 70B)</td><td><span class="yr y-25">2025</span></td><td>Meta FAIR</td><td><a href="https://arxiv.org/abs/2505.10320">arXiv</a></td><td>Llama-3 8B / 70B</td><td>Reasoning + pairwise verdict</td><td>RL-trained "thinking" judge; beats DeepSeek-GRM &amp; distilled R1 judges on non-verifiable tasks.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>2</td><td><b>RM-R1</b></td><td><span class="yr y-25">2025</span></td><td>UIUC</td><td><a href="https://github.com/RM-R1-UIUC/RM-R1">GitHub</a> · <a href="https://arxiv.org/abs/2505.02387">arXiv</a></td><td>Qwen2.5 / Llama-3</td><td>CoT + Chain-of-Rubrics + verdict</td><td>"Reward modeling as reasoning"; <b>+4.9% over much larger RMs</b> on three RM benches.</td></tr>
+  <tr><td>3</td><td><b>DeepSeek-GRM-27B</b></td><td><span class="yr y-25">2025</span></td><td>DeepSeek + Tsinghua</td><td><a href="https://arxiv.org/abs/2504.02495">arXiv</a></td><td>DeepSeek-V2-Lite-27B</td><td>Pointwise generative critique + score</td><td>Self-Principled Critique Tuning (SPCT); 27B matches 70B+ via inference scaling.</td></tr>
+  <tr><td>4</td><td><b>Skywork-Critic-Llama-3.1</b> (8B / 70B)</td><td><span class="yr y-24">2024</span></td><td>Skywork AI</td><td><a href="https://huggingface.co/Skywork/Skywork-Critic-Llama-3.1-70B">HF 70B</a></td><td>Llama-3.1-Instruct</td><td>Pairwise verdict</td><td>Topped RewardBench among generative judges in Sep 2024.</td></tr>
+  <tr><td>5</td><td><b>Self-Taught Evaluator</b></td><td><span class="yr y-24">2024</span></td><td>Meta FAIR</td><td><a href="https://arxiv.org/abs/2408.02666">arXiv</a></td><td>Llama-3-70B-Instruct</td><td>CoT pairwise judge</td><td>Self-bootstrapped: <b>RewardBench 75.4 → 88.3 with zero human labels</b>.</td></tr>
+  <tr><td>6</td><td><b>GenRM / GenRM-CoT</b></td><td><span class="yr y-24">2024</span></td><td>Google DeepMind</td><td><a href="https://arxiv.org/abs/2408.15240">arXiv</a></td><td>Gemma / PaLM-2</td><td>Next-token Yes/No + CoT</td><td>Foundational "reward modeling as next-token prediction". <b>+20% on reasoning BoN</b>.</td></tr>
+  <tr><td>7</td><td><b>Prometheus-2</b> (7B / 8x7B)</td><td><span class="yr y-24">2024</span></td><td>KAIST</td><td><a href="https://github.com/prometheus-eval/prometheus-eval">GitHub</a> · <a href="https://arxiv.org/abs/2405.01535">arXiv</a></td><td>Mistral-7B / Mixtral-8x7B</td><td>Score + critique (direct &amp; pairwise)</td><td>Most-used open evaluator; merges absolute scoring + pairwise.</td></tr>
+  <tr><td>8</td><td><b>Themis-8B</b></td><td><span class="yr y-24">2024</span></td><td>PKU ONELab</td><td><a href="https://github.com/PKU-ONELab/Themis">GitHub</a> · <a href="https://arxiv.org/abs/2406.18365">arXiv</a></td><td>Llama-3-8B</td><td>Aspect-aware score + explanation</td><td>58 NLG datasets, 500k samples; beats GPT-4 on several tasks.</td></tr>
+  <tr><td>R1</td><td><b>Auto-J-13B</b></td><td><span class="yr y-old">2023</span></td><td>GAIR / SJTU</td><td><a href="https://github.com/GAIR-NLP/auto-j">GitHub</a> · <a href="https://arxiv.org/abs/2310.05470">arXiv</a></td><td>Llama-2-13B-chat</td><td>Pairwise + critique</td><td>Reference baseline — early influential open generative judge.</td></tr>
+  <tr><td>R2</td><td><b>JudgeLM</b> (7B / 13B / 33B)</td><td><span class="yr y-old">2023</span></td><td>BAAI</td><td><a href="https://github.com/baaivision/JudgeLM">GitHub</a> · <a href="https://arxiv.org/abs/2310.17631">arXiv</a></td><td>Vicuna</td><td>Pairwise score + rationale</td><td>Reference baseline — established fine-tuned LLM judges as a viable GPT-4 alternative.</td></tr>
+</table>
+
+<!-- 3.3 Multi-objective -->
+<div class="stagebox" id="sec3-3">
+  <b>3.3 Multi-objective / fine-grained RMs.</b>
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Link</th><th>Output</th><th>Notes</th></tr>
+  <tr><td>1</td><td><b>HelpSteer3 / Llama-3.3-Nemotron-Reward</b></td><td><span class="yr y-25">2025</span></td><td>NVIDIA</td><td><a href="https://huggingface.co/datasets/nvidia/HelpSteer3">HF dataset</a></td><td>5+ attributes (helpful, correct, coherent, complex, verbose)</td><td>Newest HelpSteer with multilingual + STEM expansions.</td></tr>
+  <tr><td>2</td><td><b>Decision-Tree-Reward</b></td><td><span class="yr y-25">2025</span></td><td>RLHFlow</td><td><a href="https://rlhflow.github.io/posts/2025-01-22-decision-tree-reward-model/">blog</a></td><td>Multi-objective + decision-tree gate</td><td>Combines multi-obj regression with small decision tree for explainability.</td></tr>
+  <tr><td>3</td><td><b>ArmoRM</b></td><td><span class="yr y-24">2024</span></td><td>RLHFlow</td><td><a href="https://arxiv.org/abs/2406.12845">arXiv</a></td><td>19 fine-grained objectives + MoE</td><td>Canonical multi-objective RM (also listed in 3.1).</td></tr>
+  <tr><td>4</td><td><b>HelpSteer2 SteerLM-RM</b></td><td><span class="yr y-24">2024</span></td><td>NVIDIA</td><td><a href="https://arxiv.org/abs/2406.08673">arXiv</a></td><td>5-dim regression</td><td>Permissive 10k dataset that drove SteerLM-style regression RMs to SOTA.</td></tr>
+  <tr><td>R1</td><td><b>FLASK</b></td><td><span class="yr y-old">2023</span></td><td>KAIST</td><td><a href="https://arxiv.org/abs/2307.10928">arXiv</a></td><td>12 skill dimensions</td><td>Reference baseline — established fine-grained skill-set evaluation. ICLR 2024.</td></tr>
+</table>
+
+<!-- 3.4 Pairwise / reward-free -->
+<div class="stagebox" id="sec3-4">
+  <b>3.4 Pairwise &amp; reward-free methods.</b>
+  Included for context — RM-free alternatives that often replace explicit RMs in production.
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Method</th><th>Yr</th><th>Link</th><th>Notes</th></tr>
+  <tr><td>1</td><td><b>KTO</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://arxiv.org/abs/2402.01306">arXiv</a></td><td>Prospect-theory loss; only binary (good/bad) labels — no pairs.</td></tr>
+  <tr><td>2</td><td><b>PairRM</b> (0.4B)</td><td><span class="yr y-old">2023</span></td><td><a href="https://huggingface.co/llm-blender/PairRM">HF</a></td><td>DeBERTa pairwise scorer; near-GPT-4 agreement at tiny size. Widely used for DPO data curation.</td></tr>
+  <tr><td>3</td><td><b>DPO implied reward</b></td><td><span class="yr y-old">2023</span></td><td><a href="https://arxiv.org/abs/2305.18290">arXiv</a></td><td>Reward-free; policy log-ratio with reference encodes implicit reward.</td></tr>
+  <tr><td>4</td><td><b>IPO</b></td><td><span class="yr y-old">2023</span></td><td><a href="https://arxiv.org/abs/2310.12036">arXiv</a></td><td>Squared-loss fix for DPO's unbounded reward-gap growth.</td></tr>
+  <tr><td>R1</td><td><b>LLM-Blender</b></td><td><span class="yr y-old">2023</span></td><td><a href="https://github.com/yuchenlin/LLM-Blender">GitHub</a></td><td>Reference baseline — pairwise ranking + generative fusion ensemble; parent of PairRM.</td></tr>
+</table>
+
+<!-- 3.5 Rule-based RLAIF -->
+<div class="stagebox" id="sec3-5">
+  <b>3.5 Constitutional / rule-based / RLAIF reward systems.</b>
+</div>
+<table class="methods">
+  <tr><th>#</th><th>System</th><th>Yr</th><th>Team</th><th>Link</th><th>Notes</th></tr>
+  <tr><td>1</td><td><b>OpenAI Rule-Based Rewards (RBR)</b></td><td><span class="yr y-24">2024</span></td><td>OpenAI</td><td><a href="https://openai.com/index/improving-model-safety-behavior-with-rule-based-rewards/">blog</a> · <a href="https://arxiv.org/abs/2411.01111">arXiv</a> · <a href="https://github.com/openai/safety-rbr-code-and-data">GitHub</a></td><td>LLM-graded composable rule prompts as RL reward. <b>F1 91.7 → 97.1</b> on safety.</td></tr>
+  <tr><td>2</td><td><b>Meta-Rewarding LM</b></td><td><span class="yr y-24">2024</span></td><td>Meta FAIR</td><td><a href="https://arxiv.org/abs/2407.19594">arXiv</a></td><td>Meta-judge role on top of Self-Rewarding — judges the judgments.</td></tr>
+  <tr><td>3</td><td><b>Self-Rewarding LM</b></td><td><span class="yr y-24">2024</span></td><td>Meta FAIR</td><td><a href="https://arxiv.org/abs/2401.10020">arXiv</a></td><td>Single LLM acts as actor + judge; iterative DPO improves both.</td></tr>
+  <tr><td>R1</td><td><b>Anthropic CAI</b></td><td><span class="yr y-old">2022</span></td><td>Anthropic</td><td><a href="https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback">blog</a> · <a href="https://arxiv.org/abs/2212.08073">arXiv</a></td><td>Reference baseline — introduced RLAIF: RM from AI prefs against a written constitution. Basis for Claude HH training.</td></tr>
+</table>
+
+<!-- 3.B benches & surveys -->
+<div class="stagebox" id="sec3-bench">
+  <b>3.6 Benchmarks &amp; surveys.</b>
+</div>
+<table class="methods">
+  <tr><th>Item</th><th>Yr</th><th>Link</th><th>What it measures</th></tr>
+  <tr><td><b>RewardBench 2</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://arxiv.org/abs/2506.01937">arXiv</a> · <a href="https://huggingface.co/datasets/allenai/reward-bench-2">HF</a></td><td>Harder multi-skill RM accuracy; correlates with BoN + PPO downstream. ~20 pt lower than v1.</td></tr>
+  <tr><td><b>JudgeBench</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://arxiv.org/abs/2410.12784">arXiv</a></td><td>Verifiable knowledge / reason / math / code pairs. ICLR 2025.</td></tr>
+  <tr><td><b>PPE</b> (Preference Proxy Evaluations)</td><td><span class="yr y-24">2024</span></td><td><a href="https://arxiv.org/abs/2410.14872">arXiv</a> · <a href="https://github.com/lmarena/PPE">GitHub</a></td><td>First RM bench predictive of post-RLHF Arena scores. 16k Chatbot-Arena pairs + 80k verifiable completions.</td></tr>
+  <tr><td><b>RM-Bench</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://arxiv.org/abs/2410.16184">arXiv</a></td><td>Sensitivity to subtle content edits + style-bias resistance. ICLR 2025 Oral.</td></tr>
+  <tr><td><b>RMB</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://arxiv.org/abs/2410.09893">arXiv</a></td><td>49 real-world scenarios × helpful / harmless. 18k BoN-aware pairs.</td></tr>
+  <tr><td><b>MJ-Bench</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://arxiv.org/abs/2407.04842">arXiv</a></td><td>Multimodal judges for T2I: alignment / safety / quality / bias.</td></tr>
+  <tr><td><b>RewardBench (v1)</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://arxiv.org/abs/2403.13787">arXiv</a> · <a href="https://github.com/allenai/reward-bench">GitHub</a></td><td>First standardized RM leaderboard; de-facto baseline.</td></tr>
+  <tr><td><i>Survey:</i> <b>Comprehensive Survey of Reward Models</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://arxiv.org/abs/2504.12328">arXiv</a></td><td>Taxonomy, applications (VL, multilingual, RAG), challenges, future.</td></tr>
+  <tr><td><i>Survey:</i> <b>Secrets of RLHF Part II — Reward Modeling</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://huggingface.co/papers/2401.06080">HF paper</a></td><td>Practitioner guide to RM training tricks.</td></tr>
+  <tr><td><i>List:</i> <b>Awesome-Reward-Models</b></td><td>—</td><td><a href="https://github.com/JLZhong23/awesome-reward-models">GitHub</a></td><td>Continuously updated index.</td></tr>
+</table>
+<p class="note">
+  <b>Blog / lab posts:</b>
+  <a href="https://allenai.org/blog/rewardbench-the-first-benchmark-leaderboard-for-reward-models-used-in-rlhf-1d4d7d04a90b">AI2 — RewardBench</a> ·
+  <a href="https://allenai.org/blog/tulu-3-technical">AI2 — Tülu 3 / RLVR</a> ·
+  <a href="https://huggingface.co/blog/rlhf">HF — Illustrating RLHF</a> ·
+  <a href="https://www.interconnects.ai/p/tulu-3">Interconnects — Tülu 3</a> ·
+  <a href="https://www.interconnects.ai/p/openais-o3-over-optimization-is-back">Interconnects — o3 over-optimization</a> ·
+  <a href="https://rlhflow.github.io/posts/2024-05-29-multi-objective-reward-modeling/">RLHFlow — Multi-objective RM &amp; MoE</a>.
+</p>
+
+<!-- ====================================================================== -->
+<!-- SECTION 4: VISION / MULTIMODAL RMs                                     -->
+<!-- ====================================================================== -->
+
+<h2 id="sec4">4. Vision / Multimodal Generation Reward Models</h2>
+<p>
+  RMs for aligning image, video, 3D, and motion generation. 2025 shifted from CLIP-based scorers to VLM backbones (Qwen2-VL, InternVL, LLaVA-OneVision), and from scalar outputs to generative / CoT scoring with explicit rationales.
+</p>
+
+<!-- 4.1 T2I -->
+<div class="stagebox" id="sec4-1">
+  <b>4.1 Text-to-image (T2I) reward models.</b>
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Code / link</th><th>Backbone</th><th>Output</th><th>Notes</th></tr>
+  <tr><td>1</td><td><b>UnifiedReward-Flex</b></td><td><span class="yr y-26">2026</span></td><td>CodeGoat24 (Fudan)</td><td><a href="https://github.com/CodeGoat24/UnifiedReward">GitHub</a> · <a href="https://arxiv.org/abs/2602.02380">arXiv</a></td><td>Qwen2.5-VL</td><td>Pairwise + pointwise; dynamic hierarchical multi-aspect</td><td>Context-adaptive reasoning instantiates fine-grained criteria on-the-fly; tested with FLUX.1-dev, FLUX.2-klein, Wan2.1/2.2.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>2</td><td><b>RewardDance</b></td><td><span class="yr y-25">2025</span></td><td>ByteDance</td><td><a href="https://huggingface.co/papers/2509.08826">HF</a> · <a href="https://arxiv.org/abs/2509.08826">arXiv</a></td><td>InternVL 1B–26B</td><td>Generative "yes-token" prob (pairwise)</td><td>First serious <b>scaling-laws</b> study for visual RMs; reward variance stays high (resists hacking) up to 26B.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>3</td><td><b>HPSv3</b></td><td><span class="yr y-25">2025</span></td><td>MizzenAI</td><td><a href="https://github.com/MizzenAI/HPSv3">GitHub</a> · <a href="https://huggingface.co/MizzenAI/HPSv3">HF</a> · <a href="https://arxiv.org/abs/2508.03789">arXiv</a></td><td>Qwen2-VL-7B</td><td>Scalar + uncertainty-aware ranking</td><td>HPDv3 — 1.08M text-image pairs, 1.17M comparisons. Introduces Chain-of-Human-Preference (CoHP). ICCV 2025.</td></tr>
+  <tr><td>4</td><td><b>UnifiedReward / -Think</b></td><td><span class="yr y-25">2025</span></td><td>CodeGoat24 / Fudan</td><td><a href="https://github.com/CodeGoat24/UnifiedReward">GitHub</a> · <a href="https://arxiv.org/abs/2503.05236">arXiv</a></td><td>LLaVA-OneVision</td><td>Pairwise + pointwise across image/video/understanding</td><td>First unified RM covering understanding + image + video. Think variant adds GRPO RL on long CoT.</td></tr>
+  <tr><td>5</td><td><b>IXC-2.5-Reward</b></td><td><span class="yr y-25">2025</span></td><td>Shanghai AI Lab (InternLM)</td><td><a href="https://arxiv.org/abs/2501.12368">arXiv</a></td><td>InternLM-XComposer2.5</td><td>Scalar reward head over text / image / video</td><td>Top open RM on VL-RewardBench (70.0% macro acc, beats Gemini-1.5-Pro &amp; GPT-4o). ACL Findings 2025.</td></tr>
+  <tr><td>6</td><td><b>VisionReward-Image</b></td><td><span class="yr y-24">2024</span></td><td>Zhipu AI / Tsinghua</td><td><a href="https://github.com/zai-org/VisionReward">GitHub</a> · <a href="https://arxiv.org/abs/2412.21059">arXiv</a></td><td>CogVLM2 backbone</td><td>Multi-dimensional fine-grained (interpretable linear weights)</td><td>Built for stable RLHF; pairs with MPO algorithm. AAAI 2026.</td></tr>
+  <tr><td>7</td><td><b>MPS</b> (Multi-dimensional Preference Score)</td><td><span class="yr y-24">2024</span></td><td>Zhang et al.</td><td><a href="https://arxiv.org/abs/2405.14705">arXiv</a></td><td>CLIP + preference-condition module</td><td>4 dimensions (aesthetics / alignment / detail / overall)</td><td>MHP — 918k choices on 607k images. CVPR 2024.</td></tr>
+  <tr><td>8</td><td><b>RAHF</b> (Rich Automatic Human Feedback)</td><td><span class="yr y-24">2024</span></td><td>Google + UCSD/USC/Cambridge</td><td><a href="https://github.com/youweiliang/RichHF">GitHub</a> · <a href="https://arxiv.org/abs/2312.10240">arXiv</a></td><td>ViT + T5</td><td>Plausibility / alignment / aesthetic scalars + spatial heatmaps + token-level misalignment</td><td><b>CVPR 2024 Best Paper.</b> Goes beyond a single scalar.</td></tr>
+  <tr><td>9</td><td><b>Q-Align</b></td><td><span class="yr y-24">2024</span></td><td>Q-Future</td><td><a href="https://github.com/Q-Future/Q-Align">GitHub</a> · <a href="https://arxiv.org/abs/2312.17090">arXiv</a></td><td>mPLUG-Owl2 LMM</td><td>Discrete text-level rating mapped to scalars</td><td>Treats quality scoring like a human study via text levels. ICML 2024.</td></tr>
+  <tr><td>10</td><td><b>VQAScore</b></td><td><span class="yr y-24">2024</span></td><td>CMU / Meta</td><td><a href="https://github.com/linzhiqiu/t2v_metrics">GitHub</a> · <a href="https://arxiv.org/abs/2404.01291">arXiv</a></td><td>CLIP-FlanT5</td><td>P("Yes" | "Does this show {text}?")</td><td>Beats CLIPScore / PickScore on compositional prompts; zero-shot image / video / 3D. ECCV 2024.</td></tr>
+  <tr><td>R1</td><td><b>PickScore</b> + Pick-a-Pic</td><td><span class="yr y-old">2023</span></td><td>Stability AI / Tel Aviv</td><td><a href="https://arxiv.org/abs/2305.01569">arXiv</a></td><td>CLIP-H finetune</td><td>Scalar</td><td>Reference baseline — 500k+ in-the-wild prefs. NeurIPS 2023.</td></tr>
+  <tr><td>R2</td><td><b>HPSv2</b></td><td><span class="yr y-old">2023</span></td><td>CUHK MMLab</td><td><a href="https://github.com/tgxs002/HPSv2">GitHub</a> · <a href="https://arxiv.org/abs/2306.09341">arXiv</a></td><td>CLIP finetune</td><td>Scalar</td><td>Reference baseline — HPDv2 with 798k pairwise choices.</td></tr>
+  <tr><td>R3</td><td><b>ImageReward</b></td><td><span class="yr y-old">2023</span></td><td>Zhipu / Tsinghua</td><td><a href="https://github.com/zai-org/ImageReward">GitHub</a> · <a href="https://arxiv.org/abs/2304.05977">arXiv</a></td><td>BLIP + MLP head</td><td>Scalar</td><td>Reference baseline — first general-purpose T2I RM; ships ReFL fine-tuning. NeurIPS 2023.</td></tr>
+</table>
+
+<!-- 4.2 T2V -->
+<div class="stagebox" id="sec4-2">
+  <b>4.2 Text-to-video (T2V) reward models.</b>
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Code / link</th><th>Backbone</th><th>Output</th><th>Notes</th></tr>
+  <tr><td>1</td><td><b>PhysCorr / PhysicsRM</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2511.03997</td><td><a href="https://arxiv.org/abs/2511.03997">arXiv</a></td><td>—</td><td>Dual PhyScore (intra-object stability + inter-object interaction)</td><td>Plugs into PhyDPO for physics-grounded video DPO.</td></tr>
+  <tr class="pick"><td><span class="star">★</span>2</td><td><b>VideoScore2</b></td><td><span class="yr y-25">2025</span></td><td>TIGER-AI-Lab</td><td><a href="https://github.com/TIGER-AI-Lab/VideoScore2">GitHub</a> · <a href="https://arxiv.org/abs/2509.22799">arXiv</a></td><td>Qwen2.5-VL-7B</td><td>Visual / text-alignment / physical-commonsense scores + CoT</td><td>"Think before scoring" — first generative video RM with structured rationales. VideoFeedback2 (27k annotated).</td></tr>
+  <tr class="pick"><td><span class="star">★</span>3</td><td><b>VideoReward / VideoAlign</b></td><td><span class="yr y-25">2025</span></td><td>Kling team (Kuaishou)</td><td><a href="https://github.com/KlingTeam/VideoAlign">GitHub</a> · <a href="https://huggingface.co/KlingTeam/VideoReward">HF</a> · <a href="https://arxiv.org/abs/2501.13918">arXiv</a></td><td>VLM + Bradley-Terry-with-Ties</td><td>Visual Quality / Motion Quality / Text Alignment</td><td>182k prompt-video triplets; ships Flow-DPO / Flow-RWR / Flow-NRG for rectified-flow video models. NeurIPS 2025.</td></tr>
+  <tr><td>4</td><td><b>VisionReward-Video</b></td><td><span class="yr y-24">2024</span></td><td>Zhipu / Tsinghua</td><td><a href="https://github.com/zai-org/VisionReward">GitHub</a> · <a href="https://arxiv.org/abs/2412.21059">arXiv</a></td><td>CogVLM2-Video</td><td>Fine-grained multi-aspect (linearly weighted)</td><td>Beats VideoScore by <b>+17.2% pair-acc</b>; CogVideoX+MPO yields ~27% win-rate uplift. AAAI 2026.</td></tr>
+  <tr><td>5</td><td><b>LiFT / LiFT-Critic</b></td><td><span class="yr y-24">2024</span></td><td>CUHK</td><td><a href="https://arxiv.org/abs/2412.04814">arXiv</a></td><td>VILA-1.5 VLM</td><td>Semantic consistency / motion smoothness / video fidelity + reasoning</td><td>First end-to-end T2V RLHF pipeline (RM + DPO on CogVideoX).</td></tr>
+  <tr><td>R1</td><td><b>VideoScore + VideoFeedback</b></td><td><span class="yr y-24">2024</span></td><td>TIGER-AI-Lab</td><td><a href="https://github.com/TIGER-AI-Lab/VideoScore">GitHub</a> · <a href="https://arxiv.org/abs/2406.15252">arXiv</a></td><td>Mantis-Idefics2-8B</td><td>5 aspects (VQ / TC / Dynamic / TextAlign / Factual)</td><td>Reference baseline — first fine-grained learned video RM. EMNLP 2024.</td></tr>
+</table>
+
+<!-- 4.3 3D / motion -->
+<div class="stagebox" id="sec4-3">
+  <b>4.3 3D / motion reward models.</b>
+</div>
+<table class="methods">
+  <tr><th>#</th><th>Model</th><th>Yr</th><th>Team</th><th>Link</th><th>Output</th><th>Notes</th></tr>
+  <tr><td>1</td><td><b>PhyMotion</b></td><td><span class="yr y-26">2026</span></td><td>phy-motion.github.io</td><td><a href="https://phy-motion.github.io/">project</a></td><td>Three physics-grounded axes (kinematic / contact-balance / dynamic)</td><td>SMPL recovery → MuJoCo retarget → physics scoring; beats 2D-image rewards for motion realism.</td></tr>
+  <tr><td>2</td><td><b>DreamCS / RewardCS</b></td><td><span class="yr y-25">2025</span></td><td>arXiv 2506.09814</td><td><a href="https://arxiv.org/abs/2506.09814">arXiv</a></td><td>Geometry-aware mesh quality</td><td>First 3D geometry-aware RM trained on unpaired data; beats 2D RMs for text-to-3D.</td></tr>
+  <tr><td>3</td><td><b>MotionCritic</b></td><td><span class="yr y-25">2025</span></td><td>Ou et al.</td><td><a href="https://github.com/ou524u/MotionCritic">GitHub</a> · <a href="https://arxiv.org/abs/2407.02272">arXiv</a></td><td>Plug-and-play critic; perceptual-alignment loss</td><td>MotionPercept — 52k human pref pairs over generated motions. ICLR 2025.</td></tr>
+  <tr><td>R1</td><td><b>DreamReward / Reward3D</b></td><td><span class="yr y-24">2024</span></td><td>THU</td><td><a href="https://github.com/liuff19/DreamReward">GitHub</a> · <a href="https://arxiv.org/abs/2403.14613">arXiv</a></td><td>Scalar</td><td>Reference baseline — first general-purpose 3D RM. 25k expert comparisons. ECCV 2024.</td></tr>
+</table>
+
+<!-- 4.4 MLLM judges -->
+<div class="stagebox" id="sec4-4">
+  <b>4.4 MLLM-as-judge for generation.</b>
+  Training-free; relies on a strong MLLM.
+</div>
+<table class="methods">
+  <tr><th>Method</th><th>Yr</th><th>Link</th><th>Notes</th></tr>
+  <tr><td><b>GPT-4o / GPT-4V as judge</b></td><td><span class="yr y-25">2024/25</span></td><td>—</td><td>Standard prompted scoring; backbone for VIEScore and many VBench/T2V-CompBench variants. Matches human-human correlation on generation, weaker on editing.</td></tr>
+  <tr><td><b>Gemini-1.5/2.5-Pro as judge</b></td><td><span class="yr y-25">2024/25</span></td><td>—</td><td>Long-context advantage for video judging; used as generalist scorer in VBench-2.0.</td></tr>
+  <tr><td><b>VIEScore</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://github.com/TIGER-AI-Lab/VIEScore">GitHub</a> · <a href="https://arxiv.org/abs/2312.14867">arXiv</a></td><td>Semantic + perceptual scores with rationales; GPT-4o variant reaches ~0.40 Spearman vs human 0.45. ACL 2024.</td></tr>
+  <tr><td><b>VideoGen-Eval</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://arxiv.org/abs/2503.23452">arXiv</a></td><td>Agent-based judge — LLM structuring + MLLM judgment + temporal patch tools over 700 prompts / 12k videos.</td></tr>
+</table>
+
+<!-- 4.B benchmarks -->
+<div class="stagebox" id="sec4-bench">
+  <b>4.5 Benchmarks for evaluating vision-generation RMs.</b>
+</div>
+<table class="methods">
+  <tr><th>Benchmark</th><th>Yr</th><th>Link</th><th>Focus</th></tr>
+  <tr><td><b>VideoGen-RewardBench</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://huggingface.co/datasets/KwaiVGI/VideoGen-RewardBench">HF</a></td><td>26.5k (prompt, vidA, vidB) triplets; expert pairwise; 12 SOTA T2V models.</td></tr>
+  <tr><td><b>VBench-2.0</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://arxiv.org/abs/2503.21755">arXiv</a> · <a href="https://vchitect.github.io/VBench-2.0-project">project</a></td><td>5 "intrinsic faithfulness" dimensions (Human / Controllability / Creativity / Physics / Commonsense).</td></tr>
+  <tr><td><b>VideoPhy / VideoPhy-2</b></td><td><span class="yr y-25">2024/25</span></td><td><a href="https://arxiv.org/abs/2503.06800">arXiv</a></td><td>Physical-commonsense; ships VideoPhy-2-AutoEval auto-judge. ICLR 2026.</td></tr>
+  <tr><td><b>T2V-CompBench</b></td><td><span class="yr y-25">2025</span></td><td><a href="https://arxiv.org/abs/2407.14505">arXiv</a></td><td>1,400 prompts × 7 compositional axes across 23 T2V models. CVPR 2025.</td></tr>
+  <tr><td><b>VBench / VBench++</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://github.com/Vchitect/VBench">GitHub</a></td><td>16-dim T2V / I2V benchmark; dominant T2V leaderboard. CVPR 2024 Highlight.</td></tr>
+  <tr><td><b>GenAI-Bench</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://arxiv.org/abs/2406.13743">arXiv</a></td><td>1,600 compositional T2I/T2V prompts + 80k human ratings; default for VQAScore.</td></tr>
+  <tr><td><b>ImagenHub</b></td><td><span class="yr y-24">2024</span></td><td><a href="https://arxiv.org/abs/2310.01596">arXiv</a></td><td>Unified library + benchmark over 7 conditional image-generation tasks. ICLR 2024.</td></tr>
+  <tr><td><b>EvalCrafter</b></td><td><span class="yr y-24">2024</span></td><td>—</td><td>17 sub-dimensions complementary to VBench. CVPR 2024.</td></tr>
+</table>
+
+<!-- ====================================================================== -->
+<!-- SECTION 5: CROSS-CUTTING TRENDS                                        -->
+<!-- ====================================================================== -->
+
+<h2 id="cross">5. Cross-cutting trends &amp; reading list</h2>
+
+<h3>Trends across all four families (2025 → 2026)</h3>
+<ul>
+  <li><b>From scalar to generative.</b> Every category is shifting from a single-number reward to a generated critique + verdict — RM-R1, J1, GenRM (LLM); ThinkPRM, GenPRM, R-PRM (PRMs); RewardDance, VideoScore2, UnifiedReward-Think (vision); SARM, ReWiND (robotics). More interpretable, harder to hack, scales with inference compute.</li>
+  <li><b>VLM backbones replace CLIP.</b> Across vision RMs and robot RMs alike, Qwen2-VL / InternVL / LLaVA-OneVision dominate. CLIP-era scorers (HPSv2, PickScore, ImageReward) are now baselines.</li>
+  <li><b>Label-free / weakly-labeled RMs.</b> PRIME, FreePRM, Implicit-PRM, Self-Taught Evaluator, GRAPE — derive step or trajectory rewards from outcomes or self-bootstrapping rather than human labels.</li>
+  <li><b>RMs as test-time verifiers.</b> RoVer (robots), SWE-PRM (agents), ThinkPRM (math) — the RM moves from training-time signal to inference-time best-of-N / search rerank.</li>
+  <li><b>Reward hacking awareness.</b> Style-bias resistance (RM-Bench), min-form credit (PURE), temporal smoothing (T²-VLM), physics grounding (PhysCorr, PhyMotion, RoboScape-R) — explicit mitigations are now table stakes.</li>
+  <li><b>RLVR / rule-based rewards <i>replace</i> RMs where verifiability exists.</b> Tülu 3, OpenAI RBR, RL-VLA empirical study — when env signal is verifiable, learned RMs are increasingly skipped.</li>
+  <li><b>Robotics catches up fast.</b> The 2025–2026 wave (LRM, RoboReward, ReWiND, Robometer, SARM) finally brings RewardBench-style benchmarks (RoboReward-Bench, OpenGVL) and scaled multi-source datasets to the robot side.</li>
+</ul>
+
+<h3>Top reading list</h3>
+<ul>
+  <li><b>Survey (general):</b> <a href="https://arxiv.org/abs/2504.12328">A Comprehensive Survey of Reward Models</a> (Apr 2025) — taxonomy + applications + benchmarks.</li>
+  <li><b>Survey (PRMs):</b> <a href="https://arxiv.org/abs/2510.08049">Survey of Process Reward Models</a> + <a href="https://github.com/RyanLiu112/Awesome-Process-Reward-Models">Awesome-PRMs</a>.</li>
+  <li><b>Survey (robotics RL of VLA):</b> <a href="https://www.techrxiv.org/users/934012/articles/1366553/">RL of VLA Models</a> + <a href="https://github.com/Denghaoyuan123/Awesome-RL-VLA">Awesome-RL-VLA</a>.</li>
+  <li><b>Survey (world models for robots):</b> <a href="https://ntumars.github.io/wm-robot-survey/">World Model for Robot Learning</a>.</li>
+  <li><b>Practitioner guide (RLHF):</b> <a href="https://huggingface.co/papers/2401.06080">Secrets of RLHF Part II — Reward Modeling</a>.</li>
+  <li><b>Blogs:</b> <a href="https://www.interconnects.ai/p/2025-interconnects-year-in-review">Interconnects 2025 review</a> · <a href="https://allenai.org/blog/rewardbench-the-first-benchmark-leaderboard-for-reward-models-used-in-rlhf-1d4d7d04a90b">AI2 RewardBench</a> · <a href="https://allenai.org/blog/tulu-3-technical">AI2 Tülu 3 (RLVR)</a> · <a href="https://blogs.nvidia.com/blog/eureka-robotics-research/">NVIDIA Eureka</a>.</li>
+  <li><b>Living indexes:</b> <a href="https://github.com/JLZhong23/awesome-reward-models">Awesome-Reward-Models</a> · <a href="https://github.com/jonyzhang2023/awesome-embodied-vla-va-vln">Awesome-Embodied-VLA</a>.</li>
+</ul>
+
+</body>
+</html>

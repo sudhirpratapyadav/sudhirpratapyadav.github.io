@@ -1,0 +1,3430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VAE — from the problem up</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
+<style>
+/* ============================================================
+   Modern SaaS theme — Inter, indigo accent, varied hierarchy
+   ============================================================ */
+:root {
+  --bg:           #fbfbfd;
+  --surface:      #ffffff;
+  --text:         #0f172a;
+  --text-soft:    #475569;
+  --muted:        #64748b;
+  --rule:         #e5e7eb;
+  --rule-soft:    #f1f5f9;
+
+  --indigo:       #6366f1;
+  --indigo-soft:  #eef2ff;
+  --indigo-deep:  #4338ca;
+  --violet:       #8b5cf6;
+  --violet-soft:  #f5f3ff;
+  --emerald:      #10b981;
+  --emerald-soft: #ecfdf5;
+  --amber:        #f59e0b;
+  --amber-soft:   #fffbeb;
+  --rose:         #f43f5e;
+  --rose-soft:    #fff1f2;
+  --sky:          #0ea5e9;
+  --sky-soft:     #f0f9ff;
+  --slate-soft:   #f8fafc;
+
+  --shadow-sm:    0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow:       0 4px 14px rgba(15, 23, 42, 0.06);
+  --shadow-lg:    0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Top navigation bar ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text);
+}
+.brand .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
+.crumb-sep { color: var(--rule); }
+.crumb-current { color: var(--text-soft); font-weight: 500; }
+.topbar-spacer { flex: 1; }
+.topbar a.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px;
+  background: var(--indigo-soft);
+  color: var(--indigo-deep);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+/* ---------- Page layout ---------- */
+.page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 40px 32px 200px 32px;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 56px;
+}
+@media (max-width: 1000px) {
+  .page { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  nav.toc { display: none; }
+}
+
+article { max-width: 820px; }
+
+/* ---------- Sidebar nav ---------- */
+nav.toc {
+  position: sticky;
+  top: 80px;
+  align-self: start;
+  font-size: 14px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+nav.toc .toc-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+nav.toc ol { list-style: none; padding: 0; margin: 0; }
+nav.toc ol ol { padding-left: 14px; margin-top: 4px; border-left: 1px solid var(--rule); }
+nav.toc li { margin: 4px 0; }
+nav.toc a {
+  display: block;
+  padding: 6px 10px;
+  color: var(--text-soft);
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.12s ease;
+}
+nav.toc a:hover {
+  background: var(--slate-soft);
+  color: var(--text);
+}
+nav.toc a.active {
+  background: var(--indigo-soft);
+  color: var(--indigo-deep);
+  font-weight: 600;
+}
+
+/* ---------- Typography ---------- */
+h1 {
+  font-size: 2.4em;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0 0 12px 0;
+  background: linear-gradient(135deg, var(--text) 0%, var(--indigo-deep) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.subtitle {
+  font-size: 1.1em;
+  color: var(--muted);
+  margin: 0 0 48px 0;
+  line-height: 1.5;
+  max-width: 640px;
+}
+
+h2 {
+  font-size: 1.6em;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 64px 0 20px 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+h2:first-of-type { border-top: none; padding-top: 0; }
+h2 .num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+h3 {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 40px 0 12px 0;
+  color: var(--text);
+}
+h3 .subnum {
+  display: inline-block;
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--indigo);
+  margin-right: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+p { margin: 12px 0; color: var(--text-soft); }
+p strong { color: var(--text); font-weight: 600; }
+
+ol, ul { color: var(--text-soft); padding-left: 1.4em; }
+li { margin: 6px 0; }
+li strong { color: var(--text); }
+
+a {
+  color: var(--indigo);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+  transition: border-color 0.12s ease;
+}
+a:hover { border-bottom-color: var(--indigo); }
+
+code, .mono {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: 0.88em;
+  background: var(--slate-soft);
+  color: var(--indigo-deep);
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--rule);
+}
+
+hr { border: none; border-top: 1px dashed var(--rule); margin: 32px 0; }
+
+/* ============================================================
+   VISUAL VOCABULARY — varied, not all boxes
+   ============================================================ */
+
+/* ---------- Pullquote: thesis statement, thick bar, no fill ---------- */
+.pullquote {
+  margin: 26px 0;
+  padding: 6px 0 6px 20px;
+  border-left: 4px solid var(--indigo);
+  font-size: 1.1em;
+  line-height: 1.5;
+  color: var(--text);
+  font-weight: 500;
+}
+.pullquote .lead {
+  display: block;
+  font-weight: 700;
+  font-size: 0.78em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--indigo);
+  margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.pullquote p { color: var(--text); margin: 4px 0; font-size: inherit; }
+.pullquote p:first-child { margin-top: 0; }
+.pullquote p:last-child { margin-bottom: 0; }
+
+/* ---------- Note: quiet aside, hairline rules ---------- */
+.note {
+  margin: 20px 0;
+  padding: 10px 0 10px 14px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.note strong, .note em { color: var(--text-soft); font-style: normal; }
+.note .marker {
+  font-style: normal;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-right: 10px;
+  font-weight: 600;
+}
+
+/* ---------- Inline warn: amber tint, no emoji, soft and inline ---------- */
+.warn-inline {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  box-shadow: inset 2px 0 0 var(--amber);
+}
+.warn-inline em, .warn-inline strong { color: inherit; }
+
+/* ---------- Yellow highlight (for the strongest single phrases) ---------- */
+.hl {
+  background: linear-gradient(120deg, rgba(245, 158, 11, 0.30), rgba(245, 158, 11, 0.22));
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+/* ---------- Key points: ONE panel with numbered items ---------- */
+.key-points {
+  margin: 24px 0;
+  padding: 18px 22px 20px 22px;
+  background: var(--slate-soft);
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+}
+.key-points > .label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  letter-spacing: -0.005em;
+}
+.key-points > .label::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 14px;
+  background: var(--indigo);
+  border-radius: 2px;
+  margin-right: 10px;
+  vertical-align: -2px;
+}
+.key-points ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: kp;
+}
+.key-points ol > li {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  column-gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--rule);
+  counter-increment: kp;
+}
+.key-points ol > li:first-child { border-top: none; padding-top: 4px; }
+.key-points ol > li::before {
+  content: counter(kp);
+  grid-column: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--indigo);
+  line-height: 1.5;
+  padding-top: 1px;
+}
+.key-points ol > li > .item {
+  grid-column: 2;
+  min-width: 0;
+}
+.key-points ol > li .head {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 3px;
+}
+.key-points ol > li .body {
+  display: block;
+  font-size: 14.5px;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+.key-points ol > li .body p { margin: 4px 0; color: inherit; font-size: inherit; }
+
+/* ---------- Roadmap card: dashed border, mono label, no fill ---------- */
+.roadmap {
+  margin: 24px 0;
+  padding: 14px 18px 16px 18px;
+  border: 1px dashed var(--indigo);
+  border-radius: 10px;
+  background: transparent;
+}
+.roadmap .label {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--indigo);
+  margin-bottom: 8px;
+}
+.roadmap p { margin: 4px 0; color: var(--text-soft); }
+.roadmap strong { color: var(--text); }
+
+/* ---------- What's next: emerald edge, distinct from roadmap ---------- */
+.next-up {
+  margin: 28px 0 12px 0;
+  padding: 12px 0 12px 16px;
+  border-left: 3px solid var(--emerald);
+}
+.next-up .label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #047857;
+  margin-bottom: 6px;
+}
+.next-up p { margin: 4px 0; color: var(--text-soft); }
+.next-up strong { color: var(--text); }
+
+/* ============================================================
+   OBJECT CARDS — formula / score / sample (the skim layer)
+   ============================================================ */
+.obj-card {
+  margin: 18px 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.obj-card .obj-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--slate-soft);
+  border-bottom: 1px solid var(--rule);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.obj-card .obj-label .tag {
+  color: var(--indigo-deep);
+}
+.obj-card .obj-label .sep {
+  color: var(--rule);
+}
+.obj-card .obj-label .cost {
+  margin-left: auto;
+  color: var(--muted);
+  font-weight: 600;
+}
+.obj-card .obj-body {
+  padding: 14px 18px 16px 18px;
+}
+.obj-card .obj-body p { margin: 6px 0; color: var(--text-soft); font-size: 14.5px; line-height: 1.55; }
+.obj-card .obj-body p:first-child { margin-top: 0; }
+.obj-card .obj-body p:last-child  { margin-bottom: 0; }
+.obj-card .obj-body strong { color: var(--text); }
+.obj-card .obj-body mjx-container[display="true"] { margin: 4px 0 10px 0 !important; }
+
+/* formula card: highlight the equation itself with a subtle tint */
+.obj-card.formula .obj-label .tag { color: var(--violet); }
+.obj-card.formula .obj-body {
+  background: linear-gradient(180deg, rgba(139, 92, 246, 0.04), transparent 40px);
+}
+
+/* score card: emerald accent (= cheap territory typically) */
+.obj-card.score .obj-label .tag { color: #047857; }
+
+/* sample card: amber accent (= often costs more) */
+.obj-card.sample .obj-label .tag { color: #b45309; }
+
+/* derive card: sky accent (= a worked derivation step) */
+.obj-card.derive .obj-label .tag { color: #0369a1; }
+
+/* result card: emerald background hint (= the closed-form answer) */
+.obj-card.result .obj-label .tag { color: #047857; }
+.obj-card.result .obj-body {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.05), transparent 40px);
+}
+
+/* warning card: amber tinted, when something breaks */
+.obj-card.breaks .obj-label .tag { color: #b45309; }
+.obj-card.breaks .obj-label {
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08), var(--slate-soft));
+}
+
+/* step card: rose accent (= one step of an iterative procedure) */
+.obj-card.step .obj-label .tag { color: #be123c; }
+.obj-card.step .obj-label .step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--rose);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+/* equiv card: violet accent + soft tint (= same object in two forms) */
+.obj-card.equiv .obj-label .tag { color: var(--violet); }
+.obj-card.equiv .obj-body {
+  background: linear-gradient(180deg, rgba(139, 92, 246, 0.04), transparent 40px);
+}
+
+/* connect card: sky accent (= cross-field connection / aha moment) */
+.obj-card.connect .obj-label .tag { color: #0369a1; }
+.obj-card.connect .obj-label {
+  background: linear-gradient(180deg, rgba(14, 165, 233, 0.08), var(--slate-soft));
+}
+.obj-card.connect .obj-body table.compare {
+  margin: 10px 0 6px 0;
+  font-size: 13px;
+}
+
+/* explainer line directly under formula */
+.obj-card .symdefs {
+  margin: 8px 0 0 0;
+  padding: 8px 12px;
+  background: var(--slate-soft);
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+.obj-card .symdefs strong { color: var(--text); }
+.obj-card .symdefs .row {
+  display: block;
+  padding: 2px 0;
+}
+
+/* nested code/algo inside cards loses some weight */
+.obj-card .algo {
+  margin: 6px 0 8px 0;
+  font-size: 12.5px;
+  box-shadow: none;
+}
+
+/* ---------- Pill chips (still useful for taxonomy) ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.chip::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+.chip-easy   { background: var(--emerald-soft); color: #047857; }
+.chip-hard   { background: var(--rose-soft);    color: #be123c; }
+.chip-medium { background: var(--amber-soft);   color: #b45309; }
+.chip-info   { background: var(--sky-soft);     color: #0369a1; }
+.chip-neutral{ background: var(--slate-soft);   color: var(--text-soft); border: 1px solid var(--rule); }
+.chip-accent { background: var(--indigo-soft);  color: var(--indigo-deep); }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+
+/* ---------- Collapsible details (derivations) ---------- */
+details {
+  margin: 16px 0;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+details > summary {
+  cursor: pointer;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--indigo-deep);
+  list-style: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--indigo-soft);
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before {
+  content: '▸';
+  display: inline-block;
+  transition: transform 0.15s ease;
+  font-size: 10px;
+  color: var(--indigo);
+}
+details[open] > summary::before { transform: rotate(90deg); }
+details > .body {
+  padding: 16px 18px;
+  border-top: 1px solid var(--rule);
+}
+
+/* ---------- Explainer block (nested inside details) ---------- */
+.explainer h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 22px 0 8px 0;
+  display: flex; align-items: center; gap: 10px;
+  letter-spacing: -0.005em;
+}
+.explainer h4:first-child { margin-top: 4px; }
+.explainer h4 .step-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  color: var(--indigo); background: var(--indigo-soft);
+  padding: 2px 8px; border-radius: 4px;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+.explainer p { margin: 8px 0; color: var(--text-soft); font-size: 14.5px; line-height: 1.6; }
+.explainer p strong { color: var(--text); }
+.explainer .scenario {
+  margin: 10px 0;
+  padding: 10px 14px;
+  background: var(--slate-soft);
+  border-radius: 8px;
+  border: 1px solid var(--rule);
+  font-size: 14px;
+}
+.explainer .scenario .role {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--indigo-deep);
+  margin-right: 8px;
+}
+
+/* observed-vs-latent two-column table */
+table.ol-compare {
+  width: 100%;
+  border-collapse: separate; border-spacing: 0;
+  margin: 14px 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 14px;
+}
+table.ol-compare th, table.ol-compare td {
+  text-align: left; padding: 10px 14px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+table.ol-compare tr:last-child td { border-bottom: none; }
+table.ol-compare th {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  background: var(--slate-soft);
+}
+table.ol-compare td:first-child {
+  font-weight: 600; color: var(--text);
+  width: 32%;
+}
+table.ol-compare td:nth-child(2),
+table.ol-compare td:nth-child(3) { color: var(--text-soft); font-size: 13.5px; }
+
+/* ---------- Demo blocks ---------- */
+.demo {
+  margin: 24px 0;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.demo-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: linear-gradient(180deg, var(--slate-soft), var(--surface));
+  border-bottom: 1px solid var(--rule);
+}
+.demo-header .demo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  background: var(--indigo);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+.demo-header .demo-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.demo-body { padding: 16px 18px 18px 18px; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  align-items: center;
+  margin: 4px 0 14px 0;
+  font-size: 13px;
+}
+.controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-soft);
+  font-weight: 500;
+}
+.controls input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 110px;
+  height: 4px;
+  background: var(--rule);
+  border-radius: 2px;
+  outline: none;
+}
+.controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--indigo);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(99, 102, 241, 0.4);
+}
+.controls input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: var(--indigo);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(99, 102, 241, 0.4);
+}
+.readout {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--slate-soft);
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--rule);
+}
+.controls button {
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  background: var(--indigo);
+  border: 1px solid var(--indigo);
+  color: white;
+  cursor: pointer;
+  border-radius: 7px;
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-sm);
+}
+.controls button:hover {
+  background: var(--indigo-deep);
+  border-color: var(--indigo-deep);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+.controls button.secondary {
+  background: var(--surface);
+  color: var(--text-soft);
+  border-color: var(--rule);
+}
+.controls button.secondary:hover {
+  background: var(--slate-soft);
+  color: var(--text);
+}
+.plot { width: 100%; height: 320px; }
+.demo-footnote {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 12px 0 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+}
+
+/* ---------- Algorithm / code blocks ---------- */
+.algo {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px 18px;
+  border-radius: 10px;
+  margin: 16px 0;
+  white-space: pre-wrap;
+  line-height: 1.65;
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+}
+.algo .keyword { color: #c084fc; font-weight: 600; }
+.algo .comment { color: #94a3b8; font-style: italic; }
+.algo .string  { color: #fde68a; }
+.algo .num     { color: #67e8f9; }
+
+/* ---------- Comparison table ---------- */
+table.compare {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 20px 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  font-size: 14px;
+}
+table.compare th, table.compare td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+}
+table.compare tr:last-child td { border-bottom: none; }
+table.compare th {
+  font-weight: 600;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  background: var(--slate-soft);
+  border-bottom: 1px solid var(--rule);
+}
+table.compare td:first-child { font-weight: 600; color: var(--text); }
+table.compare tr:hover td { background: var(--slate-soft); }
+
+/* MathJax */
+mjx-container[display="true"] { margin: 14px 0 !important; overflow-x: auto; }
+mjx-container { color: var(--text); }
+@media (max-width: 600px) {
+  mjx-container[display="true"] { font-size: 0.9em !important; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="brand"><span class="dot"></span>VAE</span>
+    <span class="crumb-sep">/</span>
+    <span class="crumb-current" id="crumb">From the problem up</span>
+    <span class="topbar-spacer"></span>
+    <a class="pill" href="#sec-1">↑ Top</a>
+  </div>
+</div>
+
+<div class="page">
+
+<nav class="toc">
+  <div class="toc-label">Contents</div>
+  <ol>
+    <li><a href="#sec-1">1 · The problem</a></li>
+    <li><a href="#sec-2">2 · Probabilistic reframe</a></li>
+    <li><a href="#sec-3">3 · A tour of distributions</a>
+      <ol>
+        <li><a href="#sec-3-bernoulli">3.1 Bernoulli</a></li>
+        <li><a href="#sec-3-gaussian">3.2 Gaussian</a></li>
+        <li><a href="#sec-3-mixture">3.3 Mixture</a></li>
+        <li><a href="#sec-3-twomoons">3.4 A 2D warning</a></li>
+        <li><a href="#sec-3-axis">3.5 The axis</a></li>
+      </ol>
+    </li>
+    <li><a href="#sec-4">4 · Choosing θ from data</a>
+      <ol>
+        <li><a href="#sec-4-setup">4.1 The setup</a></li>
+        <li><a href="#sec-4-likelihood">4.2 Likelihood</a></li>
+        <li><a href="#sec-4-mle-gauss">4.3 MLE — Gaussian</a></li>
+        <li><a href="#sec-4-mle-bern">4.4 MLE — Bernoulli</a></li>
+        <li><a href="#sec-4-mle-mix">4.5 MLE — Mixture (breaks)</a></li>
+        <li><a href="#sec-4-kl">4.6 MLE ↔ KL</a></li>
+        <li><a href="#sec-4-map">4.7 MAP — adding a prior</a></li>
+        <li><a href="#sec-4-bridge">4.8 The wall</a></li>
+      </ol>
+    </li>
+    <li><a href="#sec-5">5 · EM — the classical answer</a>
+      <ol>
+        <li><a href="#sec-5-fixedpoint">5.1 Fixed-point insight</a></li>
+        <li><a href="#sec-5-recipe">5.2 The two-step recipe</a></li>
+        <li><a href="#sec-5-coindice">5.3 EM on the coin &amp; dice</a></li>
+        <li><a href="#sec-5-demo">5.4 GMM demo</a></li>
+        <li><a href="#sec-5-elbo">5.5 Why EM works · ELBO view</a></li>
+        <li><a href="#sec-5-breaks">5.6 Where EM breaks</a></li>
+        <li><a href="#sec-5-bridge">5.7 Bridge to next</a></li>
+      </ol>
+    </li>
+    <li><a href="#sec-6">6 · Variational inference</a>
+      <ol>
+        <li><a href="#sec-6-move">6.1 The move</a></li>
+        <li><a href="#sec-6-elbo">6.2 ELBO, properly</a></li>
+        <li><a href="#sec-6-decomp">6.3 Reconstruction − KL</a></li>
+        <li><a href="#sec-6-meanfield">6.4 Mean-field VI</a></li>
+        <li><a href="#sec-6-amortized">6.5 Amortized inference</a></li>
+        <li><a href="#sec-6-block">6.6 What still blocks us</a></li>
+        <li><a href="#sec-6-bridge">6.7 Bridge to next</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+
+<article>
+
+<h1>Variational Autoencoders</h1>
+<p class="subtitle">From the problem up — built piece by piece, with the tools introduced only when the problem demands them.</p>
+
+<!-- ============================================================ -->
+<h2 id="sec-1"><span class="num">1</span> The problem</h2>
+
+<p>
+We have a collection of high-dimensional examples — images of faces, sentences in English, recordings of speech, and (further afield) things like robot trajectories. Call any single example $x$. We have lots of them: $x_1, x_2, \ldots, x_N$.
+</p>
+
+<p>We want to build a machine that can do two things.</p>
+
+<div class="key-points">
+  <span class="label">The two jobs</span>
+  <ol>
+    <li>
+      <div class="item">
+        <span class="head">Score plausibility.</span>
+        <span class="body">Given a new $x$, tell us how likely it is to be <em>the same kind of thing</em> as our examples. A clear photo of a face should score high; random pixel noise should score low.</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">Generate.</span>
+        <span class="body">Produce new examples that look like they came from the same source — new faces, new sentences, new trajectories — that we've never seen before but that fit in.</span>
+      </div>
+    </li>
+  </ol>
+</div>
+
+<p>
+<strong>Why this is hard.</strong> There is no rule we can write down for <span class="hl">"looks like a face"</span> or <span class="hl">"sounds like English."</span> These concepts live in the data, not in any formula we have access to. So we cannot hand-engineer the machine; it has to <em>learn</em> what "plausible" means from the examples themselves.
+</p>
+
+<div class="pullquote">
+  <span class="lead">the unifying insight</span>
+  <p>These two jobs — scoring and generating — feel different but they aren't. They are two queries against the <strong>same</strong> underlying object: a description of which $x$'s are likely and which aren't. If we had that description, scoring is just looking up a number, and generating is drawing samples from it.</p>
+</div>
+
+<p>
+So our real problem is: <strong>learn that description from data</strong>. Everything else — autoencoders, neural networks, KL divergence, the reparameterization trick — is machinery built to do this one thing.
+</p>
+
+<p>This is exactly the language probability was designed for, which is where we go next.</p>
+
+<!-- ============================================================ -->
+<h2 id="sec-2"><span class="num">2</span> The probabilistic reframe</h2>
+
+<p>We just said our two jobs — scoring and generating — are queries against one underlying object: a description of which $x$'s are likely. Probability theory has a name for that object: a <strong>distribution</strong>.</p>
+
+<p>So we make our first move:</p>
+
+<div class="pullquote">
+  <span class="lead">the modeling assumption</span>
+  <p>Assume our examples $x_1, \ldots, x_N$ were drawn from some unknown distribution over high-dimensional space. Call it $p_{\text{data}}(x)$.</p>
+</div>
+
+<p class="note">
+  <span class="marker">aside</span>
+  This is a <strong>choice</strong>, not a fact. We're viewing the world this way because it gives us tools — but every modeling assumption is a load-bearing decision we live with downstream.
+</p>
+
+<p>If we had $p_{\text{data}}$, both jobs would be one-liners.</p>
+
+<div class="obj-card score">
+  <div class="obj-label"><span class="tag">score</span><span class="sep">·</span><span>plausibility</span><span class="cost">O(1) lookup</span></div>
+  <div class="obj-body">
+    <p>Given a new $x$, evaluate $p_{\text{data}}(x)$. Big number → plausible. Small number → unlikely.</p>
+  </div>
+</div>
+
+<div class="obj-card sample">
+  <div class="obj-label"><span class="tag">sample</span><span class="sep">·</span><span>generate</span><span class="cost">one draw</span></div>
+  <div class="obj-body">
+    <p>Draw $x \sim p_{\text{data}}$. The sample is, by construction, "the same kind of thing" as our examples.</p>
+  </div>
+</div>
+
+<p>But we don't have $p_{\text{data}}$. We have samples from it. So we build our own $p_\theta(x)$ — a family of distributions controlled by parameters $\theta$ — and try to make it match.</p>
+
+<div class="pullquote">
+  <span class="lead">the whole problem, in one line</span>
+  <p>$$\text{Make } p_\theta \approx p_{\text{data}}.$$</p>
+  <p style="font-size: 0.85em; color: var(--text-soft); margin-top: 8px; font-weight: 400;">Scoring and generating both fall out of this. Everything we build from here on serves this single objective.</p>
+</div>
+
+<div class="key-points">
+  <span class="label">Three things to notice before we move on</span>
+  <ol>
+    <li>
+      <div class="item">
+        <span class="head">"Match" needs a definition.</span>
+        <span class="body">Two distributions can be close or far apart, but we haven't said how to measure that.</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">$p_\theta$ needs a form.</span>
+        <span class="body">We have to pick <em>what kind</em> of distribution $p_\theta$ is — a Gaussian, a mixture, something more elaborate. Different choices are different tradeoffs between flexibility (can it match $p_{\text{data}}$?) and tractability (can we actually compute with it?).</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">$\theta$ needs to be chosen from data.</span>
+        <span class="body">Even after picking the form, we need a principle that says which $\theta$ is the right one given our examples.</span>
+      </div>
+    </li>
+  </ol>
+</div>
+
+<div class="roadmap">
+  <span class="label">roadmap</span>
+  <p>Each of those questions has a long history. The rest of the document walks through the answers in roughly the order they were discovered: how to choose $\theta$ (<strong>maximum likelihood</strong>, <strong>Bayesian inference</strong>), why simple forms for $p_\theta$ aren't enough (<strong>latent variables</strong>), how to compute with latent variables (<strong>EM</strong>, then <strong>variational inference</strong>), and only then — once the framework is built — what changes when we let neural networks into it.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-3"><span class="num">3</span> A tour of distributions</h2>
+
+<p>Before we get principled, let's get our hands on the actual objects. We'll meet four distributions and, for each one, do the two jobs from Section 1: <strong>score</strong> a point, and <strong>generate</strong> one.</p>
+
+<div class="pullquote">
+  <span class="lead">the point of this section</span>
+  <p>Both jobs cost something, and the cost depends on the distribution. Scoring is sometimes a formula evaluation. Generating is almost never just one operation. By the end you'll see that <span class="hl">"how hard is sampling?"</span> is an axis the whole field of generative modeling is organized along.</p>
+</div>
+
+<!-- ---------- 3.1 Bernoulli ---------- -->
+<h3 id="sec-3-bernoulli"><span class="subnum">3.1</span> Bernoulli — the warmup</h3>
+
+<div class="chip-row">
+  <span class="chip chip-neutral">discrete</span>
+  <span class="chip chip-neutral">1 parameter</span>
+  <span class="chip chip-easy">score: easy</span>
+  <span class="chip chip-easy">sample: easy</span>
+</div>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">pmf</span><span class="sep">·</span><span>bernoulli</span></div>
+  <div class="obj-body">
+    $$p(x \mid \theta) = \theta^x (1-\theta)^{1-x}, \quad x \in \{0, 1\}.$$
+    <div class="symdefs">
+      <span class="row"><strong>$\theta \in [0, 1]$</strong> — the probability of $x = 1$.</span>
+      <span class="row"><strong>$p(x)$ is a real probability</strong>, not a density. Always in $[0, 1]$. No density-vs-probability confusion here — that bites us at the Gaussian.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card score">
+  <div class="obj-label"><span class="tag">score</span><span class="sep">·</span><span>plug in</span><span class="cost">1 multiply</span></div>
+  <div class="obj-body">
+    <p>$x = 1 \Rightarrow$ return $\theta$. &nbsp;&nbsp; $x = 0 \Rightarrow$ return $1 - \theta$.</p>
+  </div>
+</div>
+
+<div class="obj-card sample">
+  <div class="obj-label"><span class="tag">sample</span><span class="sep">·</span><span>uniform threshold</span><span class="cost">1 compare</span></div>
+  <div class="obj-body">
+    <p>Draw $u \sim \text{Uniform}(0, 1)$. Return $1$ if $u < \theta$, else $0$. The uniform-to-Bernoulli mapping is exact — no approximation.</p>
+  </div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-icon">B</span>
+    <span class="demo-title">Bernoulli</span>
+  </div>
+  <div class="demo-body">
+    <div class="controls">
+      <label>$\theta$ <input type="range" id="bern-theta" min="0" max="1" step="0.01" value="0.3"></label>
+      <span class="readout" id="bern-theta-readout">θ = 0.30</span>
+      <button id="bern-sample">Sample 200 points</button>
+      <button id="bern-clear" class="secondary">Clear</button>
+    </div>
+    <div id="bern-plot" class="plot"></div>
+  </div>
+</div>
+
+<p>Used everywhere: binary pixel models (MNIST), binary classification, per-pixel decoders in VAEs. <span class="hl">Cheap on both ends — we won't be this lucky again.</span></p>
+
+<!-- ---------- 3.2 Gaussian ---------- -->
+<h3 id="sec-3-gaussian"><span class="subnum">3.2</span> Gaussian — the workhorse</h3>
+
+<div class="chip-row">
+  <span class="chip chip-neutral">continuous</span>
+  <span class="chip chip-neutral">2 parameters</span>
+  <span class="chip chip-easy">score: easy</span>
+  <span class="chip chip-medium">sample: a trick needed</span>
+</div>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">pdf</span><span class="sep">·</span><span>gaussian</span></div>
+  <div class="obj-body">
+    $$p(x \mid \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right).$$
+    <div class="symdefs">
+      <span class="row"><strong>$\mu$</strong> — where the distribution is centered. &nbsp;&nbsp;<strong>$\sigma^2$</strong> — how spread out it is.</span>
+      <span class="row"><strong>$p(x)$ is a density, not a probability.</strong> <span class="warn-inline">Densities can exceed 1</span> — what's bounded in $[0, 1]$ is the integral $\int_a^b p(x)\,dx$. Make $\sigma$ small in the demo and watch the peak shoot above 1.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card score">
+  <div class="obj-label"><span class="tag">score</span><span class="sep">·</span><span>plug in</span><span class="cost">1 exp + 1 div</span></div>
+  <div class="obj-body">
+    <p>Substitute $x, \mu, \sigma^2$ into the formula. One exponential, one division. Pointwise — no integration needed.</p>
+  </div>
+</div>
+
+<div class="obj-card sample">
+  <div class="obj-label"><span class="tag">sample</span><span class="sep">·</span><span>Box–Muller</span><span class="cost">log + √ + sin/cos</span></div>
+  <div class="obj-body">
+    <p>The Gaussian CDF has no closed-form inverse, so the usual "draw $u$ and invert" trick doesn't apply. Box–Muller takes two uniforms in and gives two independent standard Gaussians out:</p>
+<div class="algo"><span class="keyword">sample</span> from N(0, 1):
+  draw u₁, u₂ ~ Uniform(0, 1)
+  r = sqrt(-2 · ln(u₁))
+  θ = 2π · u₂
+  return  x₁ = r·cos(θ),  x₂ = r·sin(θ)   <span class="comment"># two independent samples</span>
+
+<span class="keyword">sample</span> from N(μ, σ²):
+  z ~ N(0, 1)
+  return  μ + σ·z                          <span class="comment"># location-scale shift</span>
+</div>
+    <p>Already not as primitive as Bernoulli — but still constant-cost. The trick exploits a structural property of the Gaussian that most distributions don't have.</p>
+    <details>
+      <summary>Why Box–Muller works (polar decomposition)</summary>
+      <div class="body">
+        <p>If $X_1, X_2$ are independent $\mathcal{N}(0,1)$, their joint density is $p(x_1, x_2) = \tfrac{1}{2\pi} \exp(-\tfrac{x_1^2 + x_2^2}{2})$. Switch to polar coordinates; the Jacobian is $r$:</p>
+        $$p(r,\theta) = \tfrac{r}{2\pi} \exp(-r^2/2).$$
+        <p>This factorizes — $\theta$ is uniform on $[0, 2\pi)$ (easy), and $R^2$ is exponential with mean 2 (also easy via inverse-CDF, $r = \sqrt{-2 \ln u_1}$). Sample each marginal, convert back to Cartesian, done.</p>
+      </div>
+    </details>
+  </div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-icon">G</span>
+    <span class="demo-title">Gaussian (1D)</span>
+  </div>
+  <div class="demo-body">
+    <div class="controls">
+      <label>$\mu$ <input type="range" id="g-mu" min="-3" max="3" step="0.05" value="0"></label>
+      <span class="readout" id="g-mu-readout">μ = 0.00</span>
+      <label>$\sigma$ <input type="range" id="g-sigma" min="0.2" max="2.5" step="0.05" value="1"></label>
+      <span class="readout" id="g-sigma-readout">σ = 1.00</span>
+      <button id="g-sample">Sample 200 (Box–Muller)</button>
+      <button id="g-clear" class="secondary">Clear</button>
+    </div>
+    <div id="g-plot" class="plot"></div>
+  </div>
+</div>
+
+<p>The most common <em>output</em> distribution in generative modeling. A VAE decoder predicting pixel intensities outputs exactly this — one Gaussian per pixel, with $\mu, \sigma$ from the network.</p>
+
+<!-- ---------- 3.3 Mixture ---------- -->
+<h3 id="sec-3-mixture"><span class="subnum">3.3</span> Mixture of Gaussians — the bridge</h3>
+
+<div class="chip-row">
+  <span class="chip chip-neutral">continuous</span>
+  <span class="chip chip-neutral">multimodal</span>
+  <span class="chip chip-easy">score: easy</span>
+  <span class="chip chip-medium">sample: two-stage</span>
+  <span class="chip chip-accent">latent variable preview</span>
+</div>
+
+<p>A single Gaussian is one bump. Real data isn't.</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">density</span><span class="sep">·</span><span>mixture of K gaussians</span></div>
+  <div class="obj-body">
+    $$p(x) = \sum_{k=1}^K \pi_k \cdot \mathcal{N}(x \mid \mu_k, \sigma_k^2).$$
+    <div class="symdefs">
+      <span class="row"><strong>$K$</strong> components, each its own Gaussian with $\mu_k, \sigma_k$.</span>
+      <span class="row"><strong>$\pi_k \geq 0$, $\sum_k \pi_k = 1$</strong> — the mixing weights. How much of the total mass each component contributes.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card score">
+  <div class="obj-label"><span class="tag">score</span><span class="sep">·</span><span>sum the components</span><span class="cost">K Gaussian evals</span></div>
+  <div class="obj-body">
+    <p>Evaluate each component's density at $x$, weight by $\pi_k$, add. Closed form, cheap.</p>
+  </div>
+</div>
+
+<div class="obj-card sample">
+  <div class="obj-label"><span class="tag">sample</span><span class="sep">·</span><span>two-stage</span><span class="cost">categorical + Gaussian</span></div>
+  <div class="obj-body">
+    <p>You can't "evaluate the formula" to sample — you have to commit to a component first, then draw from it.</p>
+<div class="algo"><span class="keyword">sample</span> from a mixture of K Gaussians:
+  k ~ Categorical(π₁, ..., π_K)   <span class="comment"># pick a component</span>
+  x ~ N(μ_k, σ²_k)                <span class="comment"># sample from it</span>
+  return x
+</div>
+    <p>The intermediate $k$ is generated by the process but <strong>never observed</strong> in the data. That asymmetry is the entire latent-variable idea — see the box below.</p>
+  </div>
+</div>
+
+<div class="pullquote">
+  <span class="lead">your first latent variable</span>
+  <p>$k$ is a <strong>latent variable</strong>. We never observe which component a point came from — we just see $x$. But the generative process used $k$ to produce $x$. <span class="hl">This is the entire idea behind latent variable models</span>, which we'll formalize later.</p>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-icon">M</span>
+    <span class="demo-title">Mixture of three Gaussians</span>
+  </div>
+  <div class="demo-body">
+    <div class="controls">
+      <label>$\pi_1$ <input type="range" id="mix-pi1" min="0.05" max="0.9" step="0.01" value="0.3"></label>
+      <span class="readout" id="mix-pi1-readout">π₁ = 0.30</span>
+      <label>$\pi_2$ <input type="range" id="mix-pi2" min="0.05" max="0.9" step="0.01" value="0.4"></label>
+      <span class="readout" id="mix-pi2-readout">π₂ = 0.40</span>
+      <span class="readout" id="mix-pi3-readout">π₃ = 0.30</span>
+      <button id="mix-sample">Sample 500 points</button>
+      <button id="mix-clear" class="secondary">Clear</button>
+    </div>
+    <div id="mix-plot" class="plot"></div>
+    <p class="demo-footnote">Components fixed at $\mathcal{N}(-2, 0.5^2)$, $\mathcal{N}(0, 0.7^2)$, $\mathcal{N}(2.2, 0.4^2)$. $\pi_3$ adjusts so the weights sum to 1. Sampled points are colored by which component generated them — information you wouldn't have in a real dataset.</p>
+  </div>
+</div>
+
+<p>Cheap on both ends — <em>if</em> you know the components. Inferring which component a point came from given just $x$ is harder, and that posterior inference problem is what VAEs eventually generalize.</p>
+
+<!-- ---------- 3.4 Two moons ---------- -->
+<h3 id="sec-3-twomoons"><span class="subnum">3.4</span> A 2D warning</h3>
+
+<div class="chip-row">
+  <span class="chip chip-easy">sample: trivial</span>
+  <span class="chip chip-hard">score: no closed form</span>
+</div>
+
+<p>Move to two dimensions and a non-Gaussian shape and the cracks show.</p>
+
+<div class="obj-card sample">
+  <div class="obj-label"><span class="tag">sample</span><span class="sep">·</span><span>by construction</span><span class="cost">2 trig + noise</span></div>
+  <div class="obj-body">
+    <p>Pick a moon, an angle $t \in [0, \pi]$, add Gaussian noise. Trivial — the distribution is <em>defined</em> by this procedure.</p>
+  </div>
+</div>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">score</span><span class="sep">·</span><span>no closed form</span></div>
+  <div class="obj-body">
+    <p>To write $p(x_1, x_2)$ for an arbitrary 2D point, you'd have to integrate over all $(t, \text{moon})$ that could plausibly have produced it. <strong>No clean formula.</strong> The procedure that <em>generates</em> the data is not the same as the formula that <em>evaluates</em> it.</p>
+  </div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-icon">2</span>
+    <span class="demo-title">Two moons</span>
+  </div>
+  <div class="demo-body">
+    <div class="controls">
+      <label>noise $\sigma$ <input type="range" id="moons-noise" min="0" max="0.3" step="0.005" value="0.1"></label>
+      <span class="readout" id="moons-noise-readout">σ = 0.10</span>
+      <button id="moons-sample">Resample 600 points</button>
+    </div>
+    <div id="moons-plot" class="plot"></div>
+  </div>
+</div>
+
+<p>Now flip the asymmetry.</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">energy-based</span><span class="sep">·</span><span>defined by a formula</span></div>
+  <div class="obj-body">
+    $$\tilde p(x) \propto \exp(-E(x))$$
+    <div class="symdefs">
+      <span class="row"><strong>$E(x)$</strong> — an "energy" function. Could be from physics, or an unnormalized neural-net output.</span>
+      <span class="row">We can <strong>score</strong> any point pointwise (up to a normalizing constant). But sampling now requires <span class="warn-inline">Markov Chain Monte Carlo</span> — thousands of steps with no clean guarantee of convergence.</span>
+    </div>
+  </div>
+</div>
+
+<div class="pullquote">
+  <span class="lead">the asymmetry, stated plainly</span>
+  <p><span class="hl">The same object — "a distribution" — pays its cost in different currencies depending on which way you defined it.</span></p>
+</div>
+
+<!-- ---------- 3.5 The axis ---------- -->
+<h3 id="sec-3-axis"><span class="subnum">3.5</span> The axis that organizes the whole field</h3>
+
+<p>At the level of <em>what we want</em>, scoring and generating are the same job. At the level of <em>computation</em>, they pull in different directions — and every generative model family makes a different bargain.</p>
+
+<table class="compare">
+  <thead>
+    <tr>
+      <th>Family</th>
+      <th>Score $p_\theta(x)$</th>
+      <th>Sample $x \sim p_\theta$</th>
+      <th>The bargain</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bernoulli / Gaussian</td>
+      <td><span class="chip chip-easy">cheap formula</span></td>
+      <td><span class="chip chip-easy">cheap</span></td>
+      <td>Too rigid for real high-dim data</td>
+    </tr>
+    <tr>
+      <td>Mixture model</td>
+      <td><span class="chip chip-easy">cheap sum</span></td>
+      <td><span class="chip chip-easy">pick + sample</span></td>
+      <td>Components don't scale to images</td>
+    </tr>
+    <tr>
+      <td><strong>VAE</strong></td>
+      <td><span class="chip chip-hard">intractable</span></td>
+      <td><span class="chip chip-easy">one forward pass</span></td>
+      <td>Sample fast, evaluate via a bound</td>
+    </tr>
+    <tr>
+      <td>Autoregressive (PixelCNN, GPT)</td>
+      <td><span class="chip chip-easy">factorizes</span></td>
+      <td><span class="chip chip-hard">sequential</span></td>
+      <td>Exact likelihood, slow generation</td>
+    </tr>
+    <tr>
+      <td>Normalizing flow</td>
+      <td><span class="chip chip-easy">change of vars</span></td>
+      <td><span class="chip chip-easy">invert</span></td>
+      <td>Both cheap, model form constrained</td>
+    </tr>
+    <tr>
+      <td>Diffusion</td>
+      <td><span class="chip chip-medium">via objective</span></td>
+      <td><span class="chip chip-hard">many steps</span></td>
+      <td>Best samples today, slow inference</td>
+    </tr>
+    <tr>
+      <td>GAN</td>
+      <td><span class="chip chip-neutral">not modeled</span></td>
+      <td><span class="chip chip-easy">one forward pass</span></td>
+      <td>Sample only — no $p(x)$ at all</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="pullquote">
+  <span class="lead">read the rest with this in mind</span>
+  <p>We're about to build, slowly and carefully, the row labeled <strong>VAE</strong>. Every design choice — encoder, decoder, KL term, reparameterization trick — exists to manage a particular asymmetry: <span class="hl">we want generation to be a single forward pass, and we're willing to pay for that by not being able to compute $p_\theta(x)$ exactly, only bound it.</span></p>
+</div>
+
+<div class="next-up">
+  <span class="label">what's next</span>
+  <p>Now that we've <em>seen</em> the objects, we go back to first principles. Section 4 will work through how to actually choose $\theta$ from data — <strong>maximum likelihood</strong> and <strong>MAP</strong> — with the same distributions above as worked examples. After that, we start the formal path to variational inference.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-4"><span class="num">4</span> Choosing $\theta$ from data</h2>
+
+<p>Three things to settle were left from Section 2. The form of $p_\theta$ we picked in Section 3. Now: which $\theta$ given the data, and what does "match" mean.</p>
+
+<!-- ---------- 4.1 Setup ---------- -->
+<h3 id="sec-4-setup"><span class="subnum">4.1</span> The setup</h3>
+
+<p>We have data $\mathcal{D} = \{x_1, \ldots, x_N\}$ and a chosen family $p_\theta(x)$. We need a principle that picks one $\theta$ from the family.</p>
+
+<div class="key-points">
+  <span class="label">Two principles, in this order</span>
+  <ol>
+    <li>
+      <div class="item">
+        <span class="head">Maximum likelihood (MLE).</span>
+        <span class="body">Pick the $\theta$ that makes the data we actually saw look most probable. No prior beliefs about $\theta$ — the data does all the talking.</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">Maximum a posteriori (MAP).</span>
+        <span class="body">Same idea, but with a prior $p(\theta)$ that biases the answer toward "reasonable" $\theta$'s before seeing data. MLE plus a regularizer, essentially.</span>
+      </div>
+    </li>
+  </ol>
+</div>
+
+<!-- ---------- 4.2 Likelihood ---------- -->
+<h3 id="sec-4-likelihood"><span class="subnum">4.2</span> Likelihood — the principle</h3>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">def</span><span class="sep">·</span><span>likelihood</span></div>
+  <div class="obj-body">
+    $$L(\theta) \;=\; p_\theta(\mathcal{D}) \;\stackrel{\text{i.i.d.}}{=}\; \prod_{i=1}^N p_\theta(x_i).$$
+    <div class="symdefs">
+      <span class="row"><strong>$L(\theta)$</strong> is the probability of the observed data <em>as a function of $\theta$</em>. The data is fixed; $\theta$ varies.</span>
+      <span class="row"><strong>i.i.d.</strong> — we assume the $x_i$ are independent and identically distributed under $p_\theta$. That assumption is what lets us multiply.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">def</span><span class="sep">·</span><span>log-likelihood</span></div>
+  <div class="obj-body">
+    $$\ell(\theta) \;=\; \log L(\theta) \;=\; \sum_{i=1}^N \log p_\theta(x_i).$$
+    <div class="symdefs">
+      <span class="row">Products of many small numbers underflow to zero. <strong>Logs turn products into sums</strong> and keep gradients well-scaled. Same argmax.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card result">
+  <div class="obj-label"><span class="tag">MLE</span><span class="sep">·</span><span>the principle</span></div>
+  <div class="obj-body">
+    $$\hat\theta_{\text{MLE}} \;=\; \arg\max_\theta \; \ell(\theta).$$
+    <div class="symdefs">
+      <span class="row">Find the $\theta$ that maximizes the log-probability of the data. Take derivative, set to zero, solve. Easy in principle; we'll see when it isn't.</span>
+    </div>
+  </div>
+</div>
+
+<p class="note">
+  <span class="marker">a trap to name</span>
+  $L(\theta)$ is <em>not</em> a probability over $\theta$. It does not integrate to 1 over $\theta$, and it doesn't have to. It is $p_\theta(\mathcal{D})$ — a function of $\theta$ that happens to use the data-distribution machinery to define its values.
+</p>
+
+<!-- ---------- 4.3 MLE Gaussian ---------- -->
+<h3 id="sec-4-mle-gauss"><span class="subnum">4.3</span> MLE worked — Gaussian</h3>
+
+<div class="chip-row">
+  <span class="chip chip-easy">closed form</span>
+  <span class="chip chip-accent">interpretable answer</span>
+</div>
+
+<div class="obj-card derive">
+  <div class="obj-label"><span class="tag">setup</span><span class="sep">·</span><span>log-likelihood for N points</span></div>
+  <div class="obj-body">
+    $$\ell(\mu, \sigma^2) = -\frac{N}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_{i=1}^N (x_i - \mu)^2.$$
+    <div class="symdefs">
+      <span class="row">Just plug the Gaussian PDF into $\log p$ and sum over the data. Two parameters to solve for: $\mu$ and $\sigma^2$.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card derive">
+  <div class="obj-label"><span class="tag">derive</span><span class="sep">·</span><span>set gradient to zero</span></div>
+  <div class="obj-body">
+    <p>Differentiate w.r.t. $\mu$:</p>
+    $$\frac{\partial \ell}{\partial \mu} = \frac{1}{\sigma^2}\sum_i (x_i - \mu) = 0 \;\Longrightarrow\; \sum_i x_i = N\mu.$$
+    <p>Differentiate w.r.t. $\sigma^2$:</p>
+    $$\frac{\partial \ell}{\partial \sigma^2} = -\frac{N}{2\sigma^2} + \frac{1}{2\sigma^4}\sum_i(x_i - \mu)^2 = 0.$$
+  </div>
+</div>
+
+<div class="obj-card result">
+  <div class="obj-label"><span class="tag">result</span><span class="sep">·</span><span>the MLEs</span></div>
+  <div class="obj-body">
+    $$\hat\mu_{\text{MLE}} = \frac{1}{N}\sum_{i=1}^N x_i, \quad\quad \hat\sigma^2_{\text{MLE}} = \frac{1}{N}\sum_{i=1}^N (x_i - \hat\mu)^2.$$
+    <div class="symdefs">
+      <span class="row"><strong>The sample mean and sample variance.</strong> The Gaussian MLE recovers exactly what you'd guess by eyeballing the data — that's not a coincidence, it's the Gaussian being well-behaved.</span>
+      <span class="row"><span class="warn-inline">$\hat\sigma^2_{\text{MLE}}$ is biased</span> — divides by $N$, not $N-1$. The "unbiased" estimator divides by $N-1$. Both are correct answers to different questions; MLE answers "what maximizes likelihood."</span>
+    </div>
+  </div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-icon">μ</span>
+    <span class="demo-title">MLE fit for a Gaussian — drag the dots</span>
+  </div>
+  <div class="demo-body">
+    <div class="controls">
+      <button id="mle-g-add">+ Add 10 points</button>
+      <button id="mle-g-reset" class="secondary">Reset</button>
+      <span class="readout" id="mle-g-stats">N=0  μ̂=—  σ̂=—</span>
+    </div>
+    <div id="mle-g-plot" class="plot"></div>
+    <p class="demo-footnote">Add points and watch the MLE Gaussian (indigo) reshape live. The dashed vertical line is $\hat\mu$; the shaded band is $\hat\mu \pm \hat\sigma$. The fit only sees these specific points — try clustering them on one side to see the mean shift.</p>
+  </div>
+</div>
+
+<!-- ---------- 4.4 MLE Bernoulli ---------- -->
+<h3 id="sec-4-mle-bern"><span class="subnum">4.4</span> MLE worked — Bernoulli</h3>
+
+<div class="chip-row">
+  <span class="chip chip-easy">closed form</span>
+  <span class="chip chip-easy">one-line answer</span>
+</div>
+
+<div class="obj-card derive">
+  <div class="obj-label"><span class="tag">derive</span><span class="sep">·</span><span>log-likelihood + gradient</span></div>
+  <div class="obj-body">
+    <p>Let $k = \sum_i x_i$ (the number of 1's in $N$ Bernoulli trials):</p>
+    $$\ell(\theta) = k \log \theta + (N - k) \log(1 - \theta).$$
+    <p>Differentiate, set to zero:</p>
+    $$\frac{k}{\theta} - \frac{N-k}{1-\theta} = 0 \;\Longrightarrow\; k(1-\theta) = (N-k)\theta.$$
+  </div>
+</div>
+
+<div class="obj-card result">
+  <div class="obj-label"><span class="tag">result</span><span class="sep">·</span><span>the MLE</span></div>
+  <div class="obj-body">
+    $$\hat\theta_{\text{MLE}} = \frac{k}{N} = \frac{1}{N}\sum_{i=1}^N x_i.$$
+    <div class="symdefs">
+      <span class="row"><strong>The empirical fraction of 1's.</strong> 7 heads in 10 flips → $\hat\theta = 0.7$. Exactly what intuition says.</span>
+      <span class="row">This will return when we model a single binary pixel of a decoded image — the per-pixel Bernoulli MLE is just <em>the average pixel value</em> across the dataset.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- 4.5 MLE Mixture — breaks ---------- -->
+<h3 id="sec-4-mle-mix"><span class="subnum">4.5</span> MLE worked — Mixture (and where the wall is)</h3>
+
+<div class="chip-row">
+  <span class="chip chip-hard">no closed form</span>
+  <span class="chip chip-hard">non-convex</span>
+  <span class="chip chip-accent">the gateway problem</span>
+</div>
+
+<div class="obj-card derive">
+  <div class="obj-label"><span class="tag">setup</span><span class="sep">·</span><span>log-likelihood of a mixture</span></div>
+  <div class="obj-body">
+    $$\ell(\theta) = \sum_{i=1}^N \log \left[\sum_{k=1}^K \pi_k \, \mathcal{N}(x_i \mid \mu_k, \sigma_k^2)\right].$$
+    <div class="symdefs">
+      <span class="row">Looks innocent. <strong>It is not.</strong> The log is now <em>outside a sum</em>, not a product — so $\log$ can't distribute and break it into per-component pieces.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card breaks">
+  <div class="obj-label"><span class="tag">breaks</span><span class="sep">·</span><span>why setting ∇ℓ = 0 doesn't close</span></div>
+  <div class="obj-body">
+    <p>Take $\partial \ell / \partial \mu_k$:</p>
+    $$\frac{\partial \ell}{\partial \mu_k} = \sum_i \underbrace{\frac{\pi_k \mathcal{N}(x_i \mid \mu_k, \sigma_k^2)}{\sum_j \pi_j \mathcal{N}(x_i \mid \mu_j, \sigma_j^2)}}_{=\, \gamma_{ik}} \cdot \frac{x_i - \mu_k}{\sigma_k^2} = 0.$$
+    <p>That fraction $\gamma_{ik}$ is the <strong>posterior probability that point $i$ came from component $k$</strong>. Solve for $\mu_k$:</p>
+    $$\mu_k = \frac{\sum_i \gamma_{ik}\, x_i}{\sum_i \gamma_{ik}}.$$
+    <p>But $\gamma_{ik}$ <em>depends on</em> $\mu_k$ (and all the other parameters). The equation is implicit. <span class="hl">There's no algebraic solution — the unknown is on both sides.</span></p>
+  </div>
+</div>
+
+<details>
+  <summary>Understand this deeply — what's a "latent variable," why does it cause this, and where else does this same problem live?</summary>
+  <div class="body explainer">
+
+    <h4><span class="step-tag">A</span> The setup — one coin, two dice</h4>
+    <p>Forget mixtures for a moment. Here's the smallest latent variable model in the world:</p>
+    <p>I flip a coin. If it's heads, I roll <strong>die A</strong> (fair, 1–6). If tails, I roll <strong>die B</strong> (loaded toward sixes). You see the die number. <strong>You don't see the coin.</strong></p>
+    <div class="scenario">
+      <p><span class="role">latent z</span> the coin flip — $z \in \{H, T\}$. <em>Unobserved.</em></p>
+      <p><span class="role">observed x</span> the die outcome — $x \in \{1, \ldots, 6\}$. <em>This is your data.</em></p>
+      <p><span class="role">parameters</span> $\pi = p(z = H)$, and the two die distributions $p_A(x), p_B(x)$.</p>
+    </div>
+    <p>You do this 1000 times. You see $x_1, \ldots, x_{1000}$. Your job: MLE for $\pi, p_A, p_B$.</p>
+
+    <h4><span class="step-tag">B</span> Imagine you saw the coin too — the problem decouples</h4>
+    <p>Say you had the full pairs $(z_i, x_i)$. The log-likelihood splits:</p>
+    $$\log p(x, z) = \sum_i \log \pi(z_i) + \sum_i \log p_{z_i}(x_i).$$
+    <p>That gives you <strong>three independent estimation problems</strong>:</p>
+    <ul>
+      <li><strong>$\pi$</strong>: count the fraction of $z_i = H$.</li>
+      <li><strong>$p_A$</strong>: take the $x_i$'s where $z_i = H$, compute their empirical distribution.</li>
+      <li><strong>$p_B$</strong>: take the $x_i$'s where $z_i = T$, compute their empirical distribution.</li>
+    </ul>
+    <p>Each is a one-line MLE. Closed form. Trivial. <span class="hl">When the latent is observed, the dataset partitions into independent sub-problems.</span> This is the world latent variable models <em>wish</em> they lived in.</p>
+
+    <h4><span class="step-tag">C</span> Now hide the coin — the log-of-sum appears</h4>
+    <p>You only see the dice rolls. The probability of one observed roll is now</p>
+    $$p(x_i) = p(x_i, z = H) + p(x_i, z = T) = \pi \cdot p_A(x_i) + (1 - \pi) \cdot p_B(x_i).$$
+    <p>That sum is <strong>the cost of not seeing $z$</strong> — you had to sum over all the values $z$ could have been. The log-likelihood becomes</p>
+    $$\log p(x_1, \ldots, x_N) = \sum_i \log\!\left[\pi \cdot p_A(x_i) + (1 - \pi) \cdot p_B(x_i)\right].$$
+    <p>The log is now <strong>outside a sum</strong>. And <span class="warn-inline">$\log(a + b) \neq \log a + \log b$</span> — there's no algebraic move that pulls the $p_A$ and $p_B$ apart. The parameters of die A and die B are now <strong>entangled inside every single term</strong>. You cannot estimate one without simultaneously thinking about the other.</p>
+
+    <h4><span class="step-tag">D</span> The exact problem, named — chicken and egg</h4>
+    <p>Suppose you see the roll $x_i = 6$. What does this tell you about die A vs die B?</p>
+    <p><strong>It depends on what you already think they are.</strong></p>
+    <ul>
+      <li>If you already believe die B is loaded toward sixes, this roll is evidence "$z$ was T."</li>
+      <li>If you already believe die A is loaded toward sixes, the same roll is evidence "$z$ was H."</li>
+    </ul>
+    <p>The roll itself is <em>ambiguous evidence</em> until you've already committed to a model. So:</p>
+    <div class="pullquote">
+      <span class="lead">the chicken-and-egg, stated cleanly</span>
+      <p>To estimate $p_A$ and $p_B$, you need to know which rolls came from which die. <span class="hl">To know which rolls came from which die, you need to know $p_A$ and $p_B$.</span> Neither side closes. The dataset can't be partitioned the way it could in part B, because the partitioning is <em>itself unknown</em> and depends on the answer.</p>
+    </div>
+    <p>This is exactly what the gradient equations in 4.5 are telling us, in algebraic form. The implicit $\gamma_{ik}$ that depends on $\mu_k$ which depends on $\gamma_{ik}$ — calculus's way of saying <em>"you need the labels to find the parameters, and you need the parameters to find the labels."</em></p>
+
+    <h4><span class="step-tag">E</span> The general fact — every latent variable model has this shape</h4>
+    <p>This wasn't a quirk of coins and dice. It's a universal structural fact about latent variable models:</p>
+    <table class="ol-compare">
+      <thead>
+        <tr><th>case</th><th>likelihood per datapoint</th><th>closed form?</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Latents observed: data is $(z_i, x_i)$</td>
+          <td>$\log p(z_i, x_i)$ — log of a single term</td>
+          <td><strong>Yes</strong> — problem decouples</td>
+        </tr>
+        <tr>
+          <td>Latents hidden: data is $x_i$ only</td>
+          <td>$\log \sum_z p(x_i, z)$ — log of a sum</td>
+          <td><strong>No</strong> — parameters entangled</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The mixture's $\sum_k$ in its density is structurally identical to the coin-and-dice's $\sum_z$. <span class="hl">The mixture is a latent variable model precisely because that sum is hiding a marginalized latent.</span> Same shape, same breakage.</p>
+
+    <h4><span class="step-tag">F</span> Where this same problem appears in the real world</h4>
+    <p>Once you've seen the pattern, you start to see it everywhere. Each row below is a real problem with the same chicken-and-egg structure — you observe one thing, but to model it you'd need a hidden thing you don't get to see.</p>
+    <table class="ol-compare">
+      <thead>
+        <tr><th>problem</th><th>observed $x$</th><th>latent $z$</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>3D vision from 2D images</td>
+          <td>pixels of an image</td>
+          <td>the 3D scene — geometry, materials, lighting, camera. Infinitely many scenes can produce the same pixels.</td>
+        </tr>
+        <tr>
+          <td>Speech recognition (HMMs)</td>
+          <td>audio waveform</td>
+          <td>the phoneme / word sequence that was spoken. To estimate the sound-to-phoneme mapping you'd want the alignment; to align you'd need the mapping.</td>
+        </tr>
+        <tr>
+          <td>Topic modeling (LDA)</td>
+          <td>words in a document</td>
+          <td>which topic each word came from. Topic distributions need word labels; word labels need topic distributions.</td>
+        </tr>
+        <tr>
+          <td>SLAM (robot localization &amp; mapping)</td>
+          <td>noisy sensor readings over time</td>
+          <td>the robot's true pose and the map of the world. Pose depends on map, map depends on pose — that's literally what "simultaneous" means in the name.</td>
+        </tr>
+        <tr>
+          <td>Cocktail party / source separation</td>
+          <td>mixed audio at one microphone</td>
+          <td>the individual speakers' voices being mixed together. You'd need the mixing pattern to recover voices; you'd need voices to estimate the mixing.</td>
+        </tr>
+        <tr>
+          <td>Genetics — ancestry inference</td>
+          <td>DNA from individuals</td>
+          <td>which ancestral populations contributed, and in what proportion. Population allele frequencies need ancestries; ancestries need frequencies.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Same shape in every row: observe a marginal, latent has been integrated out, parameters entangled inside a log of a sum. <span class="hl">This is one problem with many faces, not many unrelated problems.</span></p>
+
+    <h4><span class="step-tag">G</span> What this predicts about the rest of the document</h4>
+    <p>If "log of a marginal sum" is the universal obstruction, then everything that comes next is a different strategy for living with it:</p>
+    <ul>
+      <li><strong>EM</strong> (Section 5): don't fight the sum. <em>Alternate</em>. Pretend you know $z$, do the easy estimate, then re-estimate $z$ given your new parameters, repeat.</li>
+      <li><strong>Variational inference</strong> (Section 6): when even <em>computing</em> $p(z \mid x)$ for the alternation is intractable, approximate it with a tractable family.</li>
+      <li><strong>VAE</strong> (Section 7): when $z$ is continuous and high-dimensional (the sum becomes an integral over $\mathbb{R}^d$), use neural networks for the approximating family, and reparameterize so gradients flow.</li>
+    </ul>
+    <p>Three sections, one obstruction, three different ways of dodging it.</p>
+  </div>
+</details>
+
+<div class="pullquote">
+  <span class="lead">the road forks here</span>
+  <p>For the Gaussian and the Bernoulli, $\nabla \ell = 0$ <em>closed</em> — we got an answer. For the mixture, it doesn't. The reason: the mixture is a <strong>latent variable model</strong>, and $p_\theta(x) = \sum_k \pi_k \mathcal{N}(x \mid \mu_k, \sigma_k^2)$ is really a <em>marginal</em>: $p_\theta(x) = \sum_k p_\theta(x, k)$. The latent $k$ got summed out, and the log of that sum is what breaks the algebra. <span class="hl">Every algorithm we build from here on — EM, variational inference, the VAE itself — is a different answer to "what do you do when the latent variable makes the gradient implicit?"</span></p>
+</div>
+
+<p class="note">
+  <span class="marker">a preview</span>
+  The fixed-point structure of the mixture equation (<em>$\mu_k$ depends on $\gamma_{ik}$, which depends on $\mu_k$</em>) is exactly what the <strong>EM algorithm</strong> exploits: alternate between computing $\gamma_{ik}$ given the current $\mu_k$ (E-step) and updating $\mu_k$ given $\gamma_{ik}$ (M-step). EM is what comes next.
+</p>
+
+<!-- ---------- 4.6 MLE ↔ KL ---------- -->
+<h3 id="sec-4-kl"><span class="subnum">4.6</span> MLE ↔ KL — what "match" actually means</h3>
+
+<p>Back in Section 2 we left "$p_\theta \approx p_{\text{data}}$" without saying what "$\approx$" meant. MLE secretly answers it.</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">def</span><span class="sep">·</span><span>KL divergence</span></div>
+  <div class="obj-body">
+    $$\mathrm{KL}(p \,\|\, q) = \mathbb{E}_{x \sim p}\!\left[\log \frac{p(x)}{q(x)}\right] = \int p(x) \log \frac{p(x)}{q(x)}\, dx.$$
+    <div class="symdefs">
+      <span class="row"><strong>$\mathrm{KL}(p \,\|\, q) \geq 0$</strong>, with equality iff $p = q$ everywhere. It's the "extra bits" needed to encode samples from $p$ using a code optimized for $q$.</span>
+      <span class="row"><strong>Asymmetric:</strong> $\mathrm{KL}(p \,\|\, q) \neq \mathrm{KL}(q \,\|\, p)$ in general. That asymmetry will matter when we get to variational inference.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card derive">
+  <div class="obj-label"><span class="tag">derive</span><span class="sep">·</span><span>the equivalence</span></div>
+  <div class="obj-body">
+    <p>As $N \to \infty$, the average log-likelihood approaches an expectation under $p_{\text{data}}$:</p>
+    $$\frac{1}{N}\ell(\theta) = \frac{1}{N}\sum_i \log p_\theta(x_i) \;\longrightarrow\; \mathbb{E}_{x \sim p_{\text{data}}}[\log p_\theta(x)].$$
+    <p>Now expand the KL between $p_{\text{data}}$ and $p_\theta$:</p>
+    $$\mathrm{KL}(p_{\text{data}} \,\|\, p_\theta) = \mathbb{E}_{p_{\text{data}}}[\log p_{\text{data}}(x)] - \mathbb{E}_{p_{\text{data}}}[\log p_\theta(x)].$$
+    <p>The first term does not depend on $\theta$. So minimizing KL is equivalent to maximizing the second term — which is exactly the (asymptotic) log-likelihood.</p>
+  </div>
+</div>
+
+<div class="obj-card result">
+  <div class="obj-label"><span class="tag">result</span><span class="sep">·</span><span>the connection</span></div>
+  <div class="obj-body">
+    $$\arg\max_\theta \; \mathbb{E}_{p_{\text{data}}}[\log p_\theta(x)] \;=\; \arg\min_\theta \; \mathrm{KL}(p_{\text{data}} \,\|\, p_\theta).$$
+    <div class="symdefs">
+      <span class="row"><strong>Maximum likelihood <em>is</em> KL minimization</strong> (asymptotically). We weren't choosing a closeness measure arbitrarily — picking MLE picked KL for us.</span>
+      <span class="row">The direction matters: it's $\mathrm{KL}(p_{\text{data}} \,\|\, p_\theta)$ — the "data-first" direction. This penalizes $p_\theta$ for putting low probability where $p_{\text{data}}$ has support. (The reverse direction, $\mathrm{KL}(p_\theta \,\|\, p_{\text{data}})$, gives different behavior — comes back when we build the ELBO.)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- 4.7 MAP ---------- -->
+<h3 id="sec-4-map"><span class="subnum">4.7</span> MAP — adding a prior</h3>
+
+<div class="chip-row">
+  <span class="chip chip-info">Bayes' rule</span>
+  <span class="chip chip-accent">MLE + regularizer</span>
+</div>
+
+<p>MLE has no opinion about $\theta$ before seeing the data. MAP gives it one.</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">bayes</span><span class="sep">·</span><span>posterior over θ</span></div>
+  <div class="obj-body">
+    $$p(\theta \mid \mathcal{D}) = \frac{p(\mathcal{D} \mid \theta)\, p(\theta)}{p(\mathcal{D})} \;\propto\; p(\mathcal{D} \mid \theta)\, p(\theta).$$
+    <div class="symdefs">
+      <span class="row"><strong>$p(\theta)$</strong> — the <em>prior</em>: what we believe about $\theta$ before seeing data.</span>
+      <span class="row"><strong>$p(\mathcal{D} \mid \theta)$</strong> — the likelihood (same as before).</span>
+      <span class="row"><strong>$p(\mathcal{D})$</strong> — the evidence, just a normalizing constant. Drops out for argmax.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card result">
+  <div class="obj-label"><span class="tag">result</span><span class="sep">·</span><span>MAP estimator</span></div>
+  <div class="obj-body">
+    $$\hat\theta_{\text{MAP}} = \arg\max_\theta \; \log p(\mathcal{D} \mid \theta) + \log p(\theta).$$
+    <div class="symdefs">
+      <span class="row"><strong>MLE + a penalty on $\theta$.</strong> The prior $\log p(\theta)$ acts exactly like a regularizer.</span>
+      <span class="row">As $N \to \infty$, the likelihood term dominates and MAP → MLE. The prior matters most when data is scarce.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card derive">
+  <div class="obj-label"><span class="tag">worked example</span><span class="sep">·</span><span>Gaussian mean with a Gaussian prior</span></div>
+  <div class="obj-body">
+    <p>Data: $x_1, \ldots, x_N \sim \mathcal{N}(\mu, \sigma^2)$, $\sigma^2$ known. Prior: $\mu \sim \mathcal{N}(\mu_0, \tau^2)$.</p>
+    <p>Setting the gradient of $\log p(\mathcal{D} \mid \mu) + \log p(\mu)$ to zero:</p>
+    $$\hat\mu_{\text{MAP}} = \frac{\tfrac{N}{\sigma^2}\, \bar x \,+\, \tfrac{1}{\tau^2}\, \mu_0}{\tfrac{N}{\sigma^2} + \tfrac{1}{\tau^2}}.$$
+    <div class="symdefs">
+      <span class="row"><strong>A precision-weighted average</strong> of the data mean $\bar x$ and the prior mean $\mu_0$. With infinite data ($N \to \infty$) it collapses to $\bar x$; with no data ($N = 0$) it returns the prior $\mu_0$.</span>
+      <span class="row">This is the same shrinkage you see in ridge regression — and it's not a coincidence. Ridge is MAP with a Gaussian prior on the weights.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- 4.8 The wall ---------- -->
+<h3 id="sec-4-bridge"><span class="subnum">4.8</span> The wall — and what's next</h3>
+
+<p>The Gaussian and Bernoulli MLEs were one-line closed forms. The mixture wasn't — and the obstruction was specific.</p>
+
+<div class="obj-card breaks">
+  <div class="obj-label"><span class="tag">the obstruction</span><span class="sep">·</span><span>marginalizing latents</span></div>
+  <div class="obj-body">
+    <p>A latent variable model defines a joint $p_\theta(x, z)$. The data likelihood is the <em>marginal</em>:</p>
+    $$p_\theta(x) = \int p_\theta(x, z)\, dz \;=\; \int p_\theta(x \mid z)\, p_\theta(z)\, dz.$$
+    <div class="symdefs">
+      <span class="row">For the mixture, $z = k$ is discrete and the integral is a sum over $K$ terms — annoying but finite.</span>
+      <span class="row">For the <strong>VAE</strong>, $z \in \mathbb{R}^d$ is continuous and high-dimensional. This integral has no closed form, no efficient quadrature, no tractable Monte Carlo estimator that we can backprop through naïvely. <span class="hl">This single integral is what every coming chapter is built to attack.</span></span>
+    </div>
+  </div>
+</div>
+
+<div class="next-up">
+  <span class="label">what's next</span>
+  <p>Section 5 introduces the <strong>EM algorithm</strong> — the classical answer for discrete latents (mixtures). EM is elegant for finite $K$ but doesn't survive continuous high-dimensional $z$. Section 6 generalizes it to <strong>variational inference</strong>, which does. Section 7 plugs neural networks into that framework and we get the VAE.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-5"><span class="num">5</span> EM — the classical answer</h2>
+
+<p>The mixture left us with an equation where the unknown was on both sides. EM is the elegant way to live with that.</p>
+
+<!-- ---------- 5.1 Fixed-point insight ---------- -->
+<h3 id="sec-5-fixedpoint"><span class="subnum">5.1</span> The fixed-point insight</h3>
+
+<p>Recall the mixture's MLE equation from 4.5:</p>
+
+<div class="obj-card breaks">
+  <div class="obj-label"><span class="tag">recap</span><span class="sep">·</span><span>where we got stuck</span></div>
+  <div class="obj-body">
+    $$\mu_k = \frac{\sum_i \gamma_{ik}(\theta)\, x_i}{\sum_i \gamma_{ik}(\theta)}, \quad\quad \gamma_{ik}(\theta) = p(z = k \mid x_i, \theta).$$
+    <div class="symdefs">
+      <span class="row">$\mu_k$ depends on $\gamma$, $\gamma$ depends on $\mu_k$ (through all parameters). Implicit. No algebra closes it.</span>
+    </div>
+  </div>
+</div>
+
+<div class="pullquote">
+  <span class="lead">the move</span>
+  <p>Stop trying to solve it algebraically. <span class="hl">Alternate.</span> Pick a starting $\theta$, compute $\gamma$ from it, use that $\gamma$ to update $\theta$, repeat. This converges to a (local) maximum of the likelihood — and the reason it works is deeper than it looks. We'll see in 5.4.</p>
+</div>
+
+<!-- ---------- 5.2 The recipe ---------- -->
+<h3 id="sec-5-recipe"><span class="subnum">5.2</span> EM — the two-step recipe</h3>
+
+<div class="chip-row">
+  <span class="chip chip-accent">iterative</span>
+  <span class="chip chip-easy">closed-form steps (for mixtures)</span>
+  <span class="chip chip-medium">local optima</span>
+</div>
+
+<div class="obj-card step">
+  <div class="obj-label"><span class="step-badge">E</span><span class="tag">E-step</span><span class="sep">·</span><span>given θ, compute the posterior over latents</span></div>
+  <div class="obj-body">
+    <p>For each datapoint $i$ and each possible latent value $k$:</p>
+    $$\gamma_{ik} \;=\; p(z = k \mid x_i, \theta^{\text{old}}) \;=\; \frac{\pi_k\, \mathcal{N}(x_i \mid \mu_k, \sigma_k^2)}{\sum_j \pi_j\, \mathcal{N}(x_i \mid \mu_j, \sigma_j^2)}.$$
+    <div class="symdefs">
+      <span class="row"><strong>$\gamma_{ik}$ is the "responsibility"</strong> — how much component $k$ explains point $i$, given the current parameters.</span>
+      <span class="row">Each $\gamma_{i,:}$ is a probability distribution over the $K$ components: it sums to 1 across $k$.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card step">
+  <div class="obj-label"><span class="step-badge">M</span><span class="tag">M-step</span><span class="sep">·</span><span>given γ, treat responsibilities as soft labels and refit θ</span></div>
+  <div class="obj-body">
+    <p>Using the responsibilities as fixed weights, the maximization closes:</p>
+    $$\mu_k = \frac{\sum_i \gamma_{ik}\, x_i}{\sum_i \gamma_{ik}}, \quad \sigma_k^2 = \frac{\sum_i \gamma_{ik}(x_i - \mu_k)^2}{\sum_i \gamma_{ik}}, \quad \pi_k = \frac{1}{N}\sum_i \gamma_{ik}.$$
+    <div class="symdefs">
+      <span class="row">Same as the single-Gaussian MLE — but each point contributes <strong>weighted</strong> by its responsibility to component $k$.</span>
+      <span class="row">If $\gamma_{ik} \in \{0, 1\}$ (hard assignment), these become $k$-means-style updates. EM is the soft generalization.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card result">
+  <div class="obj-label"><span class="tag">algorithm</span><span class="sep">·</span><span>EM loop</span></div>
+  <div class="obj-body">
+<div class="algo"><span class="keyword">repeat</span> until log-likelihood stops increasing:
+  E-step: γ ← posterior(θ)
+  M-step: θ ← argmax over θ given γ
+</div>
+    <div class="symdefs">
+      <span class="row">Each iteration is guaranteed to <strong>not decrease</strong> $\log p_\theta(\mathcal{D})$. (Proven in 5.5 via the ELBO view.) In practice it's monotonic.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- 5.3 Coin & dice ---------- -->
+<h3 id="sec-5-coindice"><span class="subnum">5.3</span> EM on the coin and dice — the chicken-and-egg, solved</h3>
+
+<p>The mixture's chicken-and-egg in 4.5 had the simplest possible form: one coin and two dice. Now we have the algorithm. Let's run it on that exact setup and watch the deadlock dissolve.</p>
+
+<p class="note">
+  <span class="marker">recall from §4.5</span>
+  Coin $z \in \{H, T\}$ with $p(z = H) = \pi$. If H, roll <strong>die A</strong> with distribution $p_A$; if T, roll <strong>die B</strong> with distribution $p_B$. You see the dice rolls $x_1, \ldots, x_N \in \{1, \ldots, 6\}$. You don't see the coin. <em>Want to recover $\pi, p_A, p_B$.</em>
+</p>
+
+<div class="pullquote">
+  <span class="lead">the move</span>
+  <p>Don't escape the chicken-and-egg. <span class="hl">Iterate it.</span> Pick any starting $\pi, p_A, p_B$. Use them to <em>guess</em> the coin flips. Use those guesses to <em>refit</em> the parameters. Repeat.</p>
+</div>
+
+<div class="obj-card step">
+  <div class="obj-label"><span class="step-badge">E</span><span class="tag">E-step</span><span class="sep">·</span><span>soft-label each roll — Bayes' rule, applied N times</span></div>
+  <div class="obj-body">
+    <p>For each observed roll $x_i$, given the current $\pi, p_A, p_B$, compute the probability the coin was H:</p>
+    $$\gamma_i \;=\; p(z = H \mid x_i) \;=\; \frac{\pi \cdot p_A(x_i)}{\pi \cdot p_A(x_i) + (1-\pi) \cdot p_B(x_i)}.$$
+    <div class="symdefs">
+      <span class="row"><strong>$\gamma_i \in [0, 1]$ is a <em>soft label</em></strong>: how much we credit "the coin was H" for this roll, given the model. Sums with $(1 - \gamma_i)$ over the two coin outcomes.</span>
+      <span class="row"><strong>This is just Bayes' rule.</strong> $p(z \mid x) \propto p(x \mid z) \cdot p(z)$. The E-step does Bayes once per datapoint, with the current parameters as priors.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card step">
+  <div class="obj-label"><span class="step-badge">M</span><span class="tag">M-step</span><span class="sep">·</span><span>refit, treating soft labels as fractional counts</span></div>
+  <div class="obj-body">
+    <p>With the $\gamma_i$ in hand, refit each parameter as a <strong>weighted MLE</strong> — exactly Part B of the §4.5 explainer (the world where the coin was observed), but with fractional counts instead of hard counts.</p>
+    $$\pi^{\text{new}} \;=\; \frac{1}{N}\sum_i \gamma_i, \quad\quad p_A^{\text{new}}(k) \;=\; \frac{\sum_i \gamma_i \cdot \mathbb{1}[x_i = k]}{\sum_i \gamma_i}, \quad\quad p_B^{\text{new}}(k) \;=\; \frac{\sum_i (1-\gamma_i) \cdot \mathbb{1}[x_i = k]}{\sum_i (1-\gamma_i)}.$$
+    <div class="symdefs">
+      <span class="row">$\pi^{\text{new}}$ is the <em>average responsibility</em> for H — the fraction of "coin-credit" the data gives to die A.</span>
+      <span class="row">$p_A^{\text{new}}(k)$ is the fraction of rolls of face $k$, where each roll is weighted by how much die A claims it. <span class="hl">A roll of 6 with $\gamma_i = 0.8$ contributes 0.8 to die A's "6 count" and 0.2 to die B's.</span> Same as the closed-form Bernoulli/categorical MLEs from 4.4 — just with weighted counts.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card result">
+  <div class="obj-label"><span class="tag">worked example</span><span class="sep">·</span><span>one iteration on 5 rolls</span></div>
+  <div class="obj-body">
+    <p><strong>Data:</strong> $x = [6, 6, 6, 3, 1]$.</p>
+    <p><strong>Initialization:</strong> $\pi = 0.5$, $p_A$ uniform ($= 1/6$ each), $p_B = [0.1, 0.1, 0.1, 0.1, 0.1, 0.5]$.</p>
+    <p><strong>E-step.</strong> For each $x_i$, compute $\gamma_i$:</p>
+    <table class="ol-compare">
+      <thead>
+        <tr><th>$x_i$</th><th>$\pi \cdot p_A(x_i)$</th><th>$(1-\pi) \cdot p_B(x_i)$</th><th>$\gamma_i = p(H \mid x_i)$</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>6</td><td>$0.5 \cdot 0.167 = 0.083$</td><td>$0.5 \cdot 0.5 = 0.250$</td><td>$\approx 0.25$</td></tr>
+        <tr><td>6</td><td>0.083</td><td>0.250</td><td>≈ 0.25</td></tr>
+        <tr><td>6</td><td>0.083</td><td>0.250</td><td>≈ 0.25</td></tr>
+        <tr><td>3</td><td>$0.5 \cdot 0.167 = 0.083$</td><td>$0.5 \cdot 0.1 = 0.050$</td><td>≈ 0.625</td></tr>
+        <tr><td>1</td><td>0.083</td><td>0.050</td><td>≈ 0.625</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Notice:</strong> the 6s get assigned mostly to die B (low $\gamma$); the 1 and 3 get assigned mostly to die A (high $\gamma$). Bayes is already <em>using</em> the structure $p_B$ has (a fat tail at 6) to credit the 6s to die B.</p>
+    <p><strong>M-step.</strong> $\sum_i \gamma_i \approx 1.99$, so</p>
+    $$\pi^{\text{new}} = 1.99 / 5 \approx 0.40.$$
+    <p>For $p_A^{\text{new}}$, the "1-count" is $\gamma_5 \approx 0.625$, "3-count" is $\gamma_4 \approx 0.625$, "6-count" is $3 \cdot 0.25 = 0.75$. Normalize by $\sum_i \gamma_i \approx 1.99$:</p>
+    $$p_A^{\text{new}} \approx [0.31,\; 0,\; 0.31,\; 0,\; 0,\; 0.38].$$
+    <p>For $p_B^{\text{new}}$, swap $\gamma_i \to (1 - \gamma_i)$; the 6-count dominates:</p>
+    $$p_B^{\text{new}} \approx [0.12,\; 0,\; 0.12,\; 0,\; 0,\; 0.75].$$
+    <p>One iteration in, and both dice have already moved sharply toward their roles — die A is broadening to fit the 1/3, die B is concentrating on 6. <span class="hl">The "ambiguous" 6s ($\gamma \approx 0.25$ vs $0.75$) become less ambiguous in the next iteration, because the model now genuinely believes die B loves 6s.</span> The chicken-and-egg dissolves through self-reinforcement.</p>
+  </div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-icon">🎲</span>
+    <span class="demo-title">EM on the coin &amp; dice · step through it</span>
+  </div>
+  <div class="demo-body">
+    <div class="controls">
+      <button id="cd-estep">E-step</button>
+      <button id="cd-mstep">M-step</button>
+      <button id="cd-run10">Run 10 iters</button>
+      <button id="cd-reinit" class="secondary">Re-init θ</button>
+      <button id="cd-resample" class="secondary">New data</button>
+      <label>N <input type="range" id="cd-N" min="10" max="200" step="5" value="60"></label>
+      <span class="readout" id="cd-N-readout">N = 60</span>
+      <label>true π* <input type="range" id="cd-truepi" min="0.1" max="0.9" step="0.05" value="0.6"></label>
+      <span class="readout" id="cd-truepi-readout">π* = 0.60</span>
+      <span class="readout" id="cd-stats">iter=0  π̂=—  ℓ=—</span>
+    </div>
+    <div id="cd-rolls" style="margin: 8px 0 12px 0;"></div>
+    <div id="cd-dice-plot" class="plot" style="height: 240px;"></div>
+    <div id="cd-ll-plot" class="plot" style="height: 200px;"></div>
+    <p class="demo-footnote">
+      <strong>Top strip:</strong> each square is one observed roll, labeled with its die value. <span style="color: #f43f5e; font-weight: 600;">Rose</span> = "model thinks this came from die A" ($\gamma \to 1$); <span style="color: #6366f1; font-weight: 600;">indigo</span> = "die B" ($\gamma \to 0$); gray = ambiguous. <strong>Middle:</strong> the current $p_A, p_B$ as bar charts. <strong>Bottom:</strong> log-likelihood over iterations — should be monotonically non-decreasing.<br>
+      Try <em>Re-init</em> several times: roughly half the time, "die A" learns the loaded die and "die B" learns the uniform one — same likelihood, swapped labels. That's the <em>label-switching</em> non-identifiability §5.6 will name.
+    </p>
+  </div>
+</div>
+
+<p class="note">
+  <span class="marker">why this converges</span>
+  Each iteration provably does not decrease the data log-likelihood. The full proof — that EM is coordinate ascent on the ELBO $\mathcal{F}(q, \theta)$, which lower-bounds $\log p_\theta(x)$ — is in <strong>5.5</strong>. The visceral version: watch the bottom plot in the demo go up monotonically and never come back down.
+</p>
+
+<div class="key-points">
+  <span class="label">What survives, what breaks — at a glance</span>
+  <ol>
+    <li>
+      <div class="item">
+        <span class="head">Survives → all the way to the VAE.</span>
+        <span class="body">The <strong>alternation structure</strong> (E-step / M-step), <strong>responsibilities as Bayes' rule</strong>, and the <strong>weighted-MLE form</strong> of the M-step. The VAE keeps every one of these, just with neural networks in place of the closed-form updates.</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">Breaks when the latent is continuous.</span>
+        <span class="body">The E-step here is one line of Bayes' rule because $z \in \{H, T\}$ — two terms in the denominator. When $z \in \mathbb{R}^d$, that denominator becomes the intractable integral all over again. <span class="hl">That cliff is exactly what §5.6 names and §6 climbs.</span></span>
+      </div>
+    </li>
+  </ol>
+</div>
+
+<!-- ---------- 5.4 GMM demo ---------- -->
+<h3 id="sec-5-demo"><span class="subnum">5.4</span> Watch EM in action on a 2D GMM</h3>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-icon">E</span>
+    <span class="demo-title">EM on a 2D Gaussian mixture · step through it</span>
+  </div>
+  <div class="demo-body">
+    <div class="controls">
+      <button id="em-estep">E-step</button>
+      <button id="em-mstep">M-step</button>
+      <button id="em-run10">Run 10 iters</button>
+      <button id="em-reinit" class="secondary">Re-init (new θ)</button>
+      <button id="em-resample" class="secondary">New data</button>
+      <span class="readout" id="em-stats">iter=0  ℓ=—</span>
+    </div>
+    <div id="em-plot" class="plot" style="height: 420px;"></div>
+    <p class="demo-footnote">Points are colored by their <em>responsibility</em> — gray when ambiguous, sharp colors when one component dominates. Ellipses are the current $\mathcal{N}(\mu_k, \Sigma_k)$ at $1\sigma$. Try re-initializing several times: you'll sometimes get a clean fit, sometimes a stuck local optimum.</p>
+  </div>
+</div>
+
+<!-- ---------- 5.4 ELBO view ---------- -->
+<h3 id="sec-5-elbo"><span class="subnum">5.5</span> Why EM works — the lower bound view</h3>
+
+<p>EM looks like a heuristic. It isn't. The whole algorithm is <strong>coordinate ascent on a lower bound of the log-likelihood</strong>, and recognizing this is what allows EM to generalize to variational inference.</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">identity</span><span class="sep">·</span><span>log-likelihood split, for any distribution q(z)</span></div>
+  <div class="obj-body">
+    $$\log p_\theta(x) \;=\; \underbrace{\mathbb{E}_{q(z)}\!\left[\log \frac{p_\theta(x, z)}{q(z)}\right]}_{\mathcal{F}(q,\, \theta) \;=\; \text{ELBO}} \;+\; \underbrace{\mathrm{KL}\!\left(q(z) \,\|\, p(z \mid x, \theta)\right)}_{\geq 0}.$$
+    <div class="symdefs">
+      <span class="row"><strong>$q(z)$ is arbitrary</strong> — any distribution over the latents. The identity holds for every choice of $q$.</span>
+      <span class="row">Since KL ≥ 0, we get $\mathcal{F}(q, \theta) \leq \log p_\theta(x)$. <strong>The ELBO is a lower bound.</strong> Equality iff $q$ equals the true posterior $p(z \mid x, \theta)$.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card step">
+  <div class="obj-label"><span class="step-badge">E</span><span class="tag">E-step</span><span class="sep">·</span><span>maximize ELBO over q (with θ fixed)</span></div>
+  <div class="obj-body">
+    <p>For fixed $\theta$, the ELBO is largest when KL is zero — which happens when</p>
+    $$q^\star(z) = p(z \mid x, \theta).$$
+    <p>So the E-step is: <strong>set $q$ to the true posterior</strong>. After this step, the bound is tight: $\mathcal{F}(q^\star, \theta) = \log p_\theta(x)$.</p>
+  </div>
+</div>
+
+<div class="obj-card step">
+  <div class="obj-label"><span class="step-badge">M</span><span class="tag">M-step</span><span class="sep">·</span><span>maximize ELBO over θ (with q fixed)</span></div>
+  <div class="obj-body">
+    <p>With $q$ held at $q^\star$, the ELBO becomes (dropping the $\theta$-independent $-\mathbb{E}_{q^\star}[\log q^\star]$):</p>
+    $$\theta^{\text{new}} = \arg\max_\theta\; \mathbb{E}_{q^\star(z)}\!\left[\log p_\theta(x, z)\right].$$
+    <p>This is just a <strong>weighted MLE</strong> — exactly the M-step updates from 5.2.</p>
+  </div>
+</div>
+
+<div class="pullquote">
+  <span class="lead">EM, unified in one sentence</span>
+  <p>EM alternately maximizes the ELBO $\mathcal{F}(q, \theta)$ over $q$ (E-step) and $\theta$ (M-step). <span class="hl">Each step never decreases the ELBO, and the ELBO is always ≤ $\log p_\theta(x)$, so the likelihood is monotonically non-decreasing.</span> Convergence to a stationary point is guaranteed.</p>
+</div>
+
+<!-- ---------- 5.5 Where EM breaks ---------- -->
+<h3 id="sec-5-breaks"><span class="subnum">5.6</span> Where EM breaks</h3>
+
+<div class="obj-card breaks">
+  <div class="obj-label"><span class="tag">break 1</span><span class="sep">·</span><span>the E-step needs the true posterior</span></div>
+  <div class="obj-body">
+    <p>The E-step requires</p>
+    $$p(z \mid x, \theta) = \frac{p_\theta(x, z)}{\int p_\theta(x, z')\, dz'}.$$
+    <div class="symdefs">
+      <span class="row">For mixtures, the denominator is a sum over $K$ — annoying but fine. For continuous $z \in \mathbb{R}^d$, it's a high-dimensional integral with no closed form. <span class="warn-inline">EM is unavailable the moment the true posterior is intractable.</span></span>
+      <span class="row">For a VAE-style model where $p_\theta(x \mid z)$ is a neural network, the posterior $p(z \mid x)$ has no formula at all. EM cannot even start.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card breaks">
+  <div class="obj-label"><span class="tag">break 2</span><span class="sep">·</span><span>local optima</span></div>
+  <div class="obj-body">
+    <p>$\log p_\theta(x)$ for a mixture is non-convex. EM converges to a <em>local</em> maximum that depends on initialization. Try the demo: re-init a few times on the same data — you'll get visibly different fits.</p>
+    <div class="symdefs">
+      <span class="row">Standard mitigations: many random restarts, $k$-means initialization, careful annealing. None solve the problem in general.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- 5.6 Bridge ---------- -->
+<h3 id="sec-5-bridge"><span class="subnum">5.7</span> Bridge — what to do when the E-step is impossible</h3>
+
+<p>EM's recipe is "maximize the ELBO, alternating between $q$ and $\theta$." That recipe is good. The specific E-step — "set $q$ to the true posterior" — is what breaks.</p>
+
+<div class="pullquote">
+  <span class="lead">the next move</span>
+  <p>Keep the ELBO. Keep coordinate ascent. <span class="hl">Stop demanding that $q$ equal the true posterior</span> — instead, restrict $q$ to a family we can compute with, and find the best $q$ in that family by optimization. That generalization is <strong>variational inference</strong>.</p>
+</div>
+
+<div class="next-up">
+  <span class="label">what's next</span>
+  <p>Section 6 makes that move precise: pick a parametric family $q_\phi(z \mid x)$, optimize $\phi$ to maximize the ELBO over data and parameters jointly. Then "amortize" — share $\phi$ across all datapoints by making $q_\phi$ a neural network of $x$. That last move turns a classical algorithm into a deep-learning one.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-6"><span class="num">6</span> Variational inference</h2>
+
+<p>EM was coordinate ascent on the ELBO with $q$ = the true posterior. Drop that last constraint and you get VI.</p>
+
+<!-- ---------- 6.1 The move ---------- -->
+<h3 id="sec-6-move"><span class="subnum">6.1</span> The move — approximate, don't compute</h3>
+
+<div class="key-points">
+  <span class="label">The three steps to get from EM to VI</span>
+  <ol>
+    <li>
+      <div class="item">
+        <span class="head">Pick a tractable family $\mathcal{Q}$.</span>
+        <span class="body">E.g., diagonal Gaussians $q(z) = \mathcal{N}(z \mid \mu, \mathrm{diag}(\sigma^2))$. Cheap to evaluate, cheap to sample.</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">Optimize $q$ over the family.</span>
+        <span class="body">Instead of solving $q = p(z \mid x, \theta)$ in closed form (which we can't), search for the $q \in \mathcal{Q}$ that maximizes the ELBO.</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">Accept the gap.</span>
+        <span class="body">The best $q \in \mathcal{Q}$ generally won't equal the true posterior — there's a residual KL. We've turned an integration problem into an optimization problem.</span>
+      </div>
+    </li>
+  </ol>
+</div>
+
+<p class="note">
+  <span class="marker">trade you've just made</span>
+  Inference is no longer exact — but it's <em>always tractable</em>, regardless of how complicated $p_\theta(x \mid z)$ is. That trade is what lets variational inference scale to models EM cannot touch.
+</p>
+
+<!-- ---------- 6.2 ELBO properly ---------- -->
+<h3 id="sec-6-elbo"><span class="subnum">6.2</span> The ELBO, properly</h3>
+
+<p>Same identity as 5.4, written with a parametric variational family $q_\phi(z \mid x)$.</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">identity</span><span class="sep">·</span><span>log-likelihood = ELBO + KL gap</span></div>
+  <div class="obj-body">
+    $$\log p_\theta(x) \;=\; \underbrace{\mathbb{E}_{q_\phi(z|x)}\!\left[\log \frac{p_\theta(x, z)}{q_\phi(z \mid x)}\right]}_{\mathcal{L}(\theta,\,\phi;\,x)\;=\;\text{ELBO}} \;+\; \mathrm{KL}\!\left(q_\phi(z \mid x) \,\|\, p(z \mid x, \theta)\right).$$
+    <div class="symdefs">
+      <span class="row"><strong>$\theta$</strong> — parameters of the generative model $p_\theta(x, z)$.</span>
+      <span class="row"><strong>$\phi$</strong> — parameters of the approximate posterior $q_\phi(z \mid x)$. <em>New parameters we did not have before.</em></span>
+      <span class="row">The KL term measures how far our approximation $q_\phi$ is from the true (unknown) posterior. It's $\geq 0$, so the ELBO is a lower bound.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card result">
+  <div class="obj-label"><span class="tag">consequence</span><span class="sep">·</span><span>one objective, two jobs</span></div>
+  <div class="obj-body">
+    <p>Maximizing $\mathcal{L}(\theta, \phi; x)$ over $\theta$ and $\phi$ jointly does two things at once:</p>
+    <ol>
+      <li><strong>Pushes up $\log p_\theta(x)$</strong> — improves the generative model.</li>
+      <li><strong>Pushes down $\mathrm{KL}(q_\phi \,\|\, p(z \mid x))$</strong> — improves the inference network.</li>
+    </ol>
+    <div class="symdefs">
+      <span class="row">We never see $\log p_\theta(x)$ directly (it's the thing we can't compute). We optimize the bound, and both jobs improve along the way.</span>
+      <span class="row">When the bound is tight, $q_\phi = p(z \mid x)$ and $\mathcal{L} = \log p_\theta(x)$. When it's loose, we're optimizing a strict underestimate of the true likelihood — a known cost.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- 6.3 Reconstruction − KL ---------- -->
+<h3 id="sec-6-decomp"><span class="subnum">6.3</span> The ELBO, rearranged — reconstruction minus KL</h3>
+
+<p>The form above is theoretically clean. There's an equivalent form that becomes the VAE training objective.</p>
+
+<div class="obj-card derive">
+  <div class="obj-label"><span class="tag">derive</span><span class="sep">·</span><span>factor the joint p(x, z) = p(x|z) p(z)</span></div>
+  <div class="obj-body">
+    <p>Start with the ELBO and expand $\log p_\theta(x, z) = \log p_\theta(x \mid z) + \log p(z)$:</p>
+    $$\mathcal{L} = \mathbb{E}_{q_\phi(z|x)}\!\left[\log p_\theta(x \mid z) + \log p(z) - \log q_\phi(z \mid x)\right].$$
+    <p>Pull the data-dependent term out and group the rest:</p>
+    $$\mathcal{L} = \mathbb{E}_{q_\phi(z|x)}\!\left[\log p_\theta(x \mid z)\right] + \mathbb{E}_{q_\phi(z|x)}\!\left[\log \frac{p(z)}{q_\phi(z \mid x)}\right].$$
+    <p>The second expectation is $-\mathrm{KL}(q_\phi(z \mid x) \,\|\, p(z))$.</p>
+  </div>
+</div>
+
+<div class="obj-card equiv">
+  <div class="obj-label"><span class="tag">equiv</span><span class="sep">·</span><span>same ELBO, different form</span></div>
+  <div class="obj-body">
+    $$\mathcal{L}(\theta, \phi; x) \;=\; \underbrace{\mathbb{E}_{q_\phi(z|x)}\!\left[\log p_\theta(x \mid z)\right]}_{\text{reconstruction}} \;-\; \underbrace{\mathrm{KL}\!\left(q_\phi(z \mid x) \,\|\, p(z)\right)}_{\text{regularizer}}.$$
+    <div class="symdefs">
+      <span class="row"><strong>Reconstruction term</strong> — sample $z \sim q_\phi(z \mid x)$ (encoder), score $x$ under $p_\theta(x \mid z)$ (decoder). High when the encoder produces $z$'s that the decoder can reconstruct $x$ from.</span>
+      <span class="row"><strong>KL term</strong> — pulls $q_\phi(z \mid x)$ toward the prior $p(z)$. Stops the encoder from cheating by spreading each $x$ to its own private region of latent space.</span>
+      <span class="row">These two terms <strong>fight</strong>: reconstruction wants $q_\phi$ to be sharp and specific to each $x$; KL wants $q_\phi$ to look like the prior. Balance between them is the entire training dynamics of a VAE.</span>
+    </div>
+  </div>
+</div>
+
+<div class="pullquote">
+  <span class="lead">this is the VAE loss</span>
+  <p>What you'll see in any VAE training code — <span class="hl">reconstruction loss − KL term</span> (or, equivalently, negative reconstruction + KL, to minimize). It is <em>not</em> a separate, heuristic combination. It is the ELBO, rearranged.</p>
+</div>
+
+<!-- ---------- 6.4 Mean-field ---------- -->
+<h3 id="sec-6-meanfield"><span class="subnum">6.4</span> Mean-field VI — the classical instance</h3>
+
+<p>VI predates neural nets. The original instance: pick the family $\mathcal{Q}$ to be <em>fully factorized</em> distributions.</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">assumption</span><span class="sep">·</span><span>mean-field factorization</span></div>
+  <div class="obj-body">
+    $$q(z) = \prod_{j=1}^d q_j(z_j).$$
+    <div class="symdefs">
+      <span class="row">Each latent coordinate $z_j$ gets its own factor; they're independent under $q$. Even if the true posterior couples them strongly, the approximation can't.</span>
+      <span class="row">For exponential-family models, each $q_j$ has a closed-form coordinate-ascent update. No neural network involved. This is "VI before deep learning."</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card breaks">
+  <div class="obj-label"><span class="tag">the cost</span><span class="sep">·</span><span>mean-field underestimates variance</span></div>
+  <div class="obj-body">
+    <p>If the true posterior has correlated dimensions, the best factorized $q$ "shrinks" — it fits inside the high-density region rather than wrapping around it. The classical picture:</p>
+  </div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-icon">F</span>
+    <span class="demo-title">Mean-field on a correlated 2D Gaussian</span>
+  </div>
+  <div class="demo-body">
+    <div class="controls">
+      <label>correlation $\rho$ <input type="range" id="mf-rho" min="-0.95" max="0.95" step="0.01" value="0.85"></label>
+      <span class="readout" id="mf-rho-readout">ρ = 0.85</span>
+    </div>
+    <div id="mf-plot" class="plot" style="height: 380px;"></div>
+    <p class="demo-footnote">True posterior (gray) is a correlated 2D Gaussian. The mean-field approximation (indigo) is the best factorized Gaussian — it cannot tilt. Notice it <em>underestimates</em> the variance along the principal direction. This bias is intrinsic to the mean-field assumption.</p>
+  </div>
+</div>
+
+<!-- ---------- 6.5 Amortized ---------- -->
+<h3 id="sec-6-amortized"><span class="subnum">6.5</span> Amortized inference — one network, all datapoints</h3>
+
+<p>Classical VI fits a separate $q_i(z)$ for <em>each</em> datapoint $i$, by optimizing local parameters. With $N$ in the millions, that's prohibitive.</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">def</span><span class="sep">·</span><span>amortized variational posterior</span></div>
+  <div class="obj-body">
+    $$q_\phi(z \mid x) \;=\; \text{a function with parameters $\phi$, shared across all $x$}.$$
+    <div class="symdefs">
+      <span class="row">In a VAE: $q_\phi(z \mid x) = \mathcal{N}(z \mid \mu_\phi(x),\, \mathrm{diag}(\sigma_\phi^2(x)))$, where $\mu_\phi$ and $\sigma_\phi$ are <strong>outputs of a neural network</strong> taking $x$ as input.</span>
+      <span class="row">One $\phi$, infinitely many possible $x$'s. At inference time, getting a posterior for new $x$ is a <strong>single forward pass</strong> — no per-datapoint optimization.</span>
+      <span class="row">This network has a name: <strong>the encoder</strong>. The first time the VAE-style word lands naturally — and not as the starting metaphor but as a consequence of amortizing VI.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card result">
+  <div class="obj-label"><span class="tag">the trade</span><span class="sep">·</span><span>amortization gap</span></div>
+  <div class="obj-body">
+    <p>Amortization adds a second source of suboptimality on top of the family restriction:</p>
+    <ol>
+      <li>The best $q \in \mathcal{Q}$ for a particular $x$ may not equal the true posterior — <strong>approximation gap</strong>.</li>
+      <li>The best $q_\phi(z \mid x)$ for that same $x$, with $\phi$ shared across all data, may not equal the best $q \in \mathcal{Q}$ — <strong>amortization gap</strong>.</li>
+    </ol>
+    <div class="symdefs">
+      <span class="row">In practice both gaps are small for the model classes that work well, and the speed-up at inference (single forward pass vs. iterative optimization per datapoint) is worth the loss.</span>
+    </div>
+  </div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-icon">L</span>
+    <span class="demo-title">ELBO and the gap to the true log-likelihood</span>
+  </div>
+  <div class="demo-body">
+    <div class="controls">
+      <label>$q$ mean $\mu_q$ <input type="range" id="elbo-mu" min="-3" max="3" step="0.05" value="1.2"></label>
+      <span class="readout" id="elbo-mu-readout">μ_q = 1.20</span>
+      <label>$q$ std $\sigma_q$ <input type="range" id="elbo-sig" min="0.2" max="2.5" step="0.05" value="1.0"></label>
+      <span class="readout" id="elbo-sig-readout">σ_q = 1.00</span>
+      <span class="readout" id="elbo-stats">ELBO=— · log p(x)=— · KL=—</span>
+    </div>
+    <div id="elbo-plot" class="plot" style="height: 380px;"></div>
+    <p class="demo-footnote">Toy model: $p(z) = \mathcal{N}(0, 1)$, $p(x \mid z) = \mathcal{N}(z, 0.5^2)$, observation $x = 1.5$. The true posterior $p(z \mid x)$ is itself Gaussian (gray). Slide $\mu_q, \sigma_q$ to move the variational $q(z)$ (indigo). The ELBO equals $\log p(x)$ (orange line, fixed) only when $q$ matches the true posterior. Otherwise, ELBO $&lt;$ $\log p(x)$, and the gap is KL.</p>
+  </div>
+</div>
+
+<!-- ---------- 6.6 What still blocks us ---------- -->
+<h3 id="sec-6-block"><span class="subnum">6.6</span> What still blocks us</h3>
+
+<p>We have everything we need conceptually: a model $p_\theta(x, z)$, an amortized variational posterior $q_\phi(z \mid x)$, a single objective $\mathcal{L}(\theta, \phi)$. We want to maximize it by SGD over $(\theta, \phi)$. One last obstruction:</p>
+
+<div class="obj-card breaks">
+  <div class="obj-label"><span class="tag">break</span><span class="sep">·</span><span>gradient through a sampled expectation</span></div>
+  <div class="obj-body">
+    <p>The reconstruction term is</p>
+    $$\nabla_\phi \mathbb{E}_{q_\phi(z|x)}\!\left[\log p_\theta(x \mid z)\right].$$
+    <p>We need a gradient with respect to $\phi$ — but $\phi$ controls the <strong>distribution we're sampling from</strong>. We can't just sample $z$ and differentiate; the sampling operation breaks the gradient chain.</p>
+    <div class="symdefs">
+      <span class="row">The naïve fix (REINFORCE / score-function estimator) gives a <span class="warn-inline">very high-variance gradient</span> — works in theory, often unusable in practice.</span>
+      <span class="row">The clean fix is the <strong>reparameterization trick</strong>, which rewrites the sampling step so the gradient flows through. It's the last technical piece, and it's what makes the whole VAE pipeline trainable.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card connect">
+  <div class="obj-label"><span class="tag">connect</span><span class="sep">·</span><span>this is policy gradients</span></div>
+  <div class="obj-body">
+    <p>If you've seen RL, this is the same problem. Both VI and policy-gradient RL face one identity:</p>
+    $$\nabla_\phi \mathbb{E}_{q_\phi(z)}[f(z)] \;=\; \mathbb{E}_{q_\phi(z)}\!\left[f(z) \cdot \nabla_\phi \log q_\phi(z)\right].$$
+    <p>Same estimator, two communities, two names.</p>
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>field</th>
+          <th>$q_\phi(z)$</th>
+          <th>$f(z)$</th>
+          <th>known as</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>VI / VAE</td>
+          <td>posterior $q_\phi(z \mid x)$</td>
+          <td>ELBO integrand</td>
+          <td>score-function estimator</td>
+        </tr>
+        <tr>
+          <td>RL</td>
+          <td>policy $\pi_\phi(a \mid s)$</td>
+          <td>return $R$</td>
+          <td>REINFORCE / likelihood ratio</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="symdefs">
+      <span class="row"><strong>The variance fight is the same</strong>: baselines, control variates, advantage functions (PPO, GAE) on the RL side; control-variate estimators on the VI side.</span>
+      <span class="row"><strong>Where they diverge:</strong> VAEs are usually lucky — $z$ is continuous and $q_\phi$ is reparameterizable (Gaussian), so we get the lower-variance reparameterization trick. RL with <em>continuous</em> actions can do the same thing (SAC, DDPG); RL with <em>discrete</em> actions is stuck with REINFORCE plus variance-reduction tricks. <span class="hl">Reparameterization is to REINFORCE what SAC is to vanilla policy gradient — same problem, different estimator, lower variance whenever the structural assumption holds.</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- 6.7 Bridge ---------- -->
+<h3 id="sec-6-bridge"><span class="subnum">6.7</span> Bridge — everything is in place except one trick</h3>
+
+<div class="pullquote">
+  <span class="lead">the entire VAE machinery is now assembled</span>
+  <p>Generative model $p_\theta(x \mid z) p(z)$. Amortized approximate posterior $q_\phi(z \mid x)$. Objective: ELBO = reconstruction − KL. Optimize jointly by SGD. <span class="hl">The only thing left is to make that "sample $z$, then backprop" step actually differentiable.</span></p>
+</div>
+
+<div class="next-up">
+  <span class="label">what's next</span>
+  <p>Section 7 introduces the <strong>reparameterization trick</strong> and finally assembles the <strong>VAE</strong> — encoder network, decoder network, loss function, training loop. After Section 7, we'll have a working VAE we can train. Section 8 and beyond cover what people actually do with it.</p>
+</div>
+
+</article>
+</div>
+
+<script>
+// ====================================================================
+// Plot styling — match the SaaS theme
+// ====================================================================
+const COLORS = {
+  bg:     '#ffffff',
+  text:   '#0f172a',
+  muted:  '#64748b',
+  grid:   '#eef0f4',
+  zero:   '#cbd5e1',
+  indigo: '#6366f1',
+  violet: '#8b5cf6',
+  emerald:'#10b981',
+  amber:  '#f59e0b',
+  rose:   '#f43f5e',
+  sky:    '#0ea5e9',
+};
+const CATCOLORS = [COLORS.indigo, COLORS.emerald, COLORS.amber];
+
+const baseLayout = (extra = {}) => Object.assign({
+  paper_bgcolor: COLORS.bg,
+  plot_bgcolor: COLORS.bg,
+  font: { family: 'Inter, system-ui, sans-serif', size: 12, color: COLORS.text },
+  margin: { l: 50, r: 20, t: 24, b: 44 },
+  xaxis: { gridcolor: COLORS.grid, zerolinecolor: COLORS.zero, linecolor: COLORS.grid },
+  yaxis: { gridcolor: COLORS.grid, zerolinecolor: COLORS.zero, linecolor: COLORS.grid },
+  showlegend: false,
+}, extra);
+
+const baseConfig = { displayModeBar: false, responsive: true };
+
+// ====================================================================
+// 3.1 Bernoulli
+// ====================================================================
+(function() {
+  const theta = document.getElementById('bern-theta');
+  const readout = document.getElementById('bern-theta-readout');
+  const btn = document.getElementById('bern-sample');
+  const btnClear = document.getElementById('bern-clear');
+  const plot = document.getElementById('bern-plot');
+
+  let samples = [];
+
+  function pmfTrace(t) {
+    return {
+      type: 'bar',
+      x: ['0', '1'],
+      y: [1 - t, t],
+      marker: { color: COLORS.indigo, opacity: 0.85,
+                line: { color: COLORS.indigo, width: 0 } },
+      width: 0.4,
+      name: 'p(x | θ)',
+      hovertemplate: 'p(x=%{x}) = %{y:.3f}<extra></extra>',
+    };
+  }
+
+  function sampleHistTrace(samples) {
+    const zeros = samples.filter(s => s === 0).length;
+    const ones  = samples.filter(s => s === 1).length;
+    const total = samples.length || 1;
+    return {
+      type: 'bar',
+      x: ['0', '1'],
+      y: [zeros / total, ones / total],
+      marker: { color: 'rgba(245, 158, 11, 0.45)' },
+      width: 0.65,
+      name: 'samples',
+      hovertemplate: 'count(x=%{x}) / N = %{y:.3f}<extra></extra>',
+    };
+  }
+
+  function redraw() {
+    const t = parseFloat(theta.value);
+    readout.textContent = `θ = ${t.toFixed(2)}`;
+    const data = [sampleHistTrace(samples), pmfTrace(t)];
+    Plotly.react(plot, data, baseLayout({
+      barmode: 'overlay',
+      xaxis: Object.assign(baseLayout().xaxis, { title: 'x' }),
+      yaxis: Object.assign(baseLayout().yaxis, { title: 'probability', range: [0, 1] }),
+    }), baseConfig);
+  }
+
+  theta.addEventListener('input', redraw);
+  btn.addEventListener('click', () => {
+    const t = parseFloat(theta.value);
+    for (let i = 0; i < 200; i++) {
+      samples.push(Math.random() < t ? 1 : 0);
+    }
+    redraw();
+  });
+  btnClear.addEventListener('click', () => { samples = []; redraw(); });
+
+  redraw();
+})();
+
+// ====================================================================
+// Box–Muller (used by Gaussian, mixture, moons)
+// ====================================================================
+function boxMuller() {
+  let u1 = Math.random();
+  let u2 = Math.random();
+  if (u1 < 1e-12) u1 = 1e-12;
+  const r = Math.sqrt(-2 * Math.log(u1));
+  const theta = 2 * Math.PI * u2;
+  return [r * Math.cos(theta), r * Math.sin(theta)];
+}
+function gaussianPdf(x, mu, sigma) {
+  const z = (x - mu) / sigma;
+  return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+}
+
+// ====================================================================
+// 3.2 Gaussian
+// ====================================================================
+(function() {
+  const mu = document.getElementById('g-mu');
+  const sigma = document.getElementById('g-sigma');
+  const muRO = document.getElementById('g-mu-readout');
+  const sigmaRO = document.getElementById('g-sigma-readout');
+  const btnSample = document.getElementById('g-sample');
+  const btnClear = document.getElementById('g-clear');
+  const plot = document.getElementById('g-plot');
+
+  let samples = [];
+
+  function pdfTrace(m, s) {
+    const xs = [], ys = [];
+    const lo = -6, hi = 6, N = 400;
+    for (let i = 0; i <= N; i++) {
+      const x = lo + (hi - lo) * i / N;
+      xs.push(x); ys.push(gaussianPdf(x, m, s));
+    }
+    return {
+      type: 'scatter', mode: 'lines',
+      x: xs, y: ys,
+      line: { color: COLORS.indigo, width: 2.5 },
+      hovertemplate: 'x = %{x:.2f}<br>p(x) = %{y:.3f}<extra></extra>',
+    };
+  }
+  function sampleHist(samples) {
+    return {
+      type: 'histogram',
+      x: samples,
+      histnorm: 'probability density',
+      marker: { color: 'rgba(245, 158, 11, 0.45)' },
+      xbins: { start: -6, end: 6, size: 0.25 },
+      hovertemplate: 'bin ~ %{x:.2f}<br>density = %{y:.3f}<extra></extra>',
+    };
+  }
+
+  function redraw() {
+    const m = parseFloat(mu.value);
+    const s = parseFloat(sigma.value);
+    muRO.textContent = `μ = ${m.toFixed(2)}`;
+    sigmaRO.textContent = `σ = ${s.toFixed(2)}`;
+    const data = [sampleHist(samples), pdfTrace(m, s)];
+    Plotly.react(plot, data, baseLayout({
+      xaxis: Object.assign(baseLayout().xaxis, { title: 'x', range: [-6, 6] }),
+      yaxis: Object.assign(baseLayout().yaxis, { title: 'density', range: [0, 2.2] }),
+    }), baseConfig);
+  }
+
+  mu.addEventListener('input', redraw);
+  sigma.addEventListener('input', redraw);
+  btnSample.addEventListener('click', () => {
+    const m = parseFloat(mu.value);
+    const s = parseFloat(sigma.value);
+    for (let i = 0; i < 100; i++) {
+      const [z1, z2] = boxMuller();
+      samples.push(m + s * z1);
+      samples.push(m + s * z2);
+    }
+    redraw();
+  });
+  btnClear.addEventListener('click', () => { samples = []; redraw(); });
+
+  redraw();
+})();
+
+// ====================================================================
+// 3.3 Mixture
+// ====================================================================
+(function() {
+  const pi1 = document.getElementById('mix-pi1');
+  const pi2 = document.getElementById('mix-pi2');
+  const pi1RO = document.getElementById('mix-pi1-readout');
+  const pi2RO = document.getElementById('mix-pi2-readout');
+  const pi3RO = document.getElementById('mix-pi3-readout');
+  const btnSample = document.getElementById('mix-sample');
+  const btnClear = document.getElementById('mix-clear');
+  const plot = document.getElementById('mix-plot');
+
+  const comps = [
+    { mu: -2.0, sigma: 0.5 },
+    { mu:  0.0, sigma: 0.7 },
+    { mu:  2.2, sigma: 0.4 },
+  ];
+  let samples = [];
+
+  function getPis() {
+    let p1 = parseFloat(pi1.value);
+    let p2 = parseFloat(pi2.value);
+    let p3 = Math.max(0.001, 1 - p1 - p2);
+    const total = p1 + p2 + p3;
+    return [p1 / total, p2 / total, p3 / total];
+  }
+  function mixturePdf(x, pis) {
+    let v = 0;
+    for (let k = 0; k < 3; k++) v += pis[k] * gaussianPdf(x, comps[k].mu, comps[k].sigma);
+    return v;
+  }
+  function categoricalSample(pis) {
+    const u = Math.random();
+    let cum = 0;
+    for (let k = 0; k < pis.length; k++) { cum += pis[k]; if (u < cum) return k; }
+    return pis.length - 1;
+  }
+  function pdfTrace(pis) {
+    const xs = [], ys = [];
+    const lo = -5, hi = 5, N = 500;
+    for (let i = 0; i <= N; i++) {
+      const x = lo + (hi - lo) * i / N;
+      xs.push(x); ys.push(mixturePdf(x, pis));
+    }
+    return {
+      type: 'scatter', mode: 'lines',
+      x: xs, y: ys,
+      line: { color: COLORS.text, width: 2.5 },
+      hovertemplate: 'x = %{x:.2f}<br>p(x) = %{y:.3f}<extra></extra>',
+    };
+  }
+  function componentTraces(pis) {
+    const traces = [];
+    const lo = -5, hi = 5, N = 200;
+    for (let k = 0; k < 3; k++) {
+      const xs = [], ys = [];
+      for (let i = 0; i <= N; i++) {
+        const x = lo + (hi - lo) * i / N;
+        xs.push(x); ys.push(pis[k] * gaussianPdf(x, comps[k].mu, comps[k].sigma));
+      }
+      traces.push({
+        type: 'scatter', mode: 'lines',
+        x: xs, y: ys,
+        line: { color: CATCOLORS[k], width: 1.5, dash: 'dot' },
+        hoverinfo: 'skip',
+      });
+    }
+    return traces;
+  }
+  function sampleScatter(samples) {
+    const xs = samples.map(s => s.x);
+    const ys = samples.map(() => -0.02);
+    const colors = samples.map(s => CATCOLORS[s.k]);
+    return {
+      type: 'scatter', mode: 'markers',
+      x: xs, y: ys,
+      marker: { color: colors, size: 7, opacity: 0.7 },
+      hovertemplate: 'x = %{x:.2f}<extra></extra>',
+    };
+  }
+
+  function redraw() {
+    const pis = getPis();
+    pi1RO.textContent = `π₁ = ${pis[0].toFixed(2)}`;
+    pi2RO.textContent = `π₂ = ${pis[1].toFixed(2)}`;
+    pi3RO.textContent = `π₃ = ${pis[2].toFixed(2)}`;
+    const data = [sampleScatter(samples), ...componentTraces(pis), pdfTrace(pis)];
+    Plotly.react(plot, data, baseLayout({
+      xaxis: Object.assign(baseLayout().xaxis, { title: 'x', range: [-5, 5] }),
+      yaxis: Object.assign(baseLayout().yaxis, { title: 'density', range: [-0.05, 0.7] }),
+    }), baseConfig);
+  }
+
+  pi1.addEventListener('input', redraw);
+  pi2.addEventListener('input', redraw);
+  btnSample.addEventListener('click', () => {
+    const pis = getPis();
+    for (let i = 0; i < 500; i++) {
+      const k = categoricalSample(pis);
+      const [z, _] = boxMuller();
+      samples.push({ x: comps[k].mu + comps[k].sigma * z, k });
+    }
+    redraw();
+  });
+  btnClear.addEventListener('click', () => { samples = []; redraw(); });
+
+  redraw();
+})();
+
+// ====================================================================
+// 3.4 Two moons
+// ====================================================================
+(function() {
+  const noise = document.getElementById('moons-noise');
+  const noiseRO = document.getElementById('moons-noise-readout');
+  const btn = document.getElementById('moons-sample');
+  const plot = document.getElementById('moons-plot');
+
+  function makeMoons(n, sigma) {
+    const xs = [], ys = [], colors = [];
+    for (let i = 0; i < n; i++) {
+      const k = Math.random() < 0.5 ? 0 : 1;
+      const t = Math.random() * Math.PI;
+      let x, y;
+      if (k === 0) { x = Math.cos(t); y = Math.sin(t); }
+      else         { x = 1 - Math.cos(t); y = -Math.sin(t) + 0.5; }
+      const [n1, n2] = boxMuller();
+      xs.push(x + sigma * n1);
+      ys.push(y + sigma * n2);
+      colors.push(k === 0 ? COLORS.indigo : COLORS.emerald);
+    }
+    return { xs, ys, colors };
+  }
+  function redraw() {
+    const s = parseFloat(noise.value);
+    noiseRO.textContent = `σ = ${s.toFixed(2)}`;
+    const { xs, ys, colors } = makeMoons(600, s);
+    Plotly.react(plot, [{
+      type: 'scatter', mode: 'markers',
+      x: xs, y: ys,
+      marker: { color: colors, size: 5, opacity: 0.7 },
+      hovertemplate: '(%{x:.2f}, %{y:.2f})<extra></extra>',
+    }], baseLayout({
+      xaxis: Object.assign(baseLayout().xaxis, { title: 'x₁', range: [-1.8, 2.8], scaleanchor: 'y' }),
+      yaxis: Object.assign(baseLayout().yaxis, { title: 'x₂', range: [-1.4, 1.7] }),
+      height: 380,
+    }), baseConfig);
+  }
+  noise.addEventListener('input', redraw);
+  btn.addEventListener('click', redraw);
+  redraw();
+})();
+
+// ====================================================================
+// 4.3 MLE Gaussian — drag/add points, watch the fit
+// ====================================================================
+(function() {
+  const btnAdd = document.getElementById('mle-g-add');
+  const btnReset = document.getElementById('mle-g-reset');
+  const stats = document.getElementById('mle-g-stats');
+  const plot = document.getElementById('mle-g-plot');
+
+  let pts = []; // array of x values
+
+  function recompute() {
+    if (pts.length === 0) {
+      stats.textContent = 'N=0  μ̂=—  σ̂=—';
+      return { mu: 0, sigma: 1, valid: false };
+    }
+    const N = pts.length;
+    const mu = pts.reduce((a,b) => a+b, 0) / N;
+    const variance = pts.reduce((a,b) => a + (b-mu)*(b-mu), 0) / N;
+    const sigma = Math.max(Math.sqrt(variance), 0.05);
+    stats.textContent = `N=${N}  μ̂=${mu.toFixed(2)}  σ̂=${sigma.toFixed(2)}`;
+    return { mu, sigma, valid: true };
+  }
+
+  function pdfTrace(mu, sigma) {
+    const xs = [], ys = [];
+    const lo = -8, hi = 8, M = 400;
+    for (let i = 0; i <= M; i++) {
+      const x = lo + (hi - lo) * i / M;
+      xs.push(x); ys.push(gaussianPdf(x, mu, sigma));
+    }
+    return {
+      type: 'scatter', mode: 'lines',
+      x: xs, y: ys,
+      line: { color: COLORS.indigo, width: 2.5 },
+      hovertemplate: 'fitted p(x) = %{y:.3f}<extra></extra>',
+    };
+  }
+
+  function pointsTrace(pts) {
+    return {
+      type: 'scatter', mode: 'markers',
+      x: pts, y: pts.map(() => 0),
+      marker: { color: COLORS.amber, size: 9, opacity: 0.85,
+                line: { color: '#92400e', width: 1 } },
+      hovertemplate: 'x = %{x:.2f}<extra></extra>',
+    };
+  }
+
+  function meanLine(mu, sigma) {
+    return {
+      type: 'scatter', mode: 'lines',
+      x: [mu, mu], y: [0, gaussianPdf(mu, mu, sigma)],
+      line: { color: COLORS.indigo, width: 1.5, dash: 'dash' },
+      hoverinfo: 'skip',
+    };
+  }
+
+  function sigmaBand(mu, sigma) {
+    const xs = [], ys = [];
+    const lo = mu - sigma, hi = mu + sigma, M = 60;
+    for (let i = 0; i <= M; i++) {
+      const x = lo + (hi - lo) * i / M;
+      xs.push(x); ys.push(gaussianPdf(x, mu, sigma));
+    }
+    xs.push(hi, lo); ys.push(0, 0);
+    return {
+      type: 'scatter', mode: 'lines', fill: 'toself',
+      x: xs, y: ys,
+      fillcolor: 'rgba(99, 102, 241, 0.12)',
+      line: { width: 0 },
+      hoverinfo: 'skip',
+    };
+  }
+
+  function redraw() {
+    const { mu, sigma, valid } = recompute();
+    const traces = valid
+      ? [sigmaBand(mu, sigma), pdfTrace(mu, sigma), meanLine(mu, sigma), pointsTrace(pts)]
+      : [pointsTrace(pts)];
+    Plotly.react(plot, traces, baseLayout({
+      xaxis: Object.assign(baseLayout().xaxis, { title: 'x', range: [-8, 8] }),
+      yaxis: Object.assign(baseLayout().yaxis, { title: 'density', range: [-0.02, 1.0] }),
+    }), baseConfig);
+  }
+
+  function addCluster() {
+    const center = (Math.random() - 0.5) * 6;
+    const spread = 0.4 + Math.random() * 1.2;
+    for (let i = 0; i < 10; i++) {
+      const [z, _] = boxMuller();
+      pts.push(center + spread * z);
+    }
+    redraw();
+  }
+
+  btnAdd.addEventListener('click', addCluster);
+  btnReset.addEventListener('click', () => { pts = []; redraw(); });
+
+  // click on plot to add a single point
+  plot.addEventListener('click', (e) => {
+    // Plotly stores the layout, try to convert pixel click to data coord
+    const bbox = plot.getBoundingClientRect();
+    const layout = plot._fullLayout;
+    if (!layout || !layout.xaxis || !layout.xaxis.p2d) return;
+    const xPixel = e.clientX - bbox.left - layout.margin.l;
+    const x = layout.xaxis.p2d(xPixel);
+    if (typeof x === 'number' && isFinite(x) && x > -8 && x < 8) {
+      pts.push(x);
+      redraw();
+    }
+  });
+
+  redraw();
+})();
+
+// ====================================================================
+// 5.3 EM on the coin and dice — step / run / re-init
+// ====================================================================
+(function() {
+  const btnE = document.getElementById('cd-estep');
+  const btnM = document.getElementById('cd-mstep');
+  const btn10 = document.getElementById('cd-run10');
+  const btnReinit = document.getElementById('cd-reinit');
+  const btnResample = document.getElementById('cd-resample');
+  const nSlider = document.getElementById('cd-N');
+  const nRO = document.getElementById('cd-N-readout');
+  const truePiSlider = document.getElementById('cd-truepi');
+  const truePiRO = document.getElementById('cd-truepi-readout');
+  const stats = document.getElementById('cd-stats');
+  const rollsDiv = document.getElementById('cd-rolls');
+  const dicePlot = document.getElementById('cd-dice-plot');
+  const llPlot = document.getElementById('cd-ll-plot');
+
+  // true model used to generate data (hidden from EM)
+  const trueA = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6];
+  const trueB = [0.05, 0.05, 0.05, 0.05, 0.05, 0.75];
+
+  let data = [];        // array of rolls in {1..6}
+  let pi = 0.5;
+  let pA = trueA.slice();
+  let pB = trueB.slice();
+  let gamma = [];       // soft labels p(z=H | x_i)
+  let iter = 0;
+  let llTrace = [];     // log-likelihoods over time
+
+  function sampleData(N, piStar) {
+    const arr = [];
+    for (let i = 0; i < N; i++) {
+      const useA = Math.random() < piStar;
+      const dist = useA ? trueA : trueB;
+      const u = Math.random();
+      let cum = 0, face = 0;
+      for (face = 0; face < 6; face++) { cum += dist[face]; if (u < cum) break; }
+      arr.push(Math.min(face + 1, 6));
+    }
+    return arr;
+  }
+
+  function reinitTheta() {
+    pi = 0.3 + 0.4 * Math.random();
+    // random per-face probabilities, normalized
+    const ra = Array.from({length:6}, () => 0.5 + Math.random());
+    const rb = Array.from({length:6}, () => 0.5 + Math.random());
+    const sa = ra.reduce((a,b)=>a+b, 0);
+    const sb = rb.reduce((a,b)=>a+b, 0);
+    pA = ra.map(v => v/sa);
+    pB = rb.map(v => v/sb);
+    gamma = data.map(() => 0.5);
+    iter = 0;
+    llTrace = [];
+  }
+
+  function logLik() {
+    let ll = 0;
+    for (let i = 0; i < data.length; i++) {
+      const face = data[i] - 1;
+      const px = pi * pA[face] + (1 - pi) * pB[face];
+      ll += Math.log(Math.max(px, 1e-300));
+    }
+    return ll;
+  }
+
+  function eStep() {
+    const G = [];
+    for (let i = 0; i < data.length; i++) {
+      const face = data[i] - 1;
+      const a = pi * pA[face];
+      const b = (1 - pi) * pB[face];
+      G.push(a / (a + b + 1e-300));
+    }
+    gamma = G;
+    llTrace.push(logLik());
+  }
+
+  function mStep() {
+    if (gamma.length === 0) return;
+    const N = data.length;
+    let sumG = 0;
+    const aCount = Array(6).fill(0);
+    const bCount = Array(6).fill(0);
+    let aTot = 0, bTot = 0;
+    for (let i = 0; i < N; i++) {
+      const face = data[i] - 1;
+      const g = gamma[i];
+      sumG += g;
+      aCount[face] += g;
+      bCount[face] += (1 - g);
+      aTot += g;
+      bTot += (1 - g);
+    }
+    pi = sumG / N;
+    // small smoothing to avoid p = 0 dead components
+    const eps = 1e-3;
+    pA = aCount.map(v => (v + eps) / (aTot + 6*eps));
+    pB = bCount.map(v => (v + eps) / (bTot + 6*eps));
+    iter++;
+  }
+
+  function colorFromGamma(g) {
+    // rose for gamma=1 (die A), indigo for gamma=0 (die B), gray when ambiguous
+    if (gamma.length === 0) return 'rgba(148, 163, 184, 0.6)';
+    const rose   = [244, 63, 94];
+    const indigo = [99, 102, 241];
+    const gray   = [148, 163, 184];
+    // blend: confidence = |g - 0.5| * 2 (0 = ambiguous, 1 = certain)
+    const conf = Math.min(1, Math.abs(g - 0.5) * 2);
+    const dieColor = g > 0.5 ? rose : indigo;
+    const r = Math.round(gray[0] * (1 - conf) + dieColor[0] * conf);
+    const gg = Math.round(gray[1] * (1 - conf) + dieColor[1] * conf);
+    const b = Math.round(gray[2] * (1 - conf) + dieColor[2] * conf);
+    return `rgb(${r}, ${gg}, ${b})`;
+  }
+
+  function renderRolls() {
+    const N = data.length;
+    let html = '<div style="display: flex; flex-wrap: wrap; gap: 3px;">';
+    for (let i = 0; i < N; i++) {
+      const g = gamma[i] !== undefined ? gamma[i] : 0.5;
+      const col = colorFromGamma(g);
+      html += `<div title="x=${data[i]}, γ=${g.toFixed(2)}" style="
+        width: 22px; height: 22px;
+        display: flex; align-items: center; justify-content: center;
+        background: ${col};
+        color: white;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(15,23,42,0.1);
+      ">${data[i]}</div>`;
+    }
+    html += '</div>';
+    rollsDiv.innerHTML = html;
+  }
+
+  function renderDice() {
+    const traces = [
+      {
+        type: 'bar', x: ['1','2','3','4','5','6'], y: pA,
+        name: 'p_A', marker: { color: 'rgba(244, 63, 94, 0.85)' },
+        offsetgroup: '0',
+        hovertemplate: 'p_A(%{x}) = %{y:.3f}<extra></extra>',
+      },
+      {
+        type: 'bar', x: ['1','2','3','4','5','6'], y: pB,
+        name: 'p_B', marker: { color: 'rgba(99, 102, 241, 0.85)' },
+        offsetgroup: '1',
+        hovertemplate: 'p_B(%{x}) = %{y:.3f}<extra></extra>',
+      },
+    ];
+    Plotly.react(dicePlot, traces, baseLayout({
+      barmode: 'group',
+      bargap: 0.25,
+      xaxis: Object.assign(baseLayout().xaxis, { title: 'die face' }),
+      yaxis: Object.assign(baseLayout().yaxis, { title: 'probability', range: [0, 1] }),
+      showlegend: true,
+      legend: { x: 0.85, y: 1.05, bgcolor: 'rgba(255,255,255,0.85)', bordercolor: COLORS.grid, borderwidth: 1, font: { size: 11 } },
+      margin: { l: 50, r: 20, t: 18, b: 38 },
+    }), baseConfig);
+  }
+
+  function renderLL() {
+    const xs = llTrace.map((_, k) => k + 1);
+    Plotly.react(llPlot, [{
+      type: 'scatter', mode: 'lines+markers',
+      x: xs, y: llTrace,
+      line: { color: COLORS.indigo, width: 2 },
+      marker: { color: COLORS.indigo, size: 6 },
+      hovertemplate: 'iter %{x}: ℓ=%{y:.2f}<extra></extra>',
+    }], baseLayout({
+      xaxis: Object.assign(baseLayout().xaxis, { title: 'iteration (E-step #)', dtick: 1 }),
+      yaxis: Object.assign(baseLayout().yaxis, { title: 'log-likelihood' }),
+      margin: { l: 60, r: 20, t: 14, b: 40 },
+    }), baseConfig);
+  }
+
+  function statsLine() {
+    const ll = llTrace.length > 0 ? llTrace[llTrace.length - 1].toFixed(2) : '—';
+    stats.textContent = `iter=${iter}  π̂=${pi.toFixed(2)}  ℓ=${ll}`;
+  }
+
+  function redrawAll() {
+    renderRolls();
+    renderDice();
+    renderLL();
+    statsLine();
+  }
+
+  // wire controls
+  btnE.addEventListener('click', () => { eStep(); redrawAll(); });
+  btnM.addEventListener('click', () => { mStep(); redrawAll(); });
+  btn10.addEventListener('click', () => {
+    for (let k = 0; k < 10; k++) { eStep(); mStep(); }
+    eStep();
+    redrawAll();
+  });
+  btnReinit.addEventListener('click', () => { reinitTheta(); redrawAll(); });
+  btnResample.addEventListener('click', () => {
+    data = sampleData(parseInt(nSlider.value), parseFloat(truePiSlider.value));
+    reinitTheta();
+    redrawAll();
+  });
+  nSlider.addEventListener('input', () => {
+    nRO.textContent = `N = ${nSlider.value}`;
+  });
+  truePiSlider.addEventListener('input', () => {
+    truePiRO.textContent = `π* = ${parseFloat(truePiSlider.value).toFixed(2)}`;
+  });
+
+  // init
+  data = sampleData(60, 0.6);
+  reinitTheta();
+  redrawAll();
+})();
+
+// ====================================================================
+// 5.4 EM on a 2D GMM — step / run / re-init
+// ====================================================================
+(function() {
+  const btnE = document.getElementById('em-estep');
+  const btnM = document.getElementById('em-mstep');
+  const btn10 = document.getElementById('em-run10');
+  const btnReinit = document.getElementById('em-reinit');
+  const btnResample = document.getElementById('em-resample');
+  const stats = document.getElementById('em-stats');
+  const plot = document.getElementById('em-plot');
+
+  const K = 3;
+  const N = 300;
+  // true components for data generation
+  const trueComps = [
+    { mu: [-2.0, -1.0], S: [[0.5, 0.0],[0.0, 0.5]], pi: 0.35 },
+    { mu: [ 2.5,  1.5], S: [[0.7, 0.3],[0.3, 0.5]], pi: 0.40 },
+    { mu: [ 0.0,  2.5], S: [[0.4, -0.1],[-0.1, 0.6]], pi: 0.25 },
+  ];
+
+  let data = [];
+  let theta = null;  // {mus: [[]], Sigmas: [[]], pis: []}
+  let gamma = null;  // N x K responsibility matrix
+  let iter = 0;
+  let lastLL = null;
+
+  function sampleMVN(mu, S) {
+    // Cholesky of 2x2 S
+    const a = Math.sqrt(S[0][0]);
+    const b = S[0][1] / a;
+    const c = Math.sqrt(Math.max(S[1][1] - b*b, 1e-6));
+    const [z1, z2] = boxMuller();
+    return [mu[0] + a*z1, mu[1] + b*z1 + c*z2];
+  }
+  function inv2(S) {
+    const det = S[0][0]*S[1][1] - S[0][1]*S[1][0];
+    return { inv: [[S[1][1]/det, -S[0][1]/det],[-S[1][0]/det, S[0][0]/det]], det };
+  }
+  function mvnPdf(x, mu, S) {
+    const { inv, det } = inv2(S);
+    if (det <= 0) return 1e-30;
+    const dx = [x[0]-mu[0], x[1]-mu[1]];
+    const q = dx[0]*(inv[0][0]*dx[0] + inv[0][1]*dx[1]) +
+              dx[1]*(inv[1][0]*dx[0] + inv[1][1]*dx[1]);
+    return Math.exp(-0.5*q) / (2*Math.PI*Math.sqrt(det));
+  }
+
+  function genData() {
+    data = [];
+    for (let i = 0; i < N; i++) {
+      const u = Math.random();
+      let cum = 0, k = 0;
+      for (k = 0; k < K; k++) { cum += trueComps[k].pi; if (u < cum) break; }
+      if (k >= K) k = K-1;
+      data.push(sampleMVN(trueComps[k].mu, trueComps[k].S));
+    }
+  }
+  function reinit() {
+    // pick K random data points as initial means; small isotropic covariance
+    const idx = [];
+    while (idx.length < K) {
+      const j = Math.floor(Math.random() * data.length);
+      if (!idx.includes(j)) idx.push(j);
+    }
+    theta = {
+      mus: idx.map(j => [data[j][0], data[j][1]]),
+      Sigmas: Array.from({length: K}, () => [[1.0, 0.0],[0.0, 1.0]]),
+      pis: Array.from({length: K}, () => 1/K),
+    };
+    gamma = null;
+    iter = 0;
+    lastLL = null;
+  }
+  function eStep() {
+    const G = [];
+    let ll = 0;
+    for (let i = 0; i < data.length; i++) {
+      const probs = theta.pis.map((p, k) => Math.max(p * mvnPdf(data[i], theta.mus[k], theta.Sigmas[k]), 1e-300));
+      const sum = probs.reduce((a,b) => a+b, 0);
+      G.push(probs.map(p => p / sum));
+      ll += Math.log(sum);
+    }
+    gamma = G;
+    lastLL = ll;
+  }
+  function mStep() {
+    if (!gamma) return;
+    const Nk = Array(K).fill(0);
+    for (let i = 0; i < data.length; i++) for (let k = 0; k < K; k++) Nk[k] += gamma[i][k];
+    for (let k = 0; k < K; k++) {
+      let mx = 0, my = 0;
+      for (let i = 0; i < data.length; i++) { mx += gamma[i][k] * data[i][0]; my += gamma[i][k] * data[i][1]; }
+      theta.mus[k] = [mx/Nk[k], my/Nk[k]];
+      let s00=0, s01=0, s11=0;
+      for (let i = 0; i < data.length; i++) {
+        const dx = data[i][0] - theta.mus[k][0];
+        const dy = data[i][1] - theta.mus[k][1];
+        s00 += gamma[i][k]*dx*dx;
+        s01 += gamma[i][k]*dx*dy;
+        s11 += gamma[i][k]*dy*dy;
+      }
+      theta.Sigmas[k] = [[s00/Nk[k] + 1e-4, s01/Nk[k]],[s01/Nk[k], s11/Nk[k] + 1e-4]];
+      theta.pis[k] = Nk[k] / data.length;
+    }
+    iter++;
+  }
+
+  function ellipsePts(mu, S, nSig=1.5, M=80) {
+    // eigendecomposition of 2x2 symmetric matrix
+    const a = S[0][0], b = S[0][1], c = S[1][1];
+    const tr = a + c, det = a*c - b*b;
+    const disc = Math.sqrt(Math.max(tr*tr/4 - det, 0));
+    const lam1 = tr/2 + disc, lam2 = tr/2 - disc;
+    // eigenvector for lam1
+    let v1;
+    if (Math.abs(b) > 1e-10) v1 = [lam1 - c, b];
+    else v1 = (a >= c) ? [1, 0] : [0, 1];
+    const n1 = Math.sqrt(v1[0]*v1[0] + v1[1]*v1[1]);
+    v1 = [v1[0]/n1, v1[1]/n1];
+    const v2 = [-v1[1], v1[0]];
+    const r1 = nSig * Math.sqrt(Math.max(lam1, 1e-8));
+    const r2 = nSig * Math.sqrt(Math.max(lam2, 1e-8));
+    const xs = [], ys = [];
+    for (let i = 0; i <= M; i++) {
+      const t = 2*Math.PI*i/M;
+      const x = r1*Math.cos(t)*v1[0] + r2*Math.sin(t)*v2[0] + mu[0];
+      const y = r1*Math.cos(t)*v1[1] + r2*Math.sin(t)*v2[1] + mu[1];
+      xs.push(x); ys.push(y);
+    }
+    return { xs, ys };
+  }
+
+  function pointColors() {
+    if (!gamma) return data.map(() => '#94a3b8');
+    return gamma.map(g => {
+      // blend RGB by responsibility
+      const cs = [
+        [99, 102, 241],   // indigo
+        [16, 185, 129],   // emerald
+        [245, 158, 11],   // amber
+      ];
+      let r=0,gg=0,bb=0;
+      for (let k = 0; k < K; k++) {
+        r  += g[k]*cs[k][0];
+        gg += g[k]*cs[k][1];
+        bb += g[k]*cs[k][2];
+      }
+      // alpha by confidence (max responsibility)
+      const maxg = Math.max(...g);
+      const a = 0.4 + 0.55 * (maxg - 1/K) / (1 - 1/K);
+      return `rgba(${Math.round(r)}, ${Math.round(gg)}, ${Math.round(bb)}, ${a})`;
+    });
+  }
+
+  function redraw() {
+    const traces = [];
+    // ellipses
+    const compColors = ['#6366f1', '#10b981', '#f59e0b'];
+    for (let k = 0; k < K; k++) {
+      const { xs, ys } = ellipsePts(theta.mus[k], theta.Sigmas[k], 1.5);
+      traces.push({
+        type: 'scatter', mode: 'lines',
+        x: xs, y: ys,
+        line: { color: compColors[k], width: 2.5 },
+        hoverinfo: 'skip',
+      });
+      traces.push({
+        type: 'scatter', mode: 'markers',
+        x: [theta.mus[k][0]], y: [theta.mus[k][1]],
+        marker: { color: compColors[k], size: 11, symbol: 'x',
+                  line: { color: '#0f172a', width: 1.5 } },
+        hoverinfo: 'skip',
+      });
+    }
+    // data points
+    traces.push({
+      type: 'scatter', mode: 'markers',
+      x: data.map(p => p[0]), y: data.map(p => p[1]),
+      marker: { color: pointColors(), size: 6,
+                line: { color: 'rgba(15,23,42,0.2)', width: 0.5 } },
+      hovertemplate: '(%{x:.2f}, %{y:.2f})<extra></extra>',
+    });
+    Plotly.react(plot, traces, baseLayout({
+      xaxis: Object.assign(baseLayout().xaxis, { range: [-5, 5], scaleanchor: 'y', title: 'x₁' }),
+      yaxis: Object.assign(baseLayout().yaxis, { range: [-4, 5], title: 'x₂' }),
+    }), baseConfig);
+    stats.textContent = lastLL === null
+      ? `iter=${iter}  ℓ=—`
+      : `iter=${iter}  ℓ=${lastLL.toFixed(1)}`;
+  }
+
+  btnE.addEventListener('click', () => { eStep(); redraw(); });
+  btnM.addEventListener('click', () => { mStep(); redraw(); });
+  btn10.addEventListener('click', () => {
+    for (let i = 0; i < 10; i++) { eStep(); mStep(); }
+    eStep(); redraw();
+  });
+  btnReinit.addEventListener('click', () => { reinit(); redraw(); });
+  btnResample.addEventListener('click', () => { genData(); reinit(); redraw(); });
+
+  genData();
+  reinit();
+  redraw();
+})();
+
+// ====================================================================
+// 6.4 Mean-field on a correlated 2D Gaussian
+// ====================================================================
+(function() {
+  const rho = document.getElementById('mf-rho');
+  const rhoRO = document.getElementById('mf-rho-readout');
+  const plot = document.getElementById('mf-plot');
+
+  function contourPts(S, level, M=120) {
+    // ellipse at -2 ln(level) Mahalanobis distance, centered at origin
+    const a = S[0][0], b = S[0][1], c = S[1][1];
+    const tr = a + c, det = a*c - b*b;
+    const disc = Math.sqrt(Math.max(tr*tr/4 - det, 0));
+    const lam1 = tr/2 + disc, lam2 = tr/2 - disc;
+    let v1;
+    if (Math.abs(b) > 1e-10) v1 = [lam1 - c, b];
+    else v1 = (a >= c) ? [1, 0] : [0, 1];
+    const n1 = Math.sqrt(v1[0]*v1[0] + v1[1]*v1[1]);
+    v1 = [v1[0]/n1, v1[1]/n1];
+    const v2 = [-v1[1], v1[0]];
+    const r1 = level * Math.sqrt(Math.max(lam1, 1e-8));
+    const r2 = level * Math.sqrt(Math.max(lam2, 1e-8));
+    const xs = [], ys = [];
+    for (let i = 0; i <= M; i++) {
+      const t = 2*Math.PI*i/M;
+      xs.push(r1*Math.cos(t)*v1[0] + r2*Math.sin(t)*v2[0]);
+      ys.push(r1*Math.cos(t)*v1[1] + r2*Math.sin(t)*v2[1]);
+    }
+    return { xs, ys };
+  }
+
+  function redraw() {
+    const r = parseFloat(rho.value);
+    rhoRO.textContent = `ρ = ${r.toFixed(2)}`;
+    // true posterior covariance (assume unit variances along each axis for simplicity)
+    const Strue = [[1, r],[r, 1]];
+    // mean-field optimum: minimize KL(q || p) over factorized q.
+    // For multivariate Gaussian target with precision Lambda = inv(Strue),
+    // optimal mean-field variances are 1/Lambda_jj. Means are at origin.
+    const detTrue = 1 - r*r;
+    const lam11 = 1 / detTrue;     // diagonal of inv(Strue) for unit-var, corr r
+    const lam22 = 1 / detTrue;
+    const mfVar1 = 1 / lam11;
+    const mfVar2 = 1 / lam22;
+    const Smf = [[mfVar1, 0],[0, mfVar2]];
+
+    const traces = [];
+    // true posterior contours (gray) at multiple levels
+    for (const lvl of [1, 2, 3]) {
+      const { xs, ys } = contourPts(Strue, lvl);
+      traces.push({
+        type: 'scatter', mode: 'lines',
+        x: xs, y: ys,
+        line: { color: 'rgba(100, 116, 139, 0.6)', width: 1.5 },
+        name: lvl === 1 ? 'true posterior' : '',
+        showlegend: lvl === 1,
+        hoverinfo: 'skip',
+      });
+    }
+    // mean-field contours (indigo)
+    for (const lvl of [1, 2, 3]) {
+      const { xs, ys } = contourPts(Smf, lvl);
+      traces.push({
+        type: 'scatter', mode: 'lines',
+        x: xs, y: ys,
+        line: { color: COLORS.indigo, width: 2, dash: lvl === 1 ? 'solid' : 'dot' },
+        name: lvl === 1 ? 'mean-field q' : '',
+        showlegend: lvl === 1,
+        hoverinfo: 'skip',
+      });
+    }
+    Plotly.react(plot, traces, baseLayout({
+      xaxis: Object.assign(baseLayout().xaxis, { range: [-5, 5], scaleanchor: 'y', title: 'z₁' }),
+      yaxis: Object.assign(baseLayout().yaxis, { range: [-5, 5], title: 'z₂' }),
+      showlegend: true,
+      legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(255,255,255,0.85)', bordercolor: COLORS.grid, borderwidth: 1, font: { size: 11 } },
+    }), baseConfig);
+  }
+
+  rho.addEventListener('input', redraw);
+  redraw();
+})();
+
+// ====================================================================
+// 6.5 ELBO tightness demo
+// ====================================================================
+(function() {
+  const muq = document.getElementById('elbo-mu');
+  const sigq = document.getElementById('elbo-sig');
+  const muRO = document.getElementById('elbo-mu-readout');
+  const sigRO = document.getElementById('elbo-sig-readout');
+  const stats = document.getElementById('elbo-stats');
+  const plot = document.getElementById('elbo-plot');
+
+  // toy model: p(z) = N(0,1), p(x|z) = N(z, 0.5^2), x = 1.5
+  // true posterior is Gaussian: precision = 1 + 1/0.25 = 5, var = 0.2, mean = (1.5/0.25) * 0.2 = 1.2
+  const xObs = 1.5;
+  const sigLik = 0.5;
+  const postVar = 1 / (1 + 1/(sigLik*sigLik));
+  const postMu = (xObs / (sigLik*sigLik)) * postVar;
+  const postSig = Math.sqrt(postVar);
+  // true log p(x) = log N(x | 0, 1 + 0.25) = log N(1.5 | 0, 1.25)
+  const logPx = -0.5*Math.log(2*Math.PI*(1 + sigLik*sigLik)) - 0.5 * xObs*xObs / (1 + sigLik*sigLik);
+
+  function klGauss(mu1, s1, mu2, s2) {
+    return Math.log(s2/s1) + (s1*s1 + (mu1-mu2)*(mu1-mu2)) / (2*s2*s2) - 0.5;
+  }
+
+  function compute(muQ, sigQ) {
+    const kl = klGauss(muQ, sigQ, postMu, postSig);
+    const elbo = logPx - kl;
+    return { kl, elbo };
+  }
+
+  function pdfTrace(mu, sigma, color, name) {
+    const xs = [], ys = [];
+    const lo = -3, hi = 4, M = 300;
+    for (let i = 0; i <= M; i++) {
+      const x = lo + (hi - lo) * i / M;
+      xs.push(x); ys.push(gaussianPdf(x, mu, sigma));
+    }
+    return {
+      type: 'scatter', mode: 'lines',
+      x: xs, y: ys,
+      line: { color, width: 2.5 },
+      name,
+      showlegend: true,
+      hovertemplate: name + ': z = %{x:.2f}, p = %{y:.3f}<extra></extra>',
+    };
+  }
+
+  function redraw() {
+    const muQ = parseFloat(muq.value);
+    const sigQ = parseFloat(sigq.value);
+    muRO.textContent = `μ_q = ${muQ.toFixed(2)}`;
+    sigRO.textContent = `σ_q = ${sigQ.toFixed(2)}`;
+    const { kl, elbo } = compute(muQ, sigQ);
+    stats.textContent = `ELBO=${elbo.toFixed(3)} · log p(x)=${logPx.toFixed(3)} · KL=${kl.toFixed(3)}`;
+
+    const traces = [
+      pdfTrace(postMu, postSig, 'rgba(100, 116, 139, 0.85)', 'true posterior p(z|x)'),
+      pdfTrace(muQ, sigQ, COLORS.indigo, 'variational q(z)'),
+    ];
+    Plotly.react(plot, traces, baseLayout({
+      xaxis: Object.assign(baseLayout().xaxis, { title: 'z', range: [-3, 4] }),
+      yaxis: Object.assign(baseLayout().yaxis, { title: 'density', range: [0, 1.2] }),
+      showlegend: true,
+      legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(255,255,255,0.85)', bordercolor: COLORS.grid, borderwidth: 1, font: { size: 11 } },
+    }), baseConfig);
+  }
+
+  muq.addEventListener('input', redraw);
+  sigq.addEventListener('input', redraw);
+  redraw();
+})();
+
+// ====================================================================
+// TOC active-section + breadcrumb sync
+// ====================================================================
+(function() {
+  const crumbEl = document.getElementById('crumb');
+  const headings = document.querySelectorAll('h2[id], h3[id]');
+  const links = new Map();
+  document.querySelectorAll('nav.toc a').forEach(a => {
+    const id = a.getAttribute('href').slice(1);
+    links.set(id, a);
+  });
+
+  const titles = new Map();
+  headings.forEach(h => {
+    const id = h.getAttribute('id');
+    titles.set(id, h.textContent.trim().replace(/^\d+(\.\d+)?\s*·?\s*/, ''));
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      const a = links.get(e.target.id);
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        if (a) a.classList.add('active');
+        const title = titles.get(e.target.id);
+        if (title) crumbEl.textContent = title;
+      }
+    });
+  }, { rootMargin: '-25% 0px -65% 0px' });
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+</body>
+</html>

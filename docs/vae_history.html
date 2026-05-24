@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VAE — the historical path</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
+<style>
+/* ============================================================
+   Shared visual vocabulary with vae.html — modern SaaS
+   ============================================================ */
+:root {
+  --bg:           #fbfbfd;
+  --surface:      #ffffff;
+  --text:         #0f172a;
+  --text-soft:    #475569;
+  --muted:        #64748b;
+  --rule:         #e5e7eb;
+  --rule-soft:    #f1f5f9;
+
+  --indigo:       #6366f1;
+  --indigo-soft:  #eef2ff;
+  --indigo-deep:  #4338ca;
+  --violet:       #8b5cf6;
+  --violet-soft:  #f5f3ff;
+  --emerald:      #10b981;
+  --emerald-soft: #ecfdf5;
+  --amber:        #f59e0b;
+  --amber-soft:   #fffbeb;
+  --rose:         #f43f5e;
+  --rose-soft:    #fff1f2;
+  --sky:          #0ea5e9;
+  --sky-soft:     #f0f9ff;
+  --slate-soft:   #f8fafc;
+  --gold:         #b45309;
+  --gold-soft:    #fef3c7;
+
+  --shadow-sm:    0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow:       0 4px 14px rgba(15, 23, 42, 0.06);
+  --shadow-lg:    0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Topbar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar-inner {
+  max-width: 1240px; margin: 0 auto;
+  padding: 14px 32px;
+  display: flex; align-items: center; gap: 16px;
+  font-size: 14px;
+}
+.brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text); }
+.brand .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--amber));
+  box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.18);
+}
+.crumb-sep { color: var(--rule); }
+.crumb-current { color: var(--text-soft); font-weight: 500; }
+.topbar-spacer { flex: 1; }
+.topbar a.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px;
+  background: var(--gold-soft);
+  color: var(--gold);
+  border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+  text-decoration: none;
+  border: 1px solid rgba(180, 83, 9, 0.18);
+}
+.topbar a.pill.alt {
+  background: var(--indigo-soft);
+  color: var(--indigo-deep);
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+/* ---------- Page layout ---------- */
+.page {
+  max-width: 1240px; margin: 0 auto;
+  padding: 40px 32px 200px 32px;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 56px;
+}
+@media (max-width: 1000px) {
+  .page { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  nav.toc { display: none; }
+}
+article { max-width: 820px; }
+
+/* ---------- Sidebar ---------- */
+nav.toc {
+  position: sticky; top: 80px; align-self: start;
+  font-size: 14px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto; padding-right: 8px;
+}
+nav.toc .toc-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+}
+nav.toc ol { list-style: none; padding: 0; margin: 0; }
+nav.toc li { margin: 4px 0; }
+nav.toc a {
+  display: block; padding: 6px 10px;
+  color: var(--text-soft); text-decoration: none;
+  border-radius: 6px; font-weight: 500;
+  transition: all 0.12s ease;
+}
+nav.toc a:hover { background: var(--slate-soft); color: var(--text); }
+nav.toc a.active {
+  background: var(--gold-soft); color: var(--gold); font-weight: 600;
+}
+
+/* ---------- Typography ---------- */
+h1 {
+  font-size: 2.4em; line-height: 1.15;
+  font-weight: 700; letter-spacing: -0.025em;
+  margin: 0 0 12px 0;
+  background: linear-gradient(135deg, var(--text) 0%, var(--gold) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.subtitle {
+  font-size: 1.1em; color: var(--muted);
+  margin: 0 0 48px 0; line-height: 1.5; max-width: 660px;
+}
+
+h2 {
+  font-size: 1.6em; font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 64px 0 20px 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  display: flex; align-items: center; gap: 14px;
+}
+h2:first-of-type { border-top: none; padding-top: 0; }
+h2 .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold), var(--amber));
+  color: white; font-size: 14px; font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+h2 .era {
+  font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500;
+  margin-left: auto;
+}
+
+h3 {
+  font-size: 1.2em; font-weight: 600;
+  margin: 40px 0 12px 0; color: var(--text);
+}
+
+p { margin: 12px 0; color: var(--text-soft); }
+p strong { color: var(--text); font-weight: 600; }
+ol, ul { color: var(--text-soft); padding-left: 1.4em; }
+li { margin: 6px 0; }
+li strong { color: var(--text); }
+
+a {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(180, 83, 9, 0.3);
+  transition: border-color 0.12s ease;
+}
+a:hover { border-bottom-color: var(--gold); }
+
+code, .mono {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: 0.88em;
+  background: var(--slate-soft);
+  color: var(--gold);
+  padding: 1px 6px; border-radius: 4px;
+  border: 1px solid var(--rule);
+}
+
+hr { border: none; border-top: 1px dashed var(--rule); margin: 32px 0; }
+
+/* ---------- Pullquote ---------- */
+.pullquote {
+  margin: 26px 0;
+  padding: 6px 0 6px 20px;
+  border-left: 4px solid var(--gold);
+  font-size: 1.1em; line-height: 1.5; color: var(--text); font-weight: 500;
+}
+.pullquote .lead {
+  display: block;
+  font-weight: 700; font-size: 0.78em;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.pullquote p { color: var(--text); margin: 4px 0; font-size: inherit; }
+.pullquote p:first-child { margin-top: 0; }
+.pullquote p:last-child { margin-bottom: 0; }
+
+/* ---------- Note ---------- */
+.note {
+  margin: 20px 0;
+  padding: 10px 0 10px 14px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px; font-style: italic; color: var(--muted);
+  line-height: 1.55;
+}
+.note strong, .note em { color: var(--text-soft); font-style: normal; }
+.note .marker {
+  font-style: normal;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text);
+  margin-right: 10px; font-weight: 600;
+}
+
+/* ---------- Warn-inline ---------- */
+.warn-inline {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  padding: 1px 6px; border-radius: 4px;
+  font-weight: 500;
+  box-shadow: inset 2px 0 0 var(--amber);
+}
+
+/* ---------- Highlight ---------- */
+.hl {
+  background: linear-gradient(120deg, rgba(245, 158, 11, 0.30), rgba(245, 158, 11, 0.22));
+  padding: 1px 4px; border-radius: 3px; font-weight: 500;
+}
+
+/* ---------- Key points ---------- */
+.key-points {
+  margin: 24px 0;
+  padding: 18px 22px 20px 22px;
+  background: var(--slate-soft);
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+}
+.key-points > .label {
+  display: block; font-size: 13.5px; font-weight: 700;
+  color: var(--text); margin-bottom: 12px;
+  letter-spacing: -0.005em;
+}
+.key-points > .label::before {
+  content: ''; display: inline-block;
+  width: 4px; height: 14px;
+  background: var(--gold); border-radius: 2px;
+  margin-right: 10px; vertical-align: -2px;
+}
+.key-points ol {
+  list-style: none; padding: 0; margin: 0;
+  counter-reset: kp;
+}
+.key-points ol > li {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  column-gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--rule);
+  counter-increment: kp;
+}
+.key-points ol > li:first-child { border-top: none; padding-top: 4px; }
+.key-points ol > li::before {
+  content: counter(kp);
+  grid-column: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 700;
+  color: var(--gold);
+  line-height: 1.5; padding-top: 1px;
+}
+.key-points ol > li > .item { grid-column: 2; min-width: 0; }
+.key-points ol > li .head {
+  display: block; font-weight: 600;
+  color: var(--text); font-size: 15px;
+  line-height: 1.5; margin-bottom: 3px;
+}
+.key-points ol > li .body {
+  display: block; font-size: 14.5px;
+  color: var(--text-soft); line-height: 1.6;
+}
+
+/* ---------- next-up ---------- */
+.next-up {
+  margin: 28px 0 12px 0;
+  padding: 12px 0 12px 16px;
+  border-left: 3px solid var(--emerald);
+}
+.next-up .label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: #047857; margin-bottom: 6px;
+}
+.next-up p { margin: 4px 0; color: var(--text-soft); }
+.next-up strong { color: var(--text); }
+
+/* ---------- Chips ---------- */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: middle; white-space: nowrap;
+}
+.chip::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; opacity: 0.7;
+}
+.chip-easy   { background: var(--emerald-soft); color: #047857; }
+.chip-hard   { background: var(--rose-soft);    color: #be123c; }
+.chip-medium { background: var(--amber-soft);   color: #b45309; }
+.chip-info   { background: var(--sky-soft);     color: #0369a1; }
+.chip-neutral{ background: var(--slate-soft);   color: var(--text-soft); border: 1px solid var(--rule); }
+.chip-accent { background: var(--indigo-soft);  color: var(--indigo-deep); }
+.chip-historic{ background: var(--gold-soft); color: var(--gold); }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+
+/* ---------- Object cards ---------- */
+.obj-card {
+  margin: 18px 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.obj-card .obj-label {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px;
+  background: var(--slate-soft);
+  border-bottom: 1px solid var(--rule);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-soft);
+}
+.obj-card .obj-label .tag { color: var(--gold); }
+.obj-card .obj-label .sep { color: var(--rule); }
+.obj-card .obj-label .cost {
+  margin-left: auto; color: var(--muted); font-weight: 600;
+}
+.obj-card .obj-body { padding: 14px 18px 16px 18px; }
+.obj-card .obj-body p { margin: 6px 0; color: var(--text-soft); font-size: 14.5px; line-height: 1.55; }
+.obj-card .obj-body p:first-child { margin-top: 0; }
+.obj-card .obj-body p:last-child  { margin-bottom: 0; }
+.obj-card .obj-body strong { color: var(--text); }
+.obj-card .obj-body mjx-container[display="true"] { margin: 4px 0 10px 0 !important; }
+
+.obj-card .symdefs {
+  margin: 8px 0 0 0;
+  padding: 8px 12px;
+  background: var(--slate-soft);
+  border-radius: 6px;
+  font-size: 13.5px; color: var(--text-soft); line-height: 1.55;
+}
+.obj-card .symdefs strong { color: var(--text); }
+.obj-card .symdefs .row { display: block; padding: 2px 0; }
+
+/* historical card */
+.obj-card.historical .obj-label .tag { color: var(--gold); }
+.obj-card.historical .obj-label {
+  background: linear-gradient(180deg, rgba(180, 83, 9, 0.08), var(--slate-soft));
+}
+.obj-card.historical .obj-body {
+  background: linear-gradient(180deg, rgba(180, 83, 9, 0.025), transparent 60px);
+}
+.obj-card.historical .who {
+  display: flex; flex-wrap: wrap; gap: 6px 14px;
+  margin: 6px 0 10px 0; font-size: 13px;
+  color: var(--text-soft);
+}
+.obj-card.historical .who .item {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.obj-card.historical .who .item .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; text-transform: uppercase;
+  color: var(--gold); font-weight: 700; letter-spacing: 0.06em;
+}
+
+/* connect card */
+.obj-card.connect .obj-label .tag { color: #0369a1; }
+.obj-card.connect .obj-label {
+  background: linear-gradient(180deg, rgba(14, 165, 233, 0.08), var(--slate-soft));
+}
+
+/* breaks card */
+.obj-card.breaks .obj-label .tag { color: #b45309; }
+.obj-card.breaks .obj-label {
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08), var(--slate-soft));
+}
+
+/* equiv card */
+.obj-card.equiv .obj-label .tag { color: var(--violet); }
+.obj-card.equiv .obj-body {
+  background: linear-gradient(180deg, rgba(139, 92, 246, 0.04), transparent 40px);
+}
+
+/* result card */
+.obj-card.result .obj-label .tag { color: #047857; }
+.obj-card.result .obj-body {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.05), transparent 40px);
+}
+
+/* ---------- Algorithm ---------- */
+.algo {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  background: #0f172a; color: #e2e8f0;
+  padding: 16px 18px; border-radius: 10px;
+  margin: 16px 0;
+  white-space: pre-wrap; line-height: 1.65;
+  box-shadow: var(--shadow); overflow-x: auto;
+}
+.algo .keyword { color: #c084fc; font-weight: 600; }
+.algo .comment { color: #94a3b8; font-style: italic; }
+
+/* ---------- Compare table ---------- */
+table.compare {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  margin: 20px 0;
+  background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 12px;
+  overflow: hidden; box-shadow: var(--shadow-sm);
+  font-size: 14px;
+}
+table.compare th, table.compare td {
+  text-align: left; padding: 12px 16px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+}
+table.compare tr:last-child td { border-bottom: none; }
+table.compare th {
+  font-weight: 600; font-size: 11.5px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted);
+  background: var(--slate-soft);
+  border-bottom: 1px solid var(--rule);
+}
+table.compare td:first-child { font-weight: 600; color: var(--text); }
+table.compare tr:hover td { background: var(--slate-soft); }
+
+/* ---------- Timeline ---------- */
+.timeline {
+  margin: 24px 0;
+  border-left: 2px solid var(--rule);
+  padding-left: 24px;
+  position: relative;
+}
+.timeline .row {
+  position: relative;
+  margin-bottom: 22px;
+}
+.timeline .row::before {
+  content: '';
+  position: absolute;
+  left: -31px; top: 6px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--gold);
+}
+.timeline .row.alt::before { background: var(--indigo); box-shadow: 0 0 0 1px var(--indigo); }
+.timeline .row.alt2::before { background: var(--emerald); box-shadow: 0 0 0 1px var(--emerald); }
+.timeline .yr {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+}
+.timeline .alt .yr { color: var(--indigo); }
+.timeline .alt2 .yr { color: #047857; }
+.timeline .what {
+  font-weight: 600; color: var(--text);
+  margin: 2px 0 4px 0; font-size: 15px;
+}
+.timeline .who {
+  font-size: 13px; color: var(--muted);
+  font-style: italic;
+}
+.timeline .body-txt {
+  font-size: 14px; color: var(--text-soft);
+  margin-top: 6px;
+}
+
+/* ---------- Family tree (SVG) ---------- */
+.tree-wrap {
+  margin: 28px 0;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+.tree-wrap svg {
+  display: block;
+  width: 100%;
+  min-width: 720px;
+  height: auto;
+}
+.tree-wrap .legend {
+  display: flex; flex-wrap: wrap; gap: 12px 18px;
+  margin-top: 14px; font-size: 12px; color: var(--text-soft);
+}
+.tree-wrap .legend .item { display: inline-flex; align-items: center; gap: 6px; }
+.tree-wrap .legend .swatch {
+  width: 10px; height: 10px; border-radius: 2px;
+  display: inline-block;
+}
+
+/* ---------- Demos ---------- */
+.demo {
+  margin: 24px 0; padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.demo-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px;
+  background: linear-gradient(180deg, var(--slate-soft), var(--surface));
+  border-bottom: 1px solid var(--rule);
+}
+.demo-header .demo-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 7px;
+  background: var(--gold); color: white;
+  font-size: 13px; font-weight: 700;
+}
+.demo-header .demo-title {
+  font-size: 13px; font-weight: 600;
+  letter-spacing: 0.02em; text-transform: uppercase; color: var(--text);
+}
+.demo-body { padding: 16px 18px 18px 18px; }
+.controls {
+  display: flex; flex-wrap: wrap; gap: 14px 22px;
+  align-items: center; margin: 4px 0 14px 0;
+  font-size: 13px;
+}
+.controls label {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--text-soft); font-weight: 500;
+}
+.controls input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 110px; height: 4px;
+  background: var(--rule); border-radius: 2px; outline: none;
+}
+.controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--gold); cursor: pointer;
+  box-shadow: 0 1px 3px rgba(180, 83, 9, 0.4);
+}
+.controls input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px; border: none; border-radius: 50%;
+  background: var(--gold); cursor: pointer;
+  box-shadow: 0 1px 3px rgba(180, 83, 9, 0.4);
+}
+.readout {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--muted);
+  background: var(--slate-soft);
+  padding: 2px 8px; border-radius: 5px;
+  border: 1px solid var(--rule);
+}
+.controls button {
+  font-family: inherit;
+  font-size: 12.5px; font-weight: 600;
+  padding: 7px 14px;
+  background: var(--gold); border: 1px solid var(--gold);
+  color: white; cursor: pointer;
+  border-radius: 7px;
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-sm);
+}
+.controls button:hover {
+  background: #92400e; border-color: #92400e;
+  transform: translateY(-1px); box-shadow: var(--shadow);
+}
+.controls button.secondary {
+  background: var(--surface); color: var(--text-soft); border-color: var(--rule);
+}
+.controls button.secondary:hover { background: var(--slate-soft); color: var(--text); }
+.plot { width: 100%; height: 320px; }
+.demo-footnote {
+  font-size: 12px; color: var(--muted);
+  margin: 12px 0 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+}
+
+/* MathJax */
+mjx-container[display="true"] { margin: 14px 0 !important; overflow-x: auto; }
+mjx-container { color: var(--text); }
+@media (max-width: 600px) {
+  mjx-container[display="true"] { font-size: 0.9em !important; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="brand"><span class="dot"></span>VAE · history</span>
+    <span class="crumb-sep">/</span>
+    <span class="crumb-current" id="crumb">Where did VAEs come from?</span>
+    <span class="topbar-spacer"></span>
+    <a class="pill alt" href="vae.html">→ vae.html · derivation</a>
+    <a class="pill" href="#sec-1">↑ Top</a>
+  </div>
+</div>
+
+<div class="page">
+
+<nav class="toc">
+  <div class="toc-label">Contents</div>
+  <ol>
+    <li><a href="#sec-1">1 · The big problem</a></li>
+    <li><a href="#sec-2">2 · Latent variables</a></li>
+    <li><a href="#sec-3">3 · Pre-DL latent models</a></li>
+    <li><a href="#sec-4">4 · The inference bottleneck</a></li>
+    <li><a href="#sec-5">5 · The fork — MCMC vs VI</a></li>
+    <li><a href="#sec-6">6 · The ELBO</a></li>
+    <li><a href="#sec-7">7 · The graphical models era</a></li>
+    <li><a href="#sec-8">8 · Deep learning meets probability</a></li>
+    <li><a href="#sec-9">9 · Why naive neural latents failed</a></li>
+    <li><a href="#sec-10">10 · The 2013 breakthrough</a></li>
+    <li><a href="#sec-11">11 · After VAEs (2014–now)</a></li>
+    <li><a href="#sec-12">12 · The family tree</a></li>
+  </ol>
+</nav>
+
+<article>
+
+<h1>Variational Autoencoders — the historical path</h1>
+<p class="subtitle">A 70-year story. VAE is not a single invention; it's the point where probabilistic modeling, Bayesian inference, and deep learning met. This document tells you which ideas had to be discovered, in which order, for the VAE to be possible.</p>
+
+<div class="pullquote">
+  <span class="lead">how to read this doc</span>
+  <p>This is the <strong>wide and shallow</strong> companion to <a href="vae.html">vae.html</a>. The other doc derives every piece from first principles. This one places the pieces in history — who, when, why, and what they were responding to. Read this for context; read the other for understanding.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-1"><span class="num">1</span> The big problem — modeling reality<span class="era">setting the stakes</span></h2>
+
+<p>The central question of generative modeling is one line:</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">the central question</span></div>
+  <div class="obj-body">
+    $$\text{Given a dataset } \{x_1, \ldots, x_N\},\ \ \text{learn } p(x).$$
+    <div class="symdefs">
+      <span class="row">$x$ is whatever the data is — an image, a sentence, an audio clip, a robot trajectory, a molecule. The dimensionality is typically <em>huge</em> (a 256×256 RGB image has ~200,000 dimensions).</span>
+      <span class="row">$p(x)$ is the probability distribution that generated the data. We don't have it. We want to learn it from samples.</span>
+    </div>
+  </div>
+</div>
+
+<div class="key-points">
+  <span class="label">Why learning $p(x)$ is worth the effort</span>
+  <ol>
+    <li><div class="item"><span class="head">Generation.</span><span class="body">Sample $x \sim p$ to produce new examples — new images, new sentences, new molecules.</span></div></li>
+    <li><div class="item"><span class="head">Density / anomaly detection.</span><span class="body">Score $p(x)$ for new inputs. Low score = unlikely under the data distribution = potentially anomalous.</span></div></li>
+    <li><div class="item"><span class="head">Compression.</span><span class="body">Shannon's source coding theorem: optimal compression needs $-\log p(x)$ bits per sample. A good density model <em>is</em> a good compressor.</span></div></li>
+    <li><div class="item"><span class="head">Denoising / inpainting.</span><span class="body">Reconstruct corrupted $x$ as $\arg\max_x p(x \mid \tilde x)$ — Bayes' rule with a noise model.</span></div></li>
+    <li><div class="item"><span class="head">Representation learning.</span><span class="body">If $p(x)$ is built through latent variables $z$, then $z$ is a learned representation of $x$ — useful for downstream tasks.</span></div></li>
+    <li><div class="item"><span class="head">World models for RL & robotics.</span><span class="body">An agent that has $p(x_{t+1} \mid x_t, a_t)$ can simulate the future and plan against it without acting in the real world.</span></div></li>
+    <li><div class="item"><span class="head">Bayesian reasoning under uncertainty.</span><span class="body">Anywhere we want $p(\text{cause} \mid \text{effect})$, we need a generative model $p(\text{effect} \mid \text{cause})$ first.</span></div></li>
+  </ol>
+</div>
+
+<div class="pullquote">
+  <span class="lead">one model, many capabilities</span>
+  <p>Every item above reduces to <strong>"score or sample from $p$"</strong>. The case for spending decades on this problem is exactly that: one good $p(x)$ unlocks all of it.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-2"><span class="num">2</span> The first idea — latent variables<span class="era">1900s–1960s</span></h2>
+
+<p>Direct modeling of $p(x)$ for high-dimensional data is hopeless. Pixels in a face image are wildly entangled — you can't write down a joint density over them. The first foundational idea was to assume the entanglement comes from something simpler underneath.</p>
+
+<div class="pullquote">
+  <span class="lead">the manifold hypothesis</span>
+  <p>Real-world high-dimensional data does not fill its ambient space. <span class="hl">It lies on (or near) a low-dimensional manifold</span>, parameterized by a handful of underlying factors. A 200,000-pixel face image varies with maybe 50 underlying things — pose, lighting, identity, expression.</p>
+</div>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">latent variable model</span></div>
+  <div class="obj-body">
+    $$p(x) = \int p(x \mid z)\, p(z)\, dz.$$
+    <div class="symdefs">
+      <span class="row"><strong>$z$</strong> — the latent variable. The "hidden cause." Lives in a much smaller space than $x$.</span>
+      <span class="row"><strong>$p(z)$</strong> — the <em>prior</em> over latent causes. Often something simple like a Gaussian.</span>
+      <span class="row"><strong>$p(x \mid z)$</strong> — the <em>decoder</em>. Given a setting of the hidden cause, how does observable data come out? This is where all the complexity lives.</span>
+      <span class="row">The marginal $p(x)$ is what we want; the integral is what we'll spend the rest of the document trying to deal with.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card historical">
+  <div class="obj-label"><span class="tag">historical</span><span class="sep">·</span><span>the idea is older than ML</span></div>
+  <div class="obj-body">
+    <div class="who">
+      <span class="item"><span class="lbl">year</span> 1904</span>
+      <span class="item"><span class="lbl">who</span> Charles Spearman</span>
+      <span class="item"><span class="lbl">what</span> "General intelligence" factor</span>
+    </div>
+    <p>Spearman proposed that performance on different mental tests was driven by a single underlying latent factor — "general intelligence" or $g$. This is essentially the first latent variable model in the statistical literature. The math was crude by modern standards, but the intuition — "many observations from one hidden cause" — is exactly the framework that VAEs use a century later.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-3"><span class="num">3</span> Pre-deep-learning latent models<span class="era">1960s–2000s</span></h2>
+
+<p>Once people accepted "observations come from hidden causes," they spent ~40 years building increasingly sophisticated tools to fit such models.</p>
+
+<!-- 3.1 Factor Analysis -->
+<h3 id="sec-3-fa">3.1 Factor analysis — the linear ancestor</h3>
+
+<div class="chip-row">
+  <span class="chip chip-historic">1940s</span>
+  <span class="chip chip-neutral">linear</span>
+  <span class="chip chip-neutral">continuous latents</span>
+</div>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">model</span><span class="sep">·</span><span>factor analysis</span></div>
+  <div class="obj-body">
+    $$x = W z + \mu + \epsilon, \quad z \sim \mathcal{N}(0, I), \quad \epsilon \sim \mathcal{N}(0, \Psi).$$
+    <div class="symdefs">
+      <span class="row"><strong>$W \in \mathbb{R}^{D \times d}$</strong> — the loading matrix. Maps from low-dim latent to high-dim observation.</span>
+      <span class="row"><strong>$\Psi$</strong> — diagonal noise covariance. Per-dimension independent noise on the observation.</span>
+      <span class="row">Everything is linear and Gaussian. The marginal $p(x)$ is itself Gaussian, with a closed form. Inference $p(z \mid x)$ is also Gaussian, closed form. Closed forms everywhere — for now.</span>
+    </div>
+  </div>
+</div>
+
+<!-- 3.2 PCA / PPCA -->
+<h3 id="sec-3-ppca">3.2 PCA → probabilistic PCA — the closest classical ancestor</h3>
+
+<div class="chip-row">
+  <span class="chip chip-historic">1933 · 1999</span>
+  <span class="chip chip-accent">VAE's direct ancestor</span>
+</div>
+
+<p>PCA (Pearson 1901, Hotelling 1933) was originally a deterministic linear projection — no probability involved. <strong>Probabilistic PCA</strong> (Tipping & Bishop 1999) reframed it as a special case of factor analysis where the observation noise is isotropic: $\Psi = \sigma^2 I$.</p>
+
+<div class="obj-card historical">
+  <div class="obj-label"><span class="tag">historical</span><span class="sep">·</span><span>probabilistic PCA</span></div>
+  <div class="obj-body">
+    <div class="who">
+      <span class="item"><span class="lbl">year</span> 1999</span>
+      <span class="item"><span class="lbl">who</span> Michael Tipping, Christopher Bishop</span>
+      <span class="item"><span class="lbl">paper</span> "Probabilistic Principal Component Analysis"</span>
+    </div>
+    <p>The first model that's truly <strong>structurally identical</strong> to a VAE — linear decoder version. Same latent variable framework, same Gaussian prior $p(z) = \mathcal{N}(0, I)$, same Gaussian observation model $p(x \mid z) = \mathcal{N}(Wz + \mu, \sigma^2 I)$. The only difference: PPCA's decoder is a linear map; the VAE's decoder is a neural network.</p>
+  </div>
+</div>
+
+<div class="obj-card equiv">
+  <div class="obj-label"><span class="tag">equiv</span><span class="sep">·</span><span>PPCA = linear VAE (in spirit)</span></div>
+  <div class="obj-body">
+    <table class="compare">
+      <thead><tr><th></th><th>PPCA (1999)</th><th>VAE (2013)</th></tr></thead>
+      <tbody>
+        <tr><td>Prior $p(z)$</td><td>$\mathcal{N}(0, I)$</td><td>$\mathcal{N}(0, I)$</td></tr>
+        <tr><td>Decoder $p(x\mid z)$</td><td>$\mathcal{N}(Wz + \mu,\; \sigma^2 I)$</td><td>$\mathcal{N}(f_\theta(z),\; \sigma^2 I)$ &nbsp; <em>(neural net $f_\theta$)</em></td></tr>
+        <tr><td>Inference $p(z\mid x)$</td><td>closed-form Gaussian</td><td>amortized $q_\phi(z \mid x)$ (neural encoder)</td></tr>
+        <tr><td>Training</td><td>EM or closed-form MLE</td><td>SGD on ELBO + reparameterization</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 3.3 GMMs -->
+<h3 id="sec-3-gmm">3.3 Gaussian mixture models — discrete latents</h3>
+
+<div class="chip-row">
+  <span class="chip chip-historic">1894 · 1977</span>
+  <span class="chip chip-neutral">discrete latent</span>
+  <span class="chip chip-easy">closed-form EM</span>
+</div>
+
+<p>The other branch of classical latent variable models: $z$ is <em>discrete</em>, indexing a finite mixture of simple distributions.</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">model</span><span class="sep">·</span><span>gaussian mixture model</span></div>
+  <div class="obj-body">
+    $$p(x) = \sum_{k=1}^K \pi_k\, \mathcal{N}(x \mid \mu_k, \Sigma_k), \quad z \in \{1, \ldots, K\},\ \ p(z=k) = \pi_k.$$
+    <div class="symdefs">
+      <span class="row">Karl Pearson fit a mixture of two Gaussians to crab measurements <em>by hand</em> in 1894 — the first published mixture model fit. The general machinery to fit GMMs (and any latent variable model with discrete latents) came almost a century later, with EM.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card historical">
+  <div class="obj-label"><span class="tag">historical</span><span class="sep">·</span><span>the EM algorithm</span></div>
+  <div class="obj-body">
+    <div class="who">
+      <span class="item"><span class="lbl">year</span> 1977</span>
+      <span class="item"><span class="lbl">who</span> Dempster, Laird, Rubin</span>
+      <span class="item"><span class="lbl">paper</span> "Maximum Likelihood from Incomplete Data via the EM Algorithm"</span>
+    </div>
+    <p>The general framework: <strong>alternate</strong> between (E-step) computing the posterior over latents given the current parameters, and (M-step) updating the parameters as if the posterior were correct. Provably monotonic in the likelihood. <span class="hl">EM is the direct algorithmic ancestor of variational inference</span> — it's exactly coordinate ascent on the ELBO, but with $q$ set to the true posterior. When the posterior is intractable, EM breaks; VI is what generalizes EM to that case.</p>
+  </div>
+</div>
+
+<!-- 3.4 Helmholtz machines + wake-sleep -->
+<h3 id="sec-3-helm">3.4 Helmholtz machines & wake-sleep — the unsung VAE ancestor</h3>
+
+<div class="chip-row">
+  <span class="chip chip-historic">1995</span>
+  <span class="chip chip-accent">architectural ancestor</span>
+</div>
+
+<div class="obj-card historical">
+  <div class="obj-label"><span class="tag">historical</span><span class="sep">·</span><span>helmholtz machines</span></div>
+  <div class="obj-body">
+    <div class="who">
+      <span class="item"><span class="lbl">year</span> 1995</span>
+      <span class="item"><span class="lbl">who</span> Hinton, Dayan, Frey, Neal</span>
+      <span class="item"><span class="lbl">paper</span> "The Helmholtz Machine"</span>
+    </div>
+    <p>A neural network with <strong>two parts</strong>: a <em>recognition</em> network (input → latent) and a <em>generative</em> network (latent → output). Trained by the <strong>wake-sleep algorithm</strong>: in the "wake" phase, run the recognition network on data and update the generative network; in the "sleep" phase, sample from the generative network and update the recognition network to invert it.</p>
+    <p>Sound familiar? <span class="hl">This is the encoder-decoder architecture, almost two decades before VAEs.</span> The reason it didn't become "the" generative model: wake-sleep optimizes <strong>two different objectives</strong> for the two networks, with no guarantee they're compatible. The VAE's contribution — the ELBO — is the <em>single</em> joint objective that the Helmholtz machine was missing.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-4"><span class="num">4</span> The inference bottleneck<span class="era">the central problem</span></h2>
+
+<p>Build a latent variable model. Now you actually want to <em>use</em> it. Two questions:</p>
+
+<div class="key-points">
+  <span class="label">The two queries that latent variable models need to answer</span>
+  <ol>
+    <li><div class="item"><span class="head">Marginal likelihood — $p(x)$.</span><span class="body">"How likely is this data point?" Needed for training (MLE) and for scoring new data.</span></div></li>
+    <li><div class="item"><span class="head">Posterior — $p(z \mid x)$.</span><span class="body">"Given this observation, what hidden cause produced it?" Needed for inference, for representation learning, and for everything Bayesian.</span></div></li>
+  </ol>
+</div>
+
+<p>Both queries are linked by Bayes' rule:</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">bayes' rule</span><span class="sep">·</span><span>the source of the bottleneck</span></div>
+  <div class="obj-body">
+    $$p(z \mid x) = \frac{p(x \mid z)\, p(z)}{p(x)}, \quad\quad p(x) = \int p(x \mid z)\, p(z)\, dz.$$
+    <div class="symdefs">
+      <span class="row">The numerator $p(x \mid z)\, p(z)$ is the joint, which is <strong>easy</strong> — we defined it.</span>
+      <span class="row">The denominator $p(x)$ is the <em>marginal</em>, which is the integral. For $z \in \mathbb{R}^d$ with $d > 10$ and a non-Gaussian decoder, <span class="warn-inline">this integral has no closed form, no efficient quadrature, no tractable Monte Carlo</span>.</span>
+    </div>
+  </div>
+</div>
+
+<div class="pullquote">
+  <span class="lead">the one equation that organizes the field</span>
+  <p><span class="hl">Every algorithm in the rest of this document — MCMC, EM, VI, VAE, normalizing flows, diffusion — is a different attempt to dodge or approximate that single integral.</span> If $p(x)$ were tractable, none of this would have been invented. It isn't, so all of it was.</p>
+</div>
+
+<div class="note">
+  <span class="marker">subtle point</span>
+  The marginal $p(x)$ is also called the <strong>evidence</strong> in the Bayesian literature. The same integral that blocks generation also blocks inference, because Bayes' rule needs it as the normalizing constant of the posterior. <em>Generation and inference are blocked by the same wall</em> — which is also why the breakthrough that unblocks one tends to unblock both.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-5"><span class="num">5</span> The fork — sampling vs approximation<span class="era">1950s–1990s</span></h2>
+
+<p>Faced with the intractable integral, two parallel traditions developed. They produced different algorithms, different research communities, and (eventually) different generative model families.</p>
+
+<div class="obj-card connect">
+  <div class="obj-label"><span class="tag">the fork</span><span class="sep">·</span><span>two answers to one problem</span></div>
+  <div class="obj-body">
+    <table class="compare">
+      <thead><tr><th>family</th><th>strategy</th><th>landmark</th><th>modern descendant</th></tr></thead>
+      <tbody>
+        <tr><td>Sampling-based</td><td>Build a Markov chain whose stationary distribution is the posterior. Sample from it.</td><td>Metropolis–Hastings (1953)</td><td>HMC, MCMC, diffusion models</td></tr>
+        <tr><td>Variational</td><td>Pick a tractable family $\mathcal{Q}$. Optimize for the best $q \in \mathcal{Q}$.</td><td>Variational Bayes (1990s)</td><td>VAE, normalizing flows</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 5.1 MCMC -->
+<h3 id="sec-5-mcmc">5.1 The sampling path — MCMC</h3>
+
+<div class="timeline">
+  <div class="row">
+    <div class="yr">1953</div>
+    <div class="what">Metropolis–Hastings</div>
+    <div class="who">Metropolis, Rosenbluth × 2, Teller × 2 — Los Alamos, simulating hydrogen bomb physics</div>
+    <div class="body-txt">The original MCMC algorithm. Propose a move, accept it with a probability that depends on density ratios. Works for any distribution you can evaluate up to a constant — which is exactly the setting of intractable $p(x)$.</div>
+  </div>
+  <div class="row">
+    <div class="yr">1984</div>
+    <div class="what">Gibbs sampling</div>
+    <div class="who">Geman & Geman</div>
+    <div class="body-txt">For multi-variable distributions, sample each variable in turn from its conditional given all others. Particularly natural for graphical models.</div>
+  </div>
+  <div class="row">
+    <div class="yr">1987</div>
+    <div class="what">Hamiltonian Monte Carlo (HMC)</div>
+    <div class="who">Duane, Kennedy, Pendleton, Roweth — borrowed from molecular dynamics</div>
+    <div class="body-txt">Use gradient information to propose informed moves, like a particle rolling through an energy landscape. Much more efficient than random-walk MCMC in high dimensions.</div>
+  </div>
+  <div class="row">
+    <div class="yr">2014</div>
+    <div class="what">NUTS — No-U-Turn Sampler</div>
+    <div class="who">Hoffman & Gelman</div>
+    <div class="body-txt">Adaptive HMC. The engine behind Stan, the modern probabilistic programming language.</div>
+  </div>
+</div>
+
+<div class="obj-card breaks">
+  <div class="obj-label"><span class="tag">why MCMC didn't win for big models</span></div>
+  <div class="obj-body">
+    <p><strong>Slow.</strong> Building a chain that mixes well over a high-dimensional, multi-modal posterior can take thousands or millions of steps per sample.</p>
+    <p><strong>Hard to diagnose.</strong> You can't easily tell when the chain has converged. You compare runs and hope.</p>
+    <p><strong>Doesn't compose with SGD.</strong> Neural network training needs gradients of an objective; MCMC produces samples, not objectives. The two paradigms don't fit together cleanly.</p>
+    <p>None of this means MCMC was abandoned — it powers modern Bayesian deep learning, probabilistic programming (Stan, PyMC, Pyro), and arguably <em>diffusion models are MCMC reborn</em>. But for the specific problem of "train a big neural latent variable model by gradient descent," MCMC was the wrong tool.</p>
+  </div>
+</div>
+
+<!-- 5.2 VI -->
+<h3 id="sec-5-vi">5.2 The variational path</h3>
+
+<div class="obj-card historical">
+  <div class="obj-label"><span class="tag">historical</span><span class="sep">·</span><span>variational inference</span></div>
+  <div class="obj-body">
+    <div class="who">
+      <span class="item"><span class="lbl">years</span> 1990s formalization</span>
+      <span class="item"><span class="lbl">who</span> Jordan, Ghahramani, Jaakkola, Saul</span>
+      <span class="item"><span class="lbl">paper</span> "An Introduction to Variational Methods for Graphical Models" (1999)</span>
+    </div>
+    <p>The idea: <span class="hl">stop trying to compute the posterior, start optimizing for it.</span> Pick a parametric family $\mathcal{Q}$ of distributions we <em>can</em> work with (Gaussians, mean-field factorizations). Find the $q \in \mathcal{Q}$ closest to the true posterior. The "closest" is measured by KL divergence, and the optimization is doable because — as we'll see in Section 6 — we never need to know the true posterior to do it.</p>
+    <p>The name <strong>"variational"</strong> comes from the calculus of variations: optimization where the variable is itself a <em>function</em> (here, a distribution), not a number.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-6"><span class="num">6</span> The ELBO — variational inference, properly<span class="era">heart of the math</span></h2>
+
+<p>The variational program needs an objective. You can't minimize $\mathrm{KL}(q \,\|\, p(z \mid x))$ directly because you don't know $p(z \mid x)$ — that's why we're approximating it in the first place. So you derive an objective that has the same minimizer but only uses things you can compute.</p>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">jensen's inequality</span><span class="sep">·</span><span>the key tool</span></div>
+  <div class="obj-body">
+    $$\log \mathbb{E}_q[f(z)] \;\geq\; \mathbb{E}_q[\log f(z)].$$
+    <div class="symdefs">
+      <span class="row">For a concave function (like $\log$), the function of the expectation is at least the expectation of the function. Equality only when $f$ is constant under $q$.</span>
+      <span class="row">This is the move that converts an <em>intractable log of an integral</em> into a <em>tractable integral of a log</em>.</span>
+    </div>
+  </div>
+</div>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">the ELBO</span><span class="sep">·</span><span>evidence lower bound</span></div>
+  <div class="obj-body">
+    $$\log p(x) \;=\; \log \int p(x \mid z) p(z)\, dz \;=\; \log \mathbb{E}_{q(z)}\!\left[\frac{p(x \mid z) p(z)}{q(z)}\right] \;\geq\; \mathbb{E}_{q(z)}\!\left[\log \frac{p(x \mid z) p(z)}{q(z)}\right].$$
+    <p>The right-hand side is the <strong>ELBO</strong>:</p>
+    $$\mathcal{L}(q) = \mathbb{E}_{q(z)}[\log p(x \mid z)] \;-\; \mathrm{KL}(q(z) \,\|\, p(z)).$$
+    <div class="symdefs">
+      <span class="row"><strong>$\mathcal{L}(q) \leq \log p(x)$</strong>, always. Equality iff $q = p(z \mid x)$.</span>
+      <span class="row">Maximizing the ELBO over $q$ does <em>two</em> things at once: improves the bound on $\log p(x)$, and pushes $q$ toward the true posterior. <span class="hl">One objective, two outcomes.</span></span>
+    </div>
+  </div>
+</div>
+
+<div class="pullquote">
+  <span class="lead">a critical historical note</span>
+  <p><strong>VAEs did not invent the ELBO.</strong> The ELBO had been the standard objective of variational Bayes for nearly 20 years before VAEs existed. Hinton was using it in the 1990s. <span class="hl">What VAEs invented was a way to make the ELBO trainable by gradient descent with neural networks.</span> The ELBO itself is an inheritance from the Bayesian statistics tradition, not a deep-learning contribution.</p>
+</div>
+
+<div class="obj-card historical">
+  <div class="obj-label"><span class="tag">historical</span><span class="sep">·</span><span>mean-field VI — the classical instance</span></div>
+  <div class="obj-body">
+    <div class="who">
+      <span class="item"><span class="lbl">years</span> 1990s–2000s</span>
+      <span class="item"><span class="lbl">used in</span> Topic models (LDA), graphical models</span>
+    </div>
+    <p>The original tractable variational family: assume $q(z) = \prod_j q_j(z_j)$ (fully factorized). For models in the exponential family, the coordinate-ascent updates have closed forms. <strong>Mean-field VI</strong> is what made variational inference deployable in the pre-neural-net era — every classical Bayesian topic model fit by VI used it.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-7"><span class="num">7</span> The graphical models era<span class="era">1990s–2000s</span></h2>
+
+<p>Through the 1990s and 2000s, the dominant paradigm for probabilistic modeling was <strong>graphical models</strong>: structured combinations of conditional distributions, with topology specified by a graph.</p>
+
+<div class="key-points">
+  <span class="label">Landmark probabilistic models of this era</span>
+  <ol>
+    <li><div class="item"><span class="head">Bayesian networks</span><span class="body">Directed graphical models. Each node is a variable, each edge a conditional dependency. Pearl's 1988 book formalized them. Inference: belief propagation, junction tree, variational methods.</span></div></li>
+    <li><div class="item"><span class="head">Hidden Markov Models (HMMs)</span><span class="body">Sequence models with discrete latent states. The dominant model for speech recognition for ~30 years. Trained by EM (Baum–Welch).</span></div></li>
+    <li><div class="item"><span class="head">Latent Dirichlet Allocation (LDA)</span><span class="body">Blei, Ng, Jordan (2003). The topic-modeling success story that made variational inference famous outside theoretical statistics. Each document has a latent distribution over topics; each topic is a distribution over words. Fit by mean-field VI.</span></div></li>
+    <li><div class="item"><span class="head">Conditional Random Fields (CRFs)</span><span class="body">Lafferty, McCallum, Pereira (2001). Undirected discriminative models. Standard for structured prediction (NER, sequence labeling) before deep learning.</span></div></li>
+    <li><div class="item"><span class="head">Variational EM</span><span class="body">The combination: when the E-step in EM is intractable, use VI to approximate the posterior. Bridge from EM to fully variational methods.</span></div></li>
+  </ol>
+</div>
+
+<div class="pullquote">
+  <span class="lead">the limitation</span>
+  <p>Graphical models were <strong>shallow</strong>. The conditional distributions $p(x_i \mid \text{parents})$ were almost always simple (linear-Gaussian, categorical, exponential family) so that closed-form updates existed. Trying to use <em>arbitrary functions</em> for these conditionals — say, deep neural networks — broke all the inference machinery. <span class="hl">The expressiveness of the model and the tractability of inference were locked in opposition.</span></p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-8"><span class="num">8</span> Deep learning meets probability<span class="era">2006–2013</span></h2>
+
+<p>Two streams of research converged in the early 2010s. They had been mostly disjoint communities.</p>
+
+<div class="obj-card connect">
+  <div class="obj-label"><span class="tag">two threads, one meeting</span></div>
+  <div class="obj-body">
+    <table class="compare">
+      <thead><tr><th>thread</th><th>strength</th><th>missing</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Probabilistic modeling (statistics)</td>
+          <td>Principled objectives, uncertainty handling, Bayesian framework</td>
+          <td>Restricted to simple model families; couldn't scale to images</td>
+        </tr>
+        <tr>
+          <td>Deep learning (ML)</td>
+          <td>Flexible function approximation, gradient-based training at scale</td>
+          <td>No structured objective beyond classification loss; no uncertainty</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Each had what the other needed. The VAE is one of the first major fruits of their meeting.</p>
+  </div>
+</div>
+
+<div class="obj-card historical">
+  <div class="obj-label"><span class="tag">historical</span><span class="sep">·</span><span>autoencoders — the deep-learning side of the genealogy</span></div>
+  <div class="obj-body">
+    <div class="who">
+      <span class="item"><span class="lbl">first</span> 1986</span>
+      <span class="item"><span class="lbl">who</span> Rumelhart, Hinton, Williams</span>
+    </div>
+    <p>An <strong>autoencoder</strong> is a neural network trained to reconstruct its input through a bottleneck. The bottleneck forces a compressed representation. Used for dimensionality reduction, representation learning, and (in stacked / deep form) pre-training for classification tasks before ReLU + good initialization made supervised pretraining unnecessary.</p>
+    <p>The autoencoder is <strong>not probabilistic</strong> — there's no $p(x)$, no $p(z)$, no sampling. It's just a deterministic encode-decode pipeline minimizing reconstruction error. <span class="hl">The "auto-encoding" in "auto-encoding variational Bayes" is the bridge: the VAE looks like an autoencoder, but its objective comes from variational Bayes. The name is the only thing borrowed from the autoencoder tradition.</span></p>
+  </div>
+</div>
+
+<div class="obj-card historical">
+  <div class="obj-label"><span class="tag">historical</span><span class="sep">·</span><span>deep belief networks — the immediate predecessor</span></div>
+  <div class="obj-body">
+    <div class="who">
+      <span class="item"><span class="lbl">years</span> 2006</span>
+      <span class="item"><span class="lbl">who</span> Hinton, Osindero, Teh</span>
+      <span class="item"><span class="lbl">paper</span> "A Fast Learning Algorithm for Deep Belief Nets"</span>
+    </div>
+    <p>The first deep <em>generative</em> model that worked, sort of. Stacks of restricted Boltzmann machines (RBMs) trained greedily layer by layer. Often credited with launching the deep learning revival. Training was awkward (contrastive divergence, not real MLE). Sampling was MCMC and slow. <span class="warn-inline">Replaced almost overnight by VAEs and GANs</span> once those appeared in 2013–14, but it set the stage by establishing "deep + probabilistic" as a viable direction.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-9"><span class="num">9</span> Why naive neural latents failed<span class="era">~2012–2013</span></h2>
+
+<p>Once researchers started trying to combine neural networks with latent variable models, they ran into a specific, brutal obstruction.</p>
+
+<div class="obj-card breaks">
+  <div class="obj-label"><span class="tag">the wall</span><span class="sep">·</span><span>gradient through a sampled latent</span></div>
+  <div class="obj-body">
+    <p>Suppose your model is: $z \sim q_\phi(z \mid x)$, then $\hat x = f_\theta(z)$. To train by SGD you need</p>
+    $$\nabla_\phi \mathbb{E}_{z \sim q_\phi}[\,\ell(\hat x, x)\,].$$
+    <p>The gradient with respect to $\phi$ — but $\phi$ controls <strong>the distribution being sampled from</strong>. The sampling step is a discrete, non-differentiable bottleneck. Backprop hits it and stops.</p>
+  </div>
+</div>
+
+<div class="obj-card historical">
+  <div class="obj-label"><span class="tag">historical</span><span class="sep">·</span><span>the attempted fix — score-function estimator</span></div>
+  <div class="obj-body">
+    <div class="who">
+      <span class="item"><span class="lbl">years</span> 2012–2014</span>
+      <span class="item"><span class="lbl">key paper</span> Mnih & Gregor, "Neural Variational Inference and Learning" (NVIL, 2014)</span>
+    </div>
+    <p>Use the identity (also known as REINFORCE):</p>
+    $$\nabla_\phi \mathbb{E}_{q_\phi}[f(z)] = \mathbb{E}_{q_\phi}[\,f(z)\, \nabla_\phi \log q_\phi(z)\,].$$
+    <p>Mathematically unimpeachable. <span class="warn-inline">Practically, the variance is enormous</span> — the estimator multiplies the loss by a (potentially large) log-derivative, and the resulting gradient is so noisy that training is unstable. Lots of variance-reduction tricks were tried (baselines, control variates) but none were as clean as what came next.</p>
+  </div>
+</div>
+
+<div class="obj-card connect">
+  <div class="obj-label"><span class="tag">connect</span><span class="sep">·</span><span>this is policy gradients in RL</span></div>
+  <div class="obj-body">
+    <p>The REINFORCE / score-function estimator is the <strong>same algorithm</strong> as the policy gradient theorem in RL (Williams 1992). RL practitioners had been wrestling with its variance for two decades by the time generative-model researchers ran into it. The variance-reduction toolbox in RL (baselines, advantage functions, control variates, later PPO and GAE) is exactly what variational inference researchers tried to reuse — with limited success.</p>
+    <p><span class="hl">VAEs were lucky in a specific way:</span> they used a Gaussian variational posterior, which is <em>reparameterizable</em>. RL with discrete actions (most of language-model RL, game-playing) does not have this luxury, which is why REINFORCE-style estimators remain a way of life in those communities.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-10"><span class="num">10</span> The 2013 breakthrough — reparameterization<span class="era">the synthesis</span></h2>
+
+<div class="obj-card historical">
+  <div class="obj-label"><span class="tag">historical</span><span class="sep">·</span><span>Auto-Encoding Variational Bayes</span></div>
+  <div class="obj-body">
+    <div class="who">
+      <span class="item"><span class="lbl">date</span> December 2013 (arXiv)</span>
+      <span class="item"><span class="lbl">who</span> Diederik P. Kingma, Max Welling</span>
+      <span class="item"><span class="lbl">venue</span> ICLR 2014</span>
+      <span class="item"><span class="lbl">paper</span> arXiv:1312.6114</span>
+    </div>
+    <p>The seminal paper. Note the title: <strong>"Auto-Encoding Variational Bayes,"</strong> not "the variational autoencoder." Kingma and Welling were doing variational Bayes — they presented the architecture as a <em>consequence</em>, not the headline. The neural-net-as-encoder/decoder structure falls out of the math.</p>
+  </div>
+</div>
+
+<div class="obj-card historical">
+  <div class="obj-label"><span class="tag">historical</span><span class="sep">·</span><span>simultaneous independent discovery</span></div>
+  <div class="obj-body">
+    <div class="who">
+      <span class="item"><span class="lbl">date</span> January 2014 (arXiv)</span>
+      <span class="item"><span class="lbl">who</span> Rezende, Mohamed, Wierstra</span>
+      <span class="item"><span class="lbl">venue</span> ICML 2014</span>
+      <span class="item"><span class="lbl">paper</span> arXiv:1401.4082</span>
+    </div>
+    <p>Two months after Kingma & Welling's preprint, Rezende et al. at DeepMind published essentially the same idea independently. <strong>"Stochastic Backpropagation and Approximate Inference in Deep Generative Models."</strong> The reparameterization trick appears under the name "stochastic backpropagation"; the ELBO derivation is the same. <span class="hl">Two groups, two continents, two months apart, same idea</span> — a classic sign that the field was ready for it.</p>
+  </div>
+</div>
+
+<div class="obj-card formula">
+  <div class="obj-label"><span class="tag">the trick itself</span></div>
+  <div class="obj-body">
+    <p>The variational posterior is chosen to be Gaussian: $q_\phi(z \mid x) = \mathcal{N}(z \mid \mu_\phi(x), \sigma_\phi^2(x))$. Sampling $z \sim q_\phi(z \mid x)$ can be rewritten as:</p>
+    $$z = \mu_\phi(x) + \sigma_\phi(x) \cdot \epsilon, \quad \epsilon \sim \mathcal{N}(0, I).$$
+    <div class="symdefs">
+      <span class="row">$\epsilon$ is now the source of randomness, and it doesn't depend on $\phi$. The path from $\phi$ to $z$ is a deterministic function ($\mu_\phi + \sigma_\phi \epsilon$) — backprop flows through it.</span>
+      <span class="row">Same distribution as before. Different computational graph.</span>
+    </div>
+  </div>
+</div>
+
+<div class="pullquote">
+  <span class="lead">why it was a breakthrough</span>
+  <p>Reparameterization moves the stochasticity to a <em>parameter-free</em> noise source $\epsilon$, leaving the rest of the computation deterministic. <span class="hl">A latent variable model becomes a regular neural network with one extra input ($\epsilon$).</span> Trainable by SGD. Variance dramatically lower than REINFORCE. The Helmholtz machine, the ELBO, the encoder-decoder architecture — all three pieces had existed for a decade or more. Reparameterization is what made them fit together into a thing you could train.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-11"><span class="num">11</span> After VAEs (2014–now)<span class="era">the modern landscape</span></h2>
+
+<p>Once the VAE worked, the floodgates opened. Within a year, the field had multiple flavors of deep generative model — each making different tradeoffs in the (scoring vs sampling vs expressiveness) space we saw in <a href="vae.html#sec-3-axis">vae.html §3.5</a>.</p>
+
+<div class="timeline">
+  <div class="row">
+    <div class="yr">2013–14</div>
+    <div class="what">VAE — Kingma & Welling / Rezende et al.</div>
+    <div class="body-txt">The first deep latent variable model trainable end-to-end by SGD. Strong probabilistic foundation, blurry samples (Gaussian decoder + KL constraint).</div>
+  </div>
+  <div class="row alt">
+    <div class="yr">2014</div>
+    <div class="what">GAN — Goodfellow et al.</div>
+    <div class="body-txt">No explicit $p(x)$ at all. Just learn to sample, using an adversarial discriminator as the objective. Spectacular sample quality, no likelihood, training instability.</div>
+  </div>
+  <div class="row alt">
+    <div class="yr">2015</div>
+    <div class="what">Normalizing flows — Rezende & Mohamed</div>
+    <div class="body-txt">Build $p(x)$ from a composition of invertible neural transformations. Exact likelihood, exact sampling, but constrained model form (must be invertible).</div>
+  </div>
+  <div class="row alt">
+    <div class="yr">2016</div>
+    <div class="what">PixelRNN / PixelCNN — van den Oord et al.</div>
+    <div class="body-txt">Autoregressive on pixels: $p(x) = \prod_i p(x_i \mid x_{<i})$. Exact likelihood, sharp samples, painfully slow generation (sequential).</div>
+  </div>
+  <div class="row alt2">
+    <div class="yr">2017–18</div>
+    <div class="what">VQ-VAE — van den Oord, Vinyals, Kavukcuoglu</div>
+    <div class="body-txt">VAE with discrete latents via a learned codebook. Becomes the foundation for tokenizer-based generation (audio: Jukebox; later, image tokenizers for autoregressive image generation).</div>
+  </div>
+  <div class="row alt">
+    <div class="yr">2020</div>
+    <div class="what">DDPM (diffusion) — Ho, Jain, Abbeel</div>
+    <div class="body-txt">A different kind of latent variable model — Markov chain of progressive denoising steps. Each step trained with an MSE loss; sampling is iterative. Now the dominant approach for high-fidelity image / video / audio generation.</div>
+  </div>
+  <div class="row alt2">
+    <div class="yr">2021–22</div>
+    <div class="what">Latent diffusion → Stable Diffusion</div>
+    <div class="body-txt">The biggest "VAE comeback": run diffusion in the <em>latent space</em> of a pre-trained VAE rather than in pixel space. <span class="hl">Every commercial image diffusion model uses a VAE encoder/decoder under the hood.</span> The VAE's representation learning survived; its generative side mostly gave way to diffusion.</div>
+  </div>
+</div>
+
+<div class="pullquote">
+  <span class="lead">where the VAE survived</span>
+  <p>VAEs lost the generation-quality race to GANs (briefly) and then to diffusion models (definitively). But the <strong>framework</strong> — amortized variational inference, encoder-decoder structure, latent representations, the ELBO — is everywhere. Stable Diffusion is a VAE encoder + diffusion in latent space + VAE decoder. Modern audio codecs (Descript, EnCodec) are VQ-VAE descendants. <span class="hl">The VAE as a standalone generator is rare today; the VAE as a representation-learning and tokenization tool is in every foundation model.</span></p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sec-12"><span class="num">12</span> The family tree<span class="era">the one diagram</span></h2>
+
+<p>Everything in one picture. Three colored streams converge at "VAE":</p>
+
+<div class="tree-wrap">
+  <svg viewBox="0 0 1100 640" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Genealogy of the VAE">
+    <defs>
+      <marker id="arrow-gold"   viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#b45309"/>
+      </marker>
+      <marker id="arrow-indigo" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6366f1"/>
+      </marker>
+      <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/>
+      </marker>
+      <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#f43f5e"/>
+      </marker>
+      <style>
+        .node rect { stroke-width: 1.5; rx: 6; ry: 6; }
+        .node text { font-family: 'Inter', sans-serif; font-size: 12px; fill: #0f172a; }
+        .node .yr  { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: #64748b; }
+        .gold    rect { fill: #fef3c7; stroke: #b45309; }
+        .indigo  rect { fill: #eef2ff; stroke: #6366f1; }
+        .emerald rect { fill: #ecfdf5; stroke: #10b981; }
+        .rose    rect { fill: #fff1f2; stroke: #f43f5e; }
+        .star    rect { fill: #f5f3ff; stroke: #8b5cf6; stroke-width: 2.5; }
+        .star    text { font-weight: 700; }
+        .edge { fill: none; stroke-width: 1.5; }
+        .edge-gold    { stroke: #b45309; }
+        .edge-indigo  { stroke: #6366f1; }
+        .edge-emerald { stroke: #10b981; }
+        .edge-rose    { stroke: #f43f5e; }
+      </style>
+    </defs>
+
+    <!-- Row labels -->
+    <text x="20" y="60"  font-family="'JetBrains Mono', monospace" font-size="11" fill="#64748b" font-weight="700" letter-spacing="0.05em">PROBABILISTIC</text>
+    <text x="20" y="220" font-family="'JetBrains Mono', monospace" font-size="11" fill="#64748b" font-weight="700" letter-spacing="0.05em">INFERENCE</text>
+    <text x="20" y="380" font-family="'JetBrains Mono', monospace" font-size="11" fill="#64748b" font-weight="700" letter-spacing="0.05em">DEEP LEARNING</text>
+
+    <!-- PROBABILISTIC row (top, gold) -->
+    <g class="node gold" transform="translate(150, 30)">
+      <rect width="150" height="48"/>
+      <text x="10" y="20">Factor analysis</text>
+      <text x="10" y="38" class="yr">1940s</text>
+    </g>
+    <g class="node gold" transform="translate(330, 30)">
+      <rect width="140" height="48"/>
+      <text x="10" y="20">PCA / PPCA</text>
+      <text x="10" y="38" class="yr">1933 / 1999</text>
+    </g>
+    <g class="node gold" transform="translate(500, 30)">
+      <rect width="140" height="48"/>
+      <text x="10" y="20">GMMs</text>
+      <text x="10" y="38" class="yr">1894 +</text>
+    </g>
+    <g class="node gold" transform="translate(670, 30)">
+      <rect width="170" height="48"/>
+      <text x="10" y="20">Graphical models</text>
+      <text x="10" y="38" class="yr">1988+ (Pearl, LDA, HMM)</text>
+    </g>
+
+    <!-- INFERENCE row (middle, indigo / rose) -->
+    <g class="node indigo" transform="translate(150, 190)">
+      <rect width="150" height="48"/>
+      <text x="10" y="20">EM algorithm</text>
+      <text x="10" y="38" class="yr">1977 (Dempster)</text>
+    </g>
+    <g class="node indigo" transform="translate(330, 190)">
+      <rect width="170" height="48"/>
+      <text x="10" y="20">Variational Bayes</text>
+      <text x="10" y="38" class="yr">1990s (Jordan et al.)</text>
+    </g>
+    <g class="node indigo" transform="translate(530, 190)">
+      <rect width="170" height="48"/>
+      <text x="10" y="20">Mean-field VI · LDA</text>
+      <text x="10" y="38" class="yr">2003 (Blei et al.)</text>
+    </g>
+    <g class="node rose" transform="translate(730, 190)">
+      <rect width="160" height="48"/>
+      <text x="10" y="20">MCMC (sibling path)</text>
+      <text x="10" y="38" class="yr">1953 · HMC 1987</text>
+    </g>
+
+    <!-- DEEP LEARNING row (bottom, emerald) -->
+    <g class="node emerald" transform="translate(150, 350)">
+      <rect width="160" height="48"/>
+      <text x="10" y="20">Autoencoder</text>
+      <text x="10" y="38" class="yr">1986 (Rumelhart)</text>
+    </g>
+    <g class="node emerald" transform="translate(340, 350)">
+      <rect width="180" height="48"/>
+      <text x="10" y="20">Helmholtz / wake-sleep</text>
+      <text x="10" y="38" class="yr">1995 (Hinton, Dayan)</text>
+    </g>
+    <g class="node emerald" transform="translate(550, 350)">
+      <rect width="160" height="48"/>
+      <text x="10" y="20">Deep belief nets</text>
+      <text x="10" y="38" class="yr">2006 (Hinton)</text>
+    </g>
+    <g class="node emerald" transform="translate(740, 350)">
+      <rect width="160" height="48"/>
+      <text x="10" y="20">Reparameterization</text>
+      <text x="10" y="38" class="yr">2013</text>
+    </g>
+
+    <!-- STAR — the VAE -->
+    <g class="node star" transform="translate(950, 230)">
+      <rect width="120" height="68"/>
+      <text x="14" y="26">VAE</text>
+      <text x="14" y="44" class="yr">2013 (Kingma)</text>
+      <text x="14" y="58" class="yr">2014 (Rezende)</text>
+    </g>
+
+    <!-- DESCENDANTS row (far right, after VAE) -->
+    <g class="node rose" transform="translate(950, 480)">
+      <rect width="120" height="44"/>
+      <text x="10" y="20">GAN</text>
+      <text x="10" y="36" class="yr">2014</text>
+    </g>
+    <g class="node rose" transform="translate(950, 540)">
+      <rect width="120" height="44"/>
+      <text x="10" y="20">Diffusion</text>
+      <text x="10" y="36" class="yr">2020</text>
+    </g>
+    <g class="node star" transform="translate(950, 600)">
+      <rect width="120" height="34"/>
+      <text x="10" y="22">Latent diffusion</text>
+    </g>
+
+    <!-- EDGES -->
+    <!-- prob row chain -->
+    <path class="edge edge-gold" d="M 300 54 L 330 54" marker-end="url(#arrow-gold)"/>
+    <path class="edge edge-gold" d="M 470 54 L 500 54" marker-end="url(#arrow-gold)"/>
+    <path class="edge edge-gold" d="M 640 54 L 670 54" marker-end="url(#arrow-gold)"/>
+
+    <!-- prob → inference (down arrows) -->
+    <path class="edge edge-gold" d="M 225 78 Q 225 130 225 190" marker-end="url(#arrow-gold)"/>
+    <path class="edge edge-gold" d="M 570 78 Q 570 130 570 190" marker-end="url(#arrow-gold)"/>
+    <path class="edge edge-gold" d="M 755 78 Q 755 130 615 190" marker-end="url(#arrow-gold)"/>
+
+    <!-- inference chain -->
+    <path class="edge edge-indigo" d="M 300 214 L 330 214" marker-end="url(#arrow-indigo)"/>
+    <path class="edge edge-indigo" d="M 500 214 L 530 214" marker-end="url(#arrow-indigo)"/>
+
+    <!-- inference → VAE -->
+    <path class="edge edge-indigo" d="M 700 214 Q 850 214 950 250" marker-end="url(#arrow-indigo)"/>
+    <!-- MCMC is sibling, draw arrow ending elsewhere (showing not-direct) -->
+    <path class="edge edge-rose" d="M 810 238 Q 810 540 950 580" marker-end="url(#arrow-rose)" stroke-dasharray="4 4"/>
+
+    <!-- deep learning chain -->
+    <path class="edge edge-emerald" d="M 310 374 L 340 374" marker-end="url(#arrow-emerald)"/>
+    <path class="edge edge-emerald" d="M 520 374 L 550 374" marker-end="url(#arrow-emerald)"/>
+    <path class="edge edge-emerald" d="M 710 374 L 740 374" marker-end="url(#arrow-emerald)"/>
+
+    <!-- Helmholtz → VAE (the architectural ancestor) -->
+    <path class="edge edge-emerald" d="M 520 374 Q 700 374 950 280" marker-end="url(#arrow-emerald)"/>
+
+    <!-- Reparam → VAE -->
+    <path class="edge edge-emerald" d="M 900 374 Q 950 320 1010 298" marker-end="url(#arrow-emerald)"/>
+
+    <!-- VAE → descendants -->
+    <path class="edge edge-rose" d="M 1010 298 Q 1010 420 1010 480" marker-end="url(#arrow-rose)"/>
+    <path class="edge edge-rose" d="M 1010 298 Q 1100 480 1010 540" marker-end="url(#arrow-rose)"/>
+    <path class="edge edge-indigo" d="M 1010 298 Q 880 540 1010 600" marker-end="url(#arrow-indigo)"/>
+  </svg>
+
+  <div class="legend">
+    <span class="item"><span class="swatch" style="background: #fef3c7; border: 1px solid #b45309;"></span>probabilistic modeling lineage</span>
+    <span class="item"><span class="swatch" style="background: #eef2ff; border: 1px solid #6366f1;"></span>inference algorithms</span>
+    <span class="item"><span class="swatch" style="background: #ecfdf5; border: 1px solid #10b981;"></span>deep learning lineage</span>
+    <span class="item"><span class="swatch" style="background: #fff1f2; border: 1px solid #f43f5e;"></span>siblings / descendants</span>
+    <span class="item"><span class="swatch" style="background: #f5f3ff; border: 2px solid #8b5cf6;"></span>the convergence point</span>
+    <span class="item">dashed = MCMC is a sibling path, not a direct ancestor</span>
+  </div>
+</div>
+
+<div class="pullquote">
+  <span class="lead">the synthesis, in one sentence</span>
+  <p>The VAE = <span class="hl">PPCA's latent variable framework + variational Bayes' ELBO + the Helmholtz machine's encoder-decoder architecture + the reparameterization trick that made it all trainable.</span> Each ingredient existed before 2013. The contribution of Kingma–Welling and Rezende-et-al. was identifying the one missing piece (reparameterization) and showing the resulting combination was practical.</p>
+</div>
+
+<div class="next-up">
+  <span class="label">go deeper</span>
+  <p>This document was the wide view. For the <em>narrow and deep</em> view — where every piece is constructively derived from first principles, with interactive demos for each — open the companion: <a href="vae.html">vae.html</a>. The two together: one tells you <em>where the VAE came from</em>, the other tells you <em>why each piece has to be exactly what it is</em>.</p>
+</div>
+
+</article>
+</div>
+
+<script>
+// ====================================================================
+// TOC active-section + breadcrumb sync
+// ====================================================================
+(function() {
+  const crumbEl = document.getElementById('crumb');
+  const headings = document.querySelectorAll('h2[id], h3[id]');
+  const links = new Map();
+  document.querySelectorAll('nav.toc a').forEach(a => {
+    const id = a.getAttribute('href').slice(1);
+    links.set(id, a);
+  });
+  const titles = new Map();
+  headings.forEach(h => {
+    const id = h.getAttribute('id');
+    titles.set(id, h.textContent.trim().replace(/^\d+(\.\d+)?\s*·?\s*/, '').replace(/\d{4}.*$/, '').trim());
+  });
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      const a = links.get(e.target.id);
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        if (a) a.classList.add('active');
+        const title = titles.get(e.target.id);
+        if (title) crumbEl.textContent = title;
+      }
+    });
+  }, { rootMargin: '-25% 0px -65% 0px' });
+  headings.forEach(h => observer.observe(h));
+})();
+</script>
+
+</body>
+</html>
