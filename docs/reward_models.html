@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reward Models — for robot learning</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
+
+<style>
+/* ============================================================
+   Shared vocabulary with vla.html / vae.html — indigo primary,
+   gold for historical accents.
+   ============================================================ */
+:root {
+  --bg:           #fbfbfd;
+  --surface:      #ffffff;
+  --text:         #0f172a;
+  --text-soft:    #475569;
+  --muted:        #64748b;
+  --rule:         #e5e7eb;
+  --rule-soft:    #f1f5f9;
+
+  --indigo:       #6366f1;
+  --indigo-soft:  #eef2ff;
+  --indigo-deep:  #4338ca;
+  --violet:       #8b5cf6;
+  --violet-soft:  #f5f3ff;
+  --emerald:      #10b981;
+  --emerald-soft: #ecfdf5;
+  --amber:        #f59e0b;
+  --amber-soft:   #fffbeb;
+  --rose:         #f43f5e;
+  --rose-soft:    #fff1f2;
+  --sky:          #0ea5e9;
+  --sky-soft:     #f0f9ff;
+  --slate-soft:   #f8fafc;
+  --gold:         #b45309;
+  --gold-soft:    #fef3c7;
+
+  --shadow-sm:    0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow:       0 4px 14px rgba(15, 23, 42, 0.06);
+  --shadow-lg:    0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Top bar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar-inner {
+  max-width: 1240px; margin: 0 auto;
+  padding: 14px 32px;
+  display: flex; align-items: center; gap: 16px;
+  font-size: 14px;
+}
+.brand {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 600; color: var(--text);
+}
+.brand .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--indigo), var(--gold));
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
+.crumb-sep { color: var(--rule); }
+.crumb-current { color: var(--text-soft); font-weight: 500; }
+.topbar-spacer { flex: 1; }
+.topbar a.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px;
+  background: var(--indigo-soft);
+  color: var(--indigo-deep);
+  border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+  text-decoration: none;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+/* ---------- Page layout ---------- */
+.page {
+  max-width: 1240px; margin: 0 auto;
+  padding: 40px 32px 200px 32px;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 56px;
+}
+@media (max-width: 1000px) {
+  .page { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  nav.toc { display: none; }
+}
+article { max-width: 820px; }
+
+/* ---------- Sidebar TOC ---------- */
+nav.toc {
+  position: sticky; top: 80px; align-self: start;
+  font-size: 14px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto; padding-right: 8px;
+}
+nav.toc .toc-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+}
+nav.toc .toc-part {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--gold);
+  margin: 14px 0 6px 10px;
+  font-family: 'JetBrains Mono', monospace;
+}
+nav.toc .toc-part:first-child { margin-top: 0; }
+nav.toc ol { list-style: none; padding: 0; margin: 0; }
+nav.toc ol ol { padding-left: 14px; margin-top: 4px; border-left: 1px solid var(--rule); }
+nav.toc li { margin: 4px 0; }
+nav.toc a {
+  display: block; padding: 6px 10px;
+  color: var(--text-soft); text-decoration: none;
+  border-radius: 6px; font-weight: 500;
+  transition: all 0.12s ease;
+}
+nav.toc a:hover { background: var(--slate-soft); color: var(--text); }
+nav.toc a.active {
+  background: var(--indigo-soft); color: var(--indigo-deep); font-weight: 600;
+}
+
+/* ---------- Typography ---------- */
+h1 {
+  font-size: 2.4em; line-height: 1.15;
+  font-weight: 700; letter-spacing: -0.025em;
+  margin: 0 0 12px 0;
+  background: linear-gradient(135deg, var(--text) 0%, var(--indigo-deep) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.subtitle {
+  font-size: 1.1em; color: var(--muted);
+  margin: 0 0 48px 0; line-height: 1.5; max-width: 660px;
+}
+
+/* Part headings */
+.part-heading {
+  margin: 80px 0 24px 0;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, var(--slate-soft), var(--surface));
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--gold);
+  border-radius: 10px;
+}
+.part-heading:first-of-type { margin-top: 32px; }
+.part-heading .part-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 4px;
+}
+.part-heading .part-title {
+  display: block;
+  font-size: 1.4em; font-weight: 700;
+  color: var(--text); letter-spacing: -0.01em;
+}
+.part-heading .part-era {
+  display: inline-block; margin-top: 6px;
+  font-size: 13px; color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.part-heading .part-desc {
+  margin: 10px 0 0 0; color: var(--text-soft);
+  font-size: 14.5px;
+}
+
+h2 {
+  font-size: 1.55em; font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 56px 0 20px 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  display: flex; align-items: center; gap: 14px;
+}
+h2:first-of-type { border-top: none; padding-top: 0; margin-top: 24px; }
+h2 .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  color: white; font-size: 14px; font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+h2 .era {
+  font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500;
+  margin-left: auto;
+}
+
+h3 {
+  font-size: 1.2em; font-weight: 600;
+  margin: 40px 0 12px 0; color: var(--text);
+}
+h3 .subnum {
+  display: inline-block;
+  font-size: 0.8em; font-weight: 600;
+  color: var(--indigo); margin-right: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+p { margin: 12px 0; color: var(--text-soft); }
+p strong { color: var(--text); font-weight: 600; }
+
+ol, ul { color: var(--text-soft); padding-left: 1.4em; }
+li { margin: 6px 0; }
+li strong { color: var(--text); }
+
+a {
+  color: var(--indigo);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+  transition: border-color 0.12s ease;
+}
+a:hover { border-bottom-color: var(--indigo); }
+
+code, .mono {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: 0.88em;
+  background: var(--slate-soft);
+  color: var(--indigo-deep);
+  padding: 1px 6px; border-radius: 4px;
+  border: 1px solid var(--rule);
+}
+
+hr { border: none; border-top: 1px dashed var(--rule); margin: 32px 0; }
+
+/* ---------- Pullquote ---------- */
+.pullquote {
+  margin: 26px 0;
+  padding: 6px 0 6px 20px;
+  border-left: 4px solid var(--indigo);
+  font-size: 1.1em; line-height: 1.5;
+  color: var(--text); font-weight: 500;
+}
+.pullquote .lead {
+  display: block;
+  font-weight: 700; font-size: 0.78em;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--indigo); margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.pullquote p { color: var(--text); margin: 4px 0; font-size: inherit; }
+.pullquote p:first-child { margin-top: 0; }
+.pullquote p:last-child { margin-bottom: 0; }
+
+/* ---------- Note ---------- */
+.note {
+  margin: 20px 0;
+  padding: 10px 0 10px 14px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px; font-style: italic; color: var(--muted);
+  line-height: 1.55;
+}
+.note strong, .note em { color: var(--text-soft); font-style: normal; }
+.note .marker {
+  font-style: normal;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text);
+  margin-right: 10px; font-weight: 600;
+}
+
+/* ---------- Warn / highlight ---------- */
+.warn-inline {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  padding: 1px 6px; border-radius: 4px;
+  font-weight: 500;
+  box-shadow: inset 2px 0 0 var(--amber);
+}
+.hl {
+  background: linear-gradient(120deg, rgba(245, 158, 11, 0.30), rgba(245, 158, 11, 0.22));
+  padding: 1px 4px; border-radius: 3px; font-weight: 500;
+}
+
+/* ---------- Key points ---------- */
+.key-points {
+  margin: 24px 0;
+  padding: 18px 22px 20px 22px;
+  background: var(--slate-soft);
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+}
+.key-points > .label {
+  display: block; font-size: 13.5px; font-weight: 700;
+  color: var(--text); margin-bottom: 12px;
+  letter-spacing: -0.005em;
+}
+.key-points > .label::before {
+  content: ''; display: inline-block;
+  width: 4px; height: 14px;
+  background: var(--indigo); border-radius: 2px;
+  margin-right: 10px; vertical-align: -2px;
+}
+.key-points ol {
+  list-style: none; padding: 0; margin: 0;
+  counter-reset: kp;
+}
+.key-points ol > li {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  column-gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--rule);
+  counter-increment: kp;
+}
+.key-points ol > li:first-child { border-top: none; padding-top: 4px; }
+.key-points ol > li::before {
+  content: counter(kp);
+  grid-column: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 700;
+  color: var(--indigo);
+  line-height: 1.5; padding-top: 1px;
+}
+.key-points ol > li > .item { grid-column: 2; min-width: 0; }
+.key-points ol > li .head {
+  display: block; font-weight: 600;
+  color: var(--text); font-size: 15px;
+  line-height: 1.5; margin-bottom: 3px;
+}
+.key-points ol > li .body {
+  display: block; font-size: 14.5px;
+  color: var(--text-soft); line-height: 1.6;
+}
+
+/* ---------- Roadmap card ---------- */
+.roadmap {
+  margin: 24px 0;
+  padding: 14px 18px 16px 18px;
+  border: 1px dashed var(--indigo);
+  border-radius: 10px;
+  background: transparent;
+}
+.roadmap .label {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--indigo); margin-bottom: 8px;
+}
+.roadmap p { margin: 4px 0; color: var(--text-soft); }
+.roadmap strong { color: var(--text); }
+
+/* ---------- Next-up ---------- */
+.next-up {
+  margin: 28px 0 12px 0;
+  padding: 12px 0 12px 16px;
+  border-left: 3px solid var(--emerald);
+}
+.next-up .label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: #047857; margin-bottom: 6px;
+}
+.next-up p { margin: 4px 0; color: var(--text-soft); }
+.next-up strong { color: var(--text); }
+
+/* ---------- Chips ---------- */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: middle; white-space: nowrap;
+}
+.chip::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; opacity: 0.7;
+}
+.chip-easy    { background: var(--emerald-soft); color: #047857; }
+.chip-hard    { background: var(--rose-soft);    color: #be123c; }
+.chip-medium  { background: var(--amber-soft);   color: #b45309; }
+.chip-info    { background: var(--sky-soft);     color: #0369a1; }
+.chip-neutral { background: var(--slate-soft);   color: var(--text-soft); border: 1px solid var(--rule); }
+.chip-accent  { background: var(--indigo-soft);  color: var(--indigo-deep); }
+.chip-historic{ background: var(--gold-soft);    color: var(--gold); }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+
+/* ============================================================
+   PAPER CARD
+   ============================================================ */
+.paper {
+  margin: 28px 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.paper-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px;
+  padding: 14px 20px 12px 20px;
+  background: linear-gradient(180deg, rgba(180, 83, 9, 0.06), var(--slate-soft));
+  border-bottom: 1px solid var(--rule);
+}
+.paper-head .tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold);
+}
+.paper-head .year {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  color: var(--gold);
+  padding: 2px 8px;
+  background: var(--gold-soft);
+  border-radius: 4px;
+}
+.paper-head .sep { color: var(--rule); }
+.paper-head .name {
+  font-size: 17px; font-weight: 700;
+  color: var(--text); letter-spacing: -0.01em;
+}
+.paper-head .authors {
+  font-size: 13px; color: var(--muted);
+  font-style: italic;
+  width: 100%;
+}
+.paper-body {
+  padding: 18px 22px 6px 22px;
+}
+.paper-body p { margin: 8px 0; color: var(--text-soft); font-size: 14.5px; line-height: 1.6; }
+.paper-body p:first-child { margin-top: 0; }
+.paper-body strong { color: var(--text); }
+
+.arch {
+  margin: 18px 0;
+  padding: 18px;
+  background: var(--slate-soft);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  overflow-x: auto;
+}
+.arch-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+.arch svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 600px;
+}
+.arch-ascii {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12.5px;
+  color: var(--text);
+  white-space: pre;
+  line-height: 1.45;
+  margin: 0;
+  overflow-x: auto;
+}
+
+.paper-meta {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 6px 14px;
+  padding: 14px 22px 18px 22px;
+  margin-top: 8px;
+  border-top: 1px solid var(--rule);
+  background: var(--slate-soft);
+  font-size: 13.5px;
+}
+.paper-meta .k {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 2px;
+}
+.paper-meta .v {
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+.paper-meta .v.solved { color: #047857; }
+.paper-meta .v.left   { color: #b45309; }
+.paper-meta .v.links a {
+  margin-right: 14px;
+  font-size: 13px;
+}
+
+/* ---------- Compare table ---------- */
+table.compare {
+  width: 100%;
+  border-collapse: separate; border-spacing: 0;
+  margin: 20px 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  font-size: 14px;
+}
+table.compare th, table.compare td {
+  text-align: left; padding: 12px 16px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+table.compare tr:last-child td { border-bottom: none; }
+table.compare th {
+  font-weight: 600; font-size: 11.5px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted);
+  background: var(--slate-soft);
+}
+table.compare td:first-child { font-weight: 600; color: var(--text); }
+table.compare tr:hover td { background: var(--slate-soft); }
+
+/* ---------- Synthesis closer ---------- */
+.synthesis {
+  margin: 40px 0 8px 0;
+  padding: 22px 24px 24px 24px;
+  background: linear-gradient(180deg, var(--indigo-soft), var(--surface));
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.synthesis .syn-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--indigo-deep); margin-bottom: 10px;
+}
+.synthesis .syn-title {
+  font-size: 1.2em; font-weight: 700;
+  color: var(--text); margin: 0 0 12px 0;
+  letter-spacing: -0.01em;
+}
+.synthesis p { color: var(--text-soft); }
+
+/* MathJax */
+mjx-container[display="true"] { margin: 14px 0 !important; overflow-x: auto; }
+mjx-container { color: var(--text); }
+@media (max-width: 600px) {
+  mjx-container[display="true"] { font-size: 0.9em !important; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="brand"><span class="dot"></span>Reward Models</span>
+    <span class="crumb-sep">/</span>
+    <span class="crumb-current">for robot learning</span>
+    <span class="topbar-spacer"></span>
+    <a class="pill" href="#sec-1">↑ Top</a>
+    <a class="pill" href="reward_models_survey.html">Survey table</a>
+  </div>
+</div>
+
+<div class="page">
+
+<nav class="toc">
+  <div class="toc-label">Contents</div>
+
+  <div class="toc-part">Part I · Foundations</div>
+  <ol>
+    <li><a href="#sec-1">1 · What a reward is</a></li>
+    <li><a href="#sec-2">2 · The three failure modes</a></li>
+  </ol>
+
+  <div class="toc-part">Part II · The hand-built era</div>
+  <ol>
+    <li><a href="#sec-3">3 · Engineered shaping</a></li>
+    <li><a href="#sec-4">4 · Sparse success classifiers</a></li>
+    <li><a href="#sec-5">5 · Inverse RL</a></li>
+  </ol>
+
+  <div class="toc-part">Part III · Learning from humans</div>
+  <ol>
+    <li><a href="#sec-6">6 · Deep RL from Preferences</a></li>
+    <li><a href="#sec-7">7 · PEBBLE &amp; the PbRL line</a></li>
+    <li><a href="#sec-8">8 · Reward-free alternatives</a></li>
+  </ol>
+
+  <div class="toc-part">Part IV · Foundation models label</div>
+  <ol>
+    <li><a href="#sec-9">9 · MineCLIP — VLM as reward</a></li>
+    <li><a href="#sec-10">10 · RoboCLIP, LIV &amp; VIP</a></li>
+    <li><a href="#sec-11">11 · VIPER — video as reward</a></li>
+    <li><a href="#sec-12">12 · RL-VLM-F &amp; GVL</a></li>
+  </ol>
+
+  <div class="toc-part">Part V · LLMs write the reward</div>
+  <ol>
+    <li><a href="#sec-13">13 · L2R &amp; Text2Reward</a></li>
+    <li><a href="#sec-14">14 · Eureka &amp; DrEureka</a></li>
+  </ol>
+
+  <div class="toc-part">Part VI · 2025–2026 frontier</div>
+  <ol>
+    <li><a href="#sec-15">15 · ReWiND &amp; learned video RMs</a></li>
+    <li><a href="#sec-16">16 · Robometer / LRM / RoboReward</a></li>
+    <li><a href="#sec-17">17 · World-model reward (V-JEPA 2)</a></li>
+    <li><a href="#sec-18">18 · GRAPE — RLHF on a VLA</a></li>
+  </ol>
+
+  <div class="toc-part">Part VII · Synthesis</div>
+  <ol>
+    <li><a href="#sec-19">19 · The throughline</a></li>
+    <li><a href="#sec-20">20 · Open problems</a></li>
+    <li><a href="#sec-21">21 · Resources</a></li>
+  </ol>
+</nav>
+
+<article>
+
+<h1>Reward Models for Robot Learning</h1>
+<p class="subtitle">A unified tour — from hand-tuned shaping in the 1990s to the VLM-as-reward and world-model-as-reward systems of 2026. Each generation fixes the labeling bottleneck of the one before it. We walk the arc and at each stop derive the actual model.</p>
+
+<div class="pullquote">
+  <span class="lead">how to read this doc</span>
+  <p>Every section is two layers. The <strong>survey layer</strong> says where we are in the timeline, what family this work belongs to, and what problem it was answering. The <strong>paper layer</strong> drops into the keystone works themselves — idea, architecture, what they solved, what they broke or left for the next generation.</p>
+  <p>Read it linearly. The whole field is one story of <span class="hl">each generation fixing the previous one's worst labeling bottleneck</span>; reading out of order loses that. A flat catalogue (instead of this narrative) lives in the companion <a href="reward_models_survey.html">survey table</a>.</p>
+</div>
+
+<!-- ============================================================
+     PART I — FOUNDATIONS
+     ============================================================ -->
+<div class="part-heading">
+  <span class="part-label">Part I</span>
+  <span class="part-title">Foundations — what we mean by "reward"</span>
+  <span class="part-era">reference · for grounding</span>
+  <p class="part-desc">Two short sections so the rest of the doc has shared vocabulary. If you already know the MDP formulation and Goodhart's law, skim them.</p>
+</div>
+
+<!-- ---------- Section 1 ---------- -->
+<h2 id="sec-1"><span class="num">1</span> What a reward is<span class="era">setup</span></h2>
+
+<p>
+A reinforcement-learning robot is a closed loop: at each instant it has a <strong>state</strong> $s$ (cameras, joints, gripper), it executes an <strong>action</strong> $a$, the world transitions to $s'$, and it receives a scalar <strong>reward</strong> $r$. Its job is to pick actions that maximize total reward over time.
+</p>
+
+<div class="pullquote">
+  <span class="lead">the central object</span>
+  <p>$$r : \mathcal{S} \times \mathcal{A} \to \mathbb{R}$$</p>
+  <p style="font-size: 0.85em; color: var(--text-soft); margin-top: 8px; font-weight: 400;">A reward function says <em>how good</em> a state-action is. <strong>Every paper in this document is a different bet on where this function comes from — who writes it, who labels it, and what fails when it's wrong.</strong></p>
+</div>
+
+<p>
+For a behavior-cloning policy you don't need $r$ — you have human demonstrations and you mimic them (this is the whole story of the companion <a href="../vla/vla.html">VLA doc</a>). The moment you want the robot to <em>improve beyond its demonstrations</em> — to recover from failures, generalize to new objects, or discover better strategies — you need a reward. Whoever or whatever supplies that reward becomes the bottleneck.
+</p>
+
+<h3 id="sec-1-where"><span class="subnum">1.1</span> Where reward signals come from</h3>
+
+<p>There are exactly four places a reward signal can come from. The history of the field is the history of moving down this list:</p>
+
+<div class="key-points">
+  <span class="label">The four reward sources</span>
+  <ol>
+    <li>
+      <div class="item">
+        <span class="head">The environment itself.</span>
+        <span class="body">In a game, the score is a reward. In a simulator, you can read whether the peg is inserted, the cup is upright, the door is open. <strong>Cheap and exact when available — almost never available in the real world.</strong> Real environments don't tell you whether you poured the water correctly; they just hand you pixels.</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">A human engineer.</span>
+        <span class="body">Someone reads the state and writes a Python function — distance-to-goal, joint smoothness, contact penalty. Reliable for narrow tasks; brittle, time-consuming, and a famous source of <em>reward hacking</em> (Section 2). This dominated 1990s–2010s robotics.</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">A human labeller.</span>
+        <span class="body">Instead of writing $r$ by hand, show humans pairs of trajectories and ask which is better. Fit a reward model to the preferences. <strong>Solves the writing problem; creates a labeling problem</strong> — you can't ship a robot fleet that needs a human in the loop forever. Christiano '17, PEBBLE, Preference Transformer.</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">A foundation model.</span>
+        <span class="body">A pretrained VLM or LLM watches the trajectory (or generates a Python reward function) and substitutes for the human labeller. The whole 2022–2026 wave. <strong>Solves the labeling-cost problem; creates a calibration and reward-hacking problem.</strong></span>
+      </div>
+    </li>
+  </ol>
+</div>
+
+<p class="note">
+  <span class="marker">the throughline</span>
+  The story this document tells is one long walk down that list. <em>Hand-written rewards</em> (Part II) hit the engineering wall; <em>human preferences</em> (Part III) hit the scale wall; <em>foundation models as labellers</em> (Parts IV–VI) are the current frontier. Every transition is forced by the failure mode of the one before — and each new generation has its own failure modes, listed in the <code>left</code> field of every paper card.
+</p>
+
+<h3 id="sec-1-rm"><span class="subnum">1.2</span> What a "reward model" is</h3>
+
+<p>
+A reward <em>model</em> is just a learned approximation $r_\phi(s, a)$ — or $r_\phi(\text{trajectory})$, or $r_\phi(\text{frame}, \text{language goal})$ — that stands in for an unknown true reward. The parameters $\phi$ are fit from <em>some</em> kind of supervision: human preferences, VLM scores, success/failure labels, future-frame prediction error.
+</p>
+
+<p>
+Once you have $r_\phi$, you plug it into any RL algorithm (PPO, SAC, GRPO, DPO) just like a hand-written reward. The whole skill is in <strong>training $r_\phi$ correctly</strong> — and just as importantly, <strong>knowing when to stop trusting it</strong>. A policy that learns to exploit $r_\phi$'s blind spots will look like it's improving while doing nothing useful. That problem has a name.
+</p>
+
+<!-- ---------- Section 2 ---------- -->
+<h2 id="sec-2"><span class="num">2</span> The three failure modes a reward must avoid<span class="era">why this is hard</span></h2>
+
+<p>
+Reward design is hard because three failure modes appear immediately — and they are the organizing problems of the rest of this document. Each generation of reward model fixes one and partially exposes another.
+</p>
+
+<div class="key-points">
+  <span class="label">The three enemies</span>
+  <ol>
+    <li>
+      <div class="item">
+        <span class="head">Sparsity.</span>
+        <span class="body">A success/failure bit at the end of a 200-step episode tells the policy almost nothing about which action helped. RL with sparse rewards either fails to learn or burns enormous sample counts on random exploration. The classical fix is <em>reward shaping</em> — adding a dense potential like distance-to-goal. The modern fix is a learned <em>dense</em> RM that scores every frame.</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">Mis-specification.</span>
+        <span class="body">The reward you wrote (or learned) is not the reward you wanted. Famous example: <a href="https://openai.com/index/faulty-reward-functions/">CoastRunners</a> (OpenAI, 2016) — the agent was rewarded for collecting coins during a boat race, learned to spin in a circle in a lagoon collecting infinite coins, never finished the race. Won the metric, failed the task. Every reward model is a proxy; <span class="hl">the policy will find the gap between the proxy and the truth</span>.</span>
+      </div>
+    </li>
+    <li>
+      <div class="item">
+        <span class="head">Reward hacking (Goodhart's law).</span>
+        <span class="body">Even a well-specified reward model can be exploited if the policy has more capacity to game $r_\phi$ than $r_\phi$ has to detect the game. With learned RMs trained on limited data, the policy reliably finds the <em>off-distribution</em> region where $r_\phi$ confidently says "good" and the task is in fact undone. This is the dominant frontier issue in 2025–2026 — see RewardDance's scaling-law study (§16 sidebar) and PURE's min-form credit assignment.</span>
+      </div>
+    </li>
+  </ol>
+</div>
+
+<p>
+A fourth, softer problem — <strong>generalization</strong> — only becomes urgent in the foundation-model era: a reward model trained on Meta-World pick-place needs to score "pour water" in a real kitchen. Fixing this is what makes the field jump from per-task classifiers to pretrained VLMs as reward in 2023.
+</p>
+
+<div class="roadmap">
+  <span class="label">roadmap</span>
+  <p>The next six Parts of this document each fix one of these failures, in roughly the order they were tackled:</p>
+  <p><strong>Part II</strong> (Sections 3–5) covers hand-engineered rewards, sparse success classifiers, and IRL — the baseline that exposes sparsity and mis-specification. <strong>Part III</strong> (6–8) covers preference-based RL — solving "who writes $r$" at the cost of scale. <strong>Parts IV–V</strong> (9–14) cover VLMs as reward labellers and LLMs as reward writers — solving the scale problem. <strong>Part VI</strong> (15–18) covers the 2025–2026 frontier: dense learned video RMs, world-model reward, test-time verifiers, and RLHF directly on VLAs.</p>
+</div>
+
+<div class="next-up">
+  <span class="label">next up — Part II</span>
+  <p>We start with the obvious thing: pay a roboticist to write a Python function. It worked for a generation of robots, until tasks got hard enough that you couldn't write the function in closed form.</p>
+</div>
+
+<!-- ============================================================
+     PART II — HAND-BUILT ERA
+     ============================================================ -->
+<div class="part-heading">
+  <span class="part-label">Part II</span>
+  <span class="part-title">The hand-built era — reward as engineering</span>
+  <span class="part-era">1990s – 2020</span>
+  <p class="part-desc">For most of robotics history a "reward function" meant a few lines of Python written by a graduate student. We trace why that worked, where it broke, and the two early attempts to learn $r$ instead — sparse success classifiers from goal images (VICE) and inverse reinforcement learning. Both planted ideas that the modern wave revives.</p>
+</div>
+
+<!-- ---------- Section 3 ---------- -->
+<h2 id="sec-3"><span class="num">3</span> Engineered shaping — and why it broke<span class="era">1990s – 2020</span></h2>
+
+<p>
+The textbook recipe: write $r(s, a) = -\|x_{\text{end-effector}} - x_{\text{goal}}\|^2$, add a small action-penalty term for smoothness, add a bigger bonus for reaching the goal, train PPO. This works <strong>spectacularly well</strong> when the state is low-dimensional and the task has a single mode — Cartpole, Reacher, peg-insertion with a known goal pose. It is the dominant reward design from the dawn of RL through the early 2020s.
+</p>
+
+<p>
+Three things break it:
+</p>
+
+<ul>
+  <li><strong>State that you can't measure.</strong> Once observations are raw RGB, "distance to the cup" is not a function you can write — you'd need a perception stack to extract it, and now you're building reward and perception together. The cup might be occluded; the goal might be "pour all the water without spilling," which is not a position.</li>
+  <li><strong>Compositional tasks.</strong> "Open the drawer, take out the mug, place it on the table" has three phases. A single distance metric is wrong; a piecewise function works but is brittle to phase-detection errors. The reward engineer is now writing a state machine.</li>
+  <li><strong>Reward hacking.</strong> Any clever shaping term invites the policy to exploit it. The classic example — <em>"reward the agent for forward velocity"</em> — produces a hopper that flips over and slides on its back, going forward faster than the intended gait. Every additional term is an additional surface to game.</li>
+</ul>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">cautionary tale</span>
+    <span class="year">2016</span>
+    <span class="sep">·</span>
+    <span class="name">Faulty Reward Functions in the Wild</span>
+    <span class="authors">Amodei &amp; Clark · OpenAI blog</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      Not a paper but a now-canonical story. The agent is trained to play <em>CoastRunners</em>, a boat-racing game. The reward is shaped: <strong>+points for collecting coins along the route</strong>, +bigger points for finishing the race. The intended interpretation: coins are a dense breadcrumb trail; finishing is the real goal.
+    </p>
+
+    <p>
+      The trained agent learns to <em>not finish the race at all</em>. It discovers a small lagoon where three coins regenerate every few seconds. It spins in a circle, on fire, smashing into other boats, collecting infinite coins. It gets ~20% higher score than the human baseline. It never crosses the finish line.
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">conceptual · the proxy-vs-goal gap</span>
+      <pre class="arch-ascii">
+   what the engineer wanted              what the engineer wrote
+   ──────────────────────────             ──────────────────────────
+   "finish the race fast"        VS.      r = α · coins + β · finish
+
+                                          policy maximises r:
+                                            → spin in lagoon
+                                            → collect infinite coins
+                                            → never finish
+                                            → wins on r, fails on intent
+
+   ┌─────────────────────────────────────────────────────────────┐
+   │  Goodhart's law:                                            │
+   │  "When a measure becomes a target,                          │
+   │   it ceases to be a good measure."                          │
+   └─────────────────────────────────────────────────────────────┘</pre>
+    </div>
+
+    <p>
+      Every learned reward model in Parts III–VI is a more sophisticated $r$ that, in principle, captures intent better than coin-counting. But the lesson is general: <span class="hl">any reward your policy can optimize <em>against</em> rather than <em>with</em> will be exploited</span>. The history of the field after this point is a slow campaign to widen the proxy-vs-goal gap by training $r$ on richer, harder-to-game signals — video, language, preference, world-model dynamics.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Named the problem in a viral, intuitive way. Reward hacking becomes a first-class concern in RL research after this.</span>
+    <span class="k">left</span><span class="v left">Doesn't propose a solution — the rest of this document is the slow-motion answer.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://openai.com/index/faulty-reward-functions/">OpenAI blog</a>
+    </span>
+  </div>
+</div>
+
+<!-- ---------- Section 4 ---------- -->
+<h2 id="sec-4"><span class="num">4</span> Sparse success classifiers — VICE<span class="era">2018 – 2019</span></h2>
+
+<p>
+The opposite extreme to dense shaping: don't shape anything, just have a classifier say "you reached the goal" or "you didn't." If you can hand the robot a few <em>images of the goal state</em>, you can train a CNN to discriminate "goal" from "not goal" and use its logit as the reward. <strong>This is the simplest possible learned reward model</strong>, and it is the conceptual ancestor of every VLM-as-success-detector in 2024–2026.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper</span>
+    <span class="year">2019</span>
+    <span class="sep">·</span>
+    <span class="name">VICE — Variational Inverse Control with Events</span>
+    <span class="authors">Fu, Singh, Ghosh, Yang, Levine · UC Berkeley · NeurIPS 2018 / arXiv 1904.07854</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      The setup is striking in its simplicity. The user provides a handful of goal-state images — a screwdriver in the slot, a block on a shelf, a door open. A CNN $D_\phi(s)$ is trained as a classifier: <em>goal</em> on the user-provided images, <em>not-goal</em> on the agent's exploration. The reward at any state is $D_\phi(s)$ — the classifier's probability that "we're at the goal now."
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">architecture · vice (fu et al. 2019)</span>
+      <pre class="arch-ascii">
+   ┌────────────────────────────┐         ┌────────────────────────────┐
+   │  user-provided goal images │         │  agent rollout states      │
+   │  (success examples)        │         │  (treated as failure)      │
+   └─────────────┬──────────────┘         └──────────────┬─────────────┘
+                 │                                       │
+                 └─────────────────┬─────────────────────┘
+                                   │
+                                   ▼
+                       ┌──────────────────────┐
+                       │   CNN classifier     │
+                       │      D_φ(s)          │   binary: goal vs not
+                       └──────────┬───────────┘
+                                  │
+                                  ▼
+                       r_φ(s) = log D_φ(s)   ← dense reward
+                                  │
+                                  ▼
+                       ┌──────────────────────┐
+                       │   RL agent (SAC)     │   maximises r_φ
+                       └──────────┬───────────┘
+                                  │
+                                  ▼  new rollouts
+                       (used to refresh D_φ
+                        in an adversarial loop)</pre>
+    </div>
+
+    <p>
+      The cleverness is the <strong>adversarial refresh</strong>. Without it, the classifier quickly learns to discriminate "demonstrator's camera angle" from "anywhere else," and the agent gets a high reward as soon as it stands near where the goal-images were taken. With it, the agent's rollouts are continuously added to the "not-goal" pile, forcing $D_\phi$ to learn the actual goal feature rather than the photographic style.
+    </p>
+
+    <p>
+      VICE is the first paper to show that <em>a learned visual classifier can stand in for a hand-written reward on a real robot</em> — door opening, drawer pulling — with no engineered $r$ at all. The line of work it starts (success-VQA, RoboReward, Robometer in §16) never really stops; it just keeps getting bigger classifiers, eventually replacing the CNN with a billion-parameter VLM.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Replaces hand-written goal-reward with a learned classifier from a few goal images. First "user provides examples, not Python" reward.</span>
+    <span class="k">left</span><span class="v left">Sparse — high reward only near goal. Needs the adversarial loop to avoid the classifier collapsing onto camera style. Per-task; no notion of language or transfer.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/1904.07854">arxiv</a>
+      <a href="https://sites.google.com/view/inverse-event">project</a>
+    </span>
+  </div>
+</div>
+
+<!-- ---------- Section 5 ---------- -->
+<h2 id="sec-5"><span class="num">5</span> Inverse RL — learning $r$ from expert demos<span class="era">2000 – 2018</span></h2>
+
+<p>
+A different bet from the same era: if you have <em>full expert trajectories</em> rather than goal images, you can try to recover the reward function the expert was implicitly optimising. This is <strong>inverse reinforcement learning</strong>, and its modern descendants are everywhere in this document — every VLM-as-reward paper is an IRL paper in spirit (the "expert" is now "internet video of humans doing the task").
+</p>
+
+<p>
+The IRL objective is roughly: find $r_\phi$ such that the expert's trajectories have higher cumulative $r$ than any other policy can achieve under the same dynamics. Ng &amp; Russell formalised this in 2000; Ziebart's <strong>Maximum Entropy IRL</strong> (2008) made it tractable; Finn, Levine, Abbeel's <strong>Guided Cost Learning</strong> (2016) scaled it to neural-network rewards on real robots; Fu et al.'s <strong>AIRL</strong> (2018) connected it to GANs (the discriminator <em>is</em> the reward).
+</p>
+
+<div class="key-points">
+  <span class="label">Why IRL didn't take over</span>
+  <ol>
+    <li><div class="item"><span class="head">Underdetermined.</span><span class="body">Many rewards explain the same demonstrations. Without a strong prior (entropy regulariser, sparsity, low-rank structure) IRL recovers garbage rewards that happen to make the expert look optimal.</span></div></li>
+    <li><div class="item"><span class="head">Sample-hungry.</span><span class="body">Each IRL update needs to <em>solve an inner RL problem</em> — find the optimal policy under the current $r_\phi$ — to evaluate the gradient. This nested loop is prohibitive at scale.</span></div></li>
+    <li><div class="item"><span class="head">No generalization across tasks.</span><span class="body">$r_\phi$ is fit to one task's demos and one environment. Re-running on a new task means re-collecting demos, re-running the nested loop.</span></div></li>
+  </ol>
+</div>
+
+<p>
+The conceptual move IRL makes — <em>treat the reward function itself as the learned object</em> — survives and dominates. The mechanism it uses (nested RL inner loops over hand-collected demos) does not. <span class="hl">Modern foundation-model reward learning is IRL where the "expert demonstration" is the entire internet</span>, and the inner loop is replaced by a single forward pass through a VLM. That's the move we'll see starting in Part IV.
+</p>
+
+<!-- ---------- Part II synthesis ---------- -->
+<div class="synthesis">
+  <span class="syn-label">part II · closing synthesis</span>
+  <h3 class="syn-title">Two ways the hand-built era ran out of road</h3>
+
+  <p>
+    The hand-built era reached its limits along two axes: <strong>what tasks you can write $r$ for</strong>, and <strong>how much demo data you need per new task</strong>. Engineered shaping covered the first axis cheaply for narrow tasks, then broke on anything compositional or visually grounded. IRL and VICE attempted to escape the writing problem by <em>learning</em> $r$ — but VICE needed per-task goal images and IRL needed per-task expert trajectories. Neither scaled to "give me a robot that can do thousands of tasks."
+  </p>
+
+  <table class="compare">
+    <thead>
+      <tr><th></th><th>Engineered $r$</th><th>VICE (goal-image classifier)</th><th>IRL (Max-Ent, AIRL)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Who supplies signal</td><td>Engineer writes Python</td><td>Few goal images per task</td><td>Full expert trajectories per task</td></tr>
+      <tr><td>Reward density</td><td>Dense (by design)</td><td>Sparse near goal</td><td>Dense (recovered)</td></tr>
+      <tr><td>Generalises across tasks</td><td>No</td><td>No</td><td>No</td></tr>
+      <tr><td>Reward-hacking risk</td><td>High (engineer-introduced terms)</td><td>Medium (classifier shortcuts)</td><td>High (underdetermined $r$)</td></tr>
+      <tr><td>What it left to fix</td><td>The writing problem</td><td>The labelling-effort problem</td><td>The nested-loop / generalisation problem</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    The next generation kept the IRL premise — <em>$r$ is a learned object</em> — but changed the supervision signal. Instead of asking an engineer to write a function, or a domain expert to provide demos, ask a non-expert human: <em>which of these two trajectories looks better?</em>
+  </p>
+</div>
+
+<div class="next-up">
+  <span class="label">next up — Part III</span>
+  <p>Christiano et al. (2017) showed that fewer than 1,000 human pairwise preferences could train a usable reward model for Atari and MuJoCo. This is the line that becomes RLHF for LLMs five years later — and on the robot side, becomes PEBBLE and Preference Transformer.</p>
+</div>
+
+<!-- ============================================================
+     PART III — LEARNING FROM HUMANS
+     ============================================================ -->
+<div class="part-heading">
+  <span class="part-label">Part III</span>
+  <span class="part-title">Learning the reward from humans — preference-based RL</span>
+  <span class="part-era">2017 – 2023</span>
+  <p class="part-desc">The 2017 paper that broke the field open: ask humans to rank pairs of trajectories instead of writing a reward. Each pairwise comparison takes seconds and requires no expertise. Fit a Bradley-Terry reward model to the preferences, then plug it into PPO. This is the lineage that becomes RLHF for LLMs in 2022 and remains the cleanest "humans-in-the-loop" reward learning recipe on the robot side.</p>
+</div>
+
+<!-- ---------- Section 6 ---------- -->
+<h2 id="sec-6"><span class="num">6</span> Deep RL from Human Preferences — the founding paper<span class="era">2017</span></h2>
+
+<p>
+Christiano et al. show that an Atari agent can be trained from <strong>fewer than a thousand</strong> human pairwise comparisons — for context, a hand-shaped reward typically wants millions of frames of engineering iteration. The setup is almost shockingly simple: render two short clips of the agent's behavior side by side, ask a non-expert "which is better?", fit a reward model that explains the choices, train RL on the fitted reward, repeat.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper · keystone</span>
+    <span class="year">2017</span>
+    <span class="sep">·</span>
+    <span class="name">Deep Reinforcement Learning from Human Preferences</span>
+    <span class="authors">Christiano, Leike, Brown, Martic, Legg, Amodei · OpenAI &amp; DeepMind · NeurIPS 2017</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      Let $\sigma^1, \sigma^2$ be two trajectory segments. A human is shown both and indicates a preference: $\sigma^1 \succ \sigma^2$, $\sigma^2 \succ \sigma^1$, or "equal." We model the probability the human prefers $\sigma^1$ with the <strong>Bradley-Terry</strong> form:
+    </p>
+
+    $$P(\sigma^1 \succ \sigma^2) = \frac{\exp \sum_t r_\phi(s_t^1, a_t^1)}{\exp \sum_t r_\phi(s_t^1, a_t^1) + \exp \sum_t r_\phi(s_t^2, a_t^2)}.$$
+
+    <p>
+      Fit $r_\phi$ by maximum likelihood on the human labels. Then run any RL algorithm — A2C in the paper — using $r_\phi$ as the reward. Periodically pause, collect more preferences on freshly generated trajectories, re-fit $r_\phi$, continue.
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">architecture · drlhp (christiano et al. 2017)</span>
+      <pre class="arch-ascii">
+                   ┌──────────────────────────────────────┐
+                   │            RL agent (A2C)            │
+                   │     trained on reward r_φ(s, a)      │
+                   └──────────────────┬───────────────────┘
+                                      │ produces trajectories
+                                      ▼
+                  ┌─────────────────────────────────────┐
+                  │     sample pairs (σ¹, σ²)           │
+                  │     of 1-2 second clips             │
+                  └──────────────────┬──────────────────┘
+                                     ▼
+                  ┌──────────────────────────────┐
+                  │   HUMAN labels preference    │
+                  │     σ¹ ≻ σ²  or  σ² ≻ σ¹     │
+                  │     (or "equal")             │
+                  └──────────────────┬───────────┘
+                                     ▼
+                  ┌──────────────────────────────────────┐
+                  │  fit r_φ  via Bradley-Terry MLE      │
+                  │  on accumulated preference labels    │
+                  └──────────────────┬───────────────────┘
+                                     │
+                                     └─────► back to RL agent (top)
+
+           ~700 preferences total → backflip on MuJoCo Hopper
+         ~5500 preferences total → matches hand-tuned reward on Atari Pong</pre>
+    </div>
+
+    <p>
+      Two surprises in the results:
+    </p>
+    <ul>
+      <li><strong>Astonishing label efficiency.</strong> ~700 preferences trained a backflip-doing Hopper. ~5,500 matched the hand-tuned-reward baseline on several Atari games. The labels are 1-2 second clip comparisons — cheap, no expertise required.</li>
+      <li><strong>Novel behaviours.</strong> The trained Hopper learns to <em>backflip</em> — a behavior the authors couldn't easily reward-shape because they didn't know how to write "a satisfying backflip" in Python. The reward model captures it from comparisons.</li>
+    </ul>
+
+    <p>
+      The structural insight that this paper plants — <span class="hl">fit a reward model from pairwise preferences, then RL on the model</span> — is the entire backbone of RLHF for LLMs, which appears at OpenAI five years later (InstructGPT, ChatGPT). On the robot side, the line continues through PEBBLE, B-Pref, Preference Transformer, RUNE, and is still the dominant non-foundation-model branch.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Showed pairwise preferences are a vastly more sample-efficient supervision signal than reward writing or full demos. Created the RLHF playbook.</span>
+    <span class="k">left</span><span class="v left">Still needs a human in the loop, online, asking thousands of questions during training. Per-task; no transfer. Reward model is small and per-environment.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/1706.03741">arxiv</a>
+      <a href="https://openai.com/research/learning-from-human-preferences">OpenAI blog</a>
+    </span>
+  </div>
+</div>
+
+<!-- ---------- Section 7 ---------- -->
+<h2 id="sec-7"><span class="num">7</span> PEBBLE &amp; the preference-based RL line<span class="era">2021 – 2023</span></h2>
+
+<p>
+Christiano '17 worked in principle but in practice <em>still</em> needed enough preferences that scaling it to dexterous manipulation was painful. The 2021–2023 wave is a series of engineering improvements that compress the label budget further and make the recipe work on robot arms instead of Atari.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper</span>
+    <span class="year">2021</span>
+    <span class="sep">·</span>
+    <span class="name">PEBBLE — Feedback-Efficient Interactive RL via Relabeling Experience and Unsupervised Pre-training</span>
+    <span class="authors">Lee, Smith, Abbeel · UC Berkeley · ICML 2021</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      PEBBLE's contribution is a deceptively boring engineering observation: <strong>most of the label budget is wasted re-learning the reward on stale data</strong>. The fix is two-pronged.
+    </p>
+
+    <ul>
+      <li><strong>Unsupervised pre-training of the policy.</strong> Before any human label, run an entropy-maximising exploration policy. This populates the replay buffer with diverse behaviors — so when the first preferences arrive, the reward model sees a wide spread of trajectories and fits a non-degenerate $r_\phi$.</li>
+      <li><strong>Relabel the replay buffer every time $r_\phi$ updates.</strong> The SAC critic was trained against old $r_\phi$; throwing it away wastes data. Instead, recompute rewards on stored transitions with the new $r_\phi$ and keep training off-policy.</li>
+    </ul>
+
+    <p>
+      The result is a roughly 5–10× reduction in human preferences vs Christiano '17 on Meta-World tasks. PEBBLE is the recipe that the whole 2022–2024 PbRL literature builds on — <strong>SURF</strong> (2022) adds data augmentation + pseudo-labels for further savings, <strong>RUNE</strong> (2022) uses reward-model uncertainty as an exploration bonus, <strong>Preference Transformer</strong> (2023) replaces the MLP reward model with a non-Markovian transformer over the whole segment.
+    </p>
+
+    <p>
+      The persistent failure mode of the entire line: <span class="hl">a human is still in the loop, online, during training</span>. PEBBLE scales preferences down by 10× but doesn't eliminate them, and you cannot deploy a 100-robot fleet if every one needs a human to grade hundreds of episode pairs. <strong>This is the bottleneck that the foundation-model era exists to break.</strong>
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Made PbRL practical for robot manipulation tasks. Unsupervised pre-training + relabeling shrinks the label budget 5–10×.</span>
+    <span class="k">left</span><span class="v left">Human-in-the-loop remains essential. Reward model is task-specific, non-transferable. No language conditioning.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2106.05091">arxiv</a>
+      <a href="https://github.com/rll-research/BPref">B-Pref benchmark</a>
+    </span>
+  </div>
+</div>
+
+<h3 id="sec-7-others"><span class="subnum">7.1</span> The rest of the PbRL family — quick tour</h3>
+
+<table class="compare">
+  <thead><tr><th>Paper</th><th>Year</th><th>One-line idea</th><th>Inherits from</th></tr></thead>
+  <tbody>
+    <tr><td>SURF</td><td>2022</td><td>Semi-supervised PbRL — augment labels with pseudo-labels from the current $r_\phi$.</td><td>PEBBLE</td></tr>
+    <tr><td>RUNE</td><td>2022</td><td>Use disagreement among an ensemble of $r_\phi$ as an exploration bonus — query humans where the RM is uncertain.</td><td>PEBBLE</td></tr>
+    <tr><td>Preference Transformer</td><td>2023</td><td>Replace MLP $r_\phi$ with a transformer over the whole segment — captures non-Markovian preferences.</td><td>Christiano '17</td></tr>
+    <tr><td>RIME</td><td>2024</td><td>Sample-selection discriminator to filter noisy / mislabelled preferences. Warm-start protection.</td><td>PEBBLE</td></tr>
+    <tr><td>B-Pref</td><td>2021</td><td>Benchmark — simulated irrational human teachers so methods can be compared without paying real humans.</td><td>(infrastructure)</td></tr>
+  </tbody>
+</table>
+
+<!-- ---------- Section 8 ---------- -->
+<h2 id="sec-8"><span class="num">8</span> Reward-free alternatives — IPL and friends<span class="era">2023</span></h2>
+
+<p>
+A parallel line argues: <em>maybe the reward model is unnecessary altogether</em>. If you have preference data, you can fit the policy <strong>directly</strong> from preferences, with the implicit reward absorbed into the Q-function or the policy log-ratio. On the LLM side this is <strong>DPO</strong> (Rafailov et al., 2023) — the algorithm that ate RLHF in 2023–2024. On the robot side the analogue is <strong>Inverse Preference Learning</strong>.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper</span>
+    <span class="year">2023</span>
+    <span class="sep">·</span>
+    <span class="name">Inverse Preference Learning — Preference-based RL Without a Reward Function</span>
+    <span class="authors">Hejna &amp; Sadigh · Stanford · NeurIPS 2023</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      IPL's observation: in offline preference-based RL, fitting a $r_\phi$ and then a $Q_\theta$ is wasteful — the $Q$-function already encodes everything you need. By reparameterising the Bradley-Terry preference probability directly in terms of $Q$, you can fit $Q$ to preferences without ever materialising $r_\phi$. The math is the same trick DPO uses for LLMs, derived a few months earlier.
+    </p>
+
+    <p>
+      The relevance for this document is conceptual: <span class="hl">a "reward model" is sometimes a fiction of convenience</span>. Whenever the downstream consumer of $r$ is a single RL algorithm with known structure, you can often fold the reward fitting into the policy fit. We'll see this pattern again with GRAPE (§18), which DPO-style-trains a VLA on preference data without ever materialising an explicit reward model.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Removes the reward-model step from offline PbRL; the Q-function does double duty.</span>
+    <span class="k">left</span><span class="v left">Tied to a specific RL formulation; doesn't give you a reward model you can reuse for evaluation, best-of-N reranking, or transfer.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2305.15363">arxiv</a>
+    </span>
+  </div>
+</div>
+
+<!-- ---------- Part III synthesis ---------- -->
+<div class="synthesis">
+  <span class="syn-label">part III · closing synthesis</span>
+  <h3 class="syn-title">Preferences solved one problem, surfaced another</h3>
+
+  <p>
+    By 2023 the PbRL recipe is mature. You can train a reasonable reward model for a manipulation task from ~1000 human pairwise comparisons; PEBBLE-and-descendants get this to ~hundreds for simple tasks; B-Pref provides a benchmark to compare methods without paying humans. The <em>writing</em> problem of Part II is fully solved — no one needs to write a reward function any more.
+  </p>
+
+  <p>
+    But the <strong>labelling</strong> problem is now the bottleneck. Every new task, every new robot, every new lab needs a fresh batch of preferences. A startup that wants to deploy a hundred robots in a hundred kitchens cannot run a hundred preference-collection campaigns. <span class="hl">The labeller has to be replaced.</span> In 2022 someone notices that CLIP scores image-text similarity, and that "image of a robot completing a task" + "text of the task description" is a reasonable proxy for "did the robot do the task." The foundation-model era of reward learning starts here.
+  </p>
+</div>
+
+<div class="next-up">
+  <span class="label">next up — Part IV</span>
+  <p>The leap. Use a pretrained vision-language model as the reward labeller. The robot shows it a frame, the engineer shows it a task description, the VLM emits a similarity score that <em>is</em> the reward. Five years of papers shrink the failure modes — semantic mis-detection, weak temporal signal, calibration drift — and the result is the 2026 wave of dense, language-conditioned, real-robot reward models.</p>
+</div>
+
+<!-- ============================================================
+     PART IV — FOUNDATION MODELS AS THE LABELLER
+     ============================================================ -->
+<div class="part-heading">
+  <span class="part-label">Part IV</span>
+  <span class="part-title">Foundation models as the labeller — VLM-as-reward</span>
+  <span class="part-era">2022 – 2024</span>
+  <p class="part-desc">The structural insight: every VLM is, implicitly, a reward function for any task you can describe in language. CLIP's cosine similarity between a frame and the prompt "robot picking up the red block" is a usable, if noisy, reward signal — for free, with no per-task training. Four years of papers fix the failure modes (single-frame myopia, temporal incoherence, semantic mis-detection, calibration drift) and the resulting reward models train RL policies across whole task families.</p>
+</div>
+
+<!-- ---------- Section 9 ---------- -->
+<h2 id="sec-9"><span class="num">9</span> MineCLIP — the first "VLM as reward" at scale<span class="era">2022</span></h2>
+
+<p>
+MineDojo's contribution is a working example, on a non-trivial open-world environment, that <strong>a pretrained video-text contrastive model can shape an entire RL training run without any per-task reward engineering</strong>. The agent's task is described in English ("shear a sheep with shears"); the reward at every step is the contrastive similarity between the recent video clip and the task prompt. No goal images, no demonstrations, no preferences.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper · keystone</span>
+    <span class="year">2022</span>
+    <span class="sep">·</span>
+    <span class="name">MineDojo — Building Open-Ended Embodied Agents with Internet-Scale Knowledge</span>
+    <span class="authors">Fan, Wang, Jiang, Mandlekar, Yang, Zhu, Anandkumar · NVIDIA · NeurIPS 2022 Outstanding</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      The reward-model piece of MineDojo is <strong>MineCLIP</strong>: a CLIP-style two-tower encoder, where one tower sees a 16-frame video clip and the other sees a text caption, trained contrastively on <em>730k</em> YouTube Minecraft videos with their transcribed captions. After pretraining, MineCLIP exposes a function $r(\text{clip}, \text{prompt}) = \cos(f_v(\text{clip}), f_t(\text{prompt}))$.
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">architecture · mineclip reward (2022)</span>
+      <pre class="arch-ascii">
+   ┌─────────────────────┐         ┌──────────────────────────────┐
+   │   recent 16 frames  │         │  task prompt (English)       │
+   │   from agent rollout│         │  "shear a sheep with shears" │
+   └──────────┬──────────┘         └──────────────┬───────────────┘
+              │                                   │
+              ▼                                   ▼
+   ┌─────────────────────┐         ┌──────────────────────────────┐
+   │   video encoder f_v │         │  text encoder f_t (BPE+Tx)   │
+   │   (ViT + temporal   │         │  initialised from CLIP       │
+   │    transformer)     │         └──────────────┬───────────────┘
+   └──────────┬──────────┘                        │
+              │                                   │
+              └────────────────┬──────────────────┘
+                               ▼
+                  ┌────────────────────────────┐
+                  │   cos(f_v(clip), f_t(p))   │   contrastive score
+                  └─────────────┬──────────────┘
+                                │
+                                ▼
+                       r_t = α · cos(...)
+                                │
+                                ▼
+                  ┌────────────────────────────┐
+                  │  PPO agent on Minecraft    │   no other reward;
+                  │  observes pixels + invent. │   no demos
+                  └────────────────────────────┘
+
+   pretrain: 730k YouTube clips ↔ captions, InfoNCE
+   downstream: 100+ MineDojo tasks, zero per-task reward engineering</pre>
+    </div>
+
+    <p>
+      The agent learns dozens of tasks specified <em>only</em> in English, with MineCLIP as the sole reward. The performance is uneven — easy tasks (chop a tree) work well; hard ones (build a shelter) work poorly — but the structural point is decisive: <strong>a single pretrained model is now the reward function for an open-ended task distribution</strong>. The reward-engineering bottleneck is no longer the agent designer; it's the VLM's accuracy.
+    </p>
+
+    <p>
+      Three failure modes of the MineCLIP-as-reward recipe show up immediately, and the rest of this Part can be read as a campaign to fix them:
+    </p>
+
+    <ul>
+      <li><strong>Single-frame myopia.</strong> MineCLIP uses a 16-frame clip but is fundamentally a contrastive model; it doesn't really model temporal causation. The agent learns to <em>get into the visually correct configuration</em> rather than <em>perform the action that causes it</em>.</li>
+      <li><strong>Calibration drift.</strong> Cosine similarity is bounded but uncalibrated; small changes in the prompt produce big swings in reward magnitude. PPO is sensitive to this.</li>
+      <li><strong>Hacking via close-up framing.</strong> Agents discover that bringing target objects very close to the camera spikes the cosine similarity without completing the task — pure Goodhart, exactly as predicted in Section 2.</li>
+    </ul>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">First demonstration that a single pretrained VLM can be the reward function for an open-ended task distribution specified in English. Eliminates per-task reward engineering for a whole task family.</span>
+    <span class="k">left</span><span class="v left">Single-frame myopia; calibration drift; easy to hack via close-up framing. Minecraft-only — no transfer to real robots yet.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2206.08853">arxiv</a>
+      <a href="https://minedojo.org/">project</a>
+      <a href="https://github.com/MineDojo/MineCLIP">code</a>
+    </span>
+  </div>
+</div>
+
+<!-- ---------- Section 10 ---------- -->
+<h2 id="sec-10"><span class="num">10</span> RoboCLIP, LIV &amp; VIP — the recipe crosses to real robots<span class="era">2022 – 2023</span></h2>
+
+<p>
+MineCLIP showed the recipe works in Minecraft. The 2022–2023 question: <em>does it survive contact with real robots?</em> Three papers from the same window give three slightly different answers — and together they establish the patterns that dominate the next two years. RoboCLIP keeps CLIP-style <em>similarity</em>. VIP recasts the same problem as <em>value learning</em>. LIV unifies the two by training a value function over language and images jointly.
+</p>
+
+<p>
+The conceptual move from <em>similarity</em> to <em>value</em> is the most important one in this section. A similarity score says "this frame looks like the goal frame"; a value score says "this frame is on the path that leads to the goal." The gap matters: a similarity-as-reward policy will park itself at any frame that looks roughly right; a value-as-reward policy gets a gradient pulling it through the trajectory. VIP is the paper that makes this distinction architectural.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper</span>
+    <span class="year">2023</span>
+    <span class="sep">·</span>
+    <span class="name">RoboCLIP — One Demonstration is Enough to Learn Robot Policies</span>
+    <span class="authors">Sontakke et al. · USC · NeurIPS 2023</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      RoboCLIP's stripped-down recipe: the engineer provides <em>one</em> reference — either an English sentence (<em>"open the drawer"</em>) <strong>or</strong> a single video demonstration. The reward at each step is the cosine similarity between the embedding of the agent's recent video clip and the embedding of that reference, in a pretrained S3D-CLIP space.
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">architecture · roboclip (sontakke et al. 2023)</span>
+      <pre class="arch-ascii">
+   reference (one of):
+     • text  "open the drawer"
+     • video demo (single clip)
+                  │
+                  ▼
+   ┌───────────────────────┐
+   │   S3D-CLIP encoder    │
+   │   (frozen)            │
+   └───────────┬───────────┘
+               │
+               ▼
+            z_ref ∈ ℝ^d
+                                  ┌────────────────────────────┐
+   ┌─────────────────────┐        │  agent's recent video clip │
+   │  agent video clip   │ ─────► │                            │
+   │  (16 frames)        │        │      S3D-CLIP encoder      │
+   └─────────────────────┘        │       (same, frozen)       │
+                                  └─────────────┬──────────────┘
+                                                ▼
+                                            z_clip ∈ ℝ^d
+               │                                │
+               └───────────────┬────────────────┘
+                               ▼
+                      r_t = cos(z_clip, z_ref)
+                               │
+                               ▼
+                       PPO on Meta-World
+
+   training: zero — both encoders frozen, no per-task supervision</pre>
+    </div>
+
+    <p>
+      RoboCLIP works on a non-trivial fraction of Meta-World tasks. <strong>Zero training, zero demos for most tasks (just a text reference), zero reward writing.</strong> The failure mode is exactly MineCLIP's, transferred to manipulation: tasks where the difference between "did the action" and "is near the object" is small (drawer-open) work well; tasks where action mid-trajectory matters (pour, slide a block precisely) don't. The cosine similarity rewards <em>visual proximity to the goal frame</em>, not the trajectory that produced it.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">VLM-as-reward works on real manipulation with one reference per task. Establishes "text or one demo → reward" as a viable robotic recipe.</span>
+    <span class="k">left</span><span class="v left">Inherits MineCLIP's pathologies — frame-similarity, not action-causality. No dense temporal signal. Works in narrow task distributions.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2310.07899">arxiv</a>
+      <a href="https://sites.google.com/view/roboclip/home">project</a>
+    </span>
+  </div>
+</div>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper</span>
+    <span class="year">2023</span>
+    <span class="sep">·</span>
+    <span class="name">LIV — Language-Image Representations and Rewards for Robotic Control</span>
+    <span class="authors">Ma, Jayaraman, Bastani, Kumar · UPenn &amp; Meta FAIR · ICML 2023</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      LIV extends <strong>VIP</strong> (§10.3 below) by adding a language tower. Where VIP learns a value function over <em>goal-image</em>-conditioned reaching, LIV learns the same value structure over <em>goal-language</em> as well — so the reward is $V(\text{obs}, \text{language goal})$, dense, monotone-improving as the agent approaches the described goal. Pretrained jointly on EpicKitchens (kitchen activities with captions) and robot data.
+    </p>
+
+    <p>
+      LIV's importance is twofold. First, it is the conceptual ancestor of GVL (§12) — "treat a VLM not as a similarity scorer but as a value function" is the move that breaks the frame-similarity ceiling RoboCLIP hit, and GVL takes it to the frontier-VLM era. Second, LIV ships as a usable frozen encoder; many downstream papers (FuRL, 2024 — and several entries in Part VI) use a frozen LIV as the reward front-end.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">First multimodal (image + language) pretrained value function for robot reward. Provides a frozen, dense, language-conditioned $V$ usable across many manipulation tasks.</span>
+    <span class="k">left</span><span class="v left">Pretrained on EpicKitchens + robot data — biased to those domains. Calibration drifts across tasks; per-domain fine-tuning often needed.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2306.00958">arxiv</a>
+      <a href="https://github.com/penn-pal-lab/LIV">code</a>
+    </span>
+  </div>
+</div>
+
+<h3 id="sec-10-vip"><span class="subnum">10.3</span> VIP — the value-implicit ancestor</h3>
+
+<p>
+The 2022 paper that LIV is built on top of, and arguably the single most important paper in this section. VIP (Value-Implicit Pre-Training) does what nothing before it does: it derives an objective whose <em>pretraining loss is literally a value function</em>, so the resulting embedding can be used as reward by construction — no per-task supervision, no language alignment trick, no contrastive heuristic.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper · keystone</span>
+    <span class="year">2022</span>
+    <span class="sep">·</span>
+    <span class="name">VIP — Towards Universal Visual Reward and Representation via Value-Implicit Pre-Training</span>
+    <span class="authors">Ma, Sodhani, Jayaraman, Bastani, Kumar, Zhang · UPenn &amp; Meta AI · ICLR 2023 Spotlight (arXiv Oct 2022)</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      VIP casts representation learning from passive human video as an <strong>offline goal-conditioned RL problem</strong>. The key derivation: there exists a <em>dual</em> form of a goal-conditioned value objective that is completely action-free, so it can be optimised on raw video (Ego4D — 4,000 hours of egocentric human activity, no actions, no rewards). The resulting loss turns out to be equivalent to an <em>implicit time-contrastive</em> objective that produces temporally smooth embeddings.
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">architecture · vip (ma et al. 2022)</span>
+      <pre class="arch-ascii">
+   ┌────────────────────────────────────────────────────────────┐
+   │   Ego4D — 4,000h egocentric video                          │
+   │   (no actions, no rewards, no language)                    │
+   └────────────────────────────┬───────────────────────────────┘
+                                │
+                                ▼
+   for each video, sample (initial frame, future frame, goal frame)
+                                │
+                                ▼
+   ┌────────────────────────────────────────────────────────────┐
+   │  ResNet-50 encoder  φ(o) → ℝ^d                             │
+   └────────────────────────────┬───────────────────────────────┘
+                                │
+                                ▼
+   ┌────────────────────────────────────────────────────────────┐
+   │  Value-Implicit loss — dual of goal-cond. RL objective     │
+   │    pull φ(initial) toward φ(goal)                          │
+   │    push φ(future) further than φ(initial) (temporal)       │
+   │    implicit value V(φ(o), φ(goal)) = −‖φ(o) − φ(goal)‖     │
+   └────────────────────────────┬───────────────────────────────┘
+                                │
+        ──────── after pretraining, frozen ────────
+                                │
+                                ▼
+   for any new task with a goal image:
+        r_t = −‖φ(o_t) − φ(o_goal)‖₂              ← reward
+        Δr_t = ‖φ(o_{t-1}) − φ(o_goal)‖           ← dense delta
+              − ‖φ(o_t) − φ(o_goal)‖                progress
+
+   zero-shot reward for downstream RL or trajectory optimisation
+   no per-task training, no action labels, no human prefs</pre>
+    </div>
+
+    <p>
+      Two things make VIP structurally different from R3M / MVP / Voltron (which appeared in the same window):
+    </p>
+
+    <ul>
+      <li><strong>The objective <em>is</em> a value function</strong>, not a representation that happens to be useful as a value function. R3M, MVP, VC-1 all learn embeddings via generic SSL losses (time-contrastive, MAE, vision-language alignment) — they get repurposed as reward by post-hoc embedding-distance tricks. VIP is the only paper in the era whose pretraining loss is literally a goal-conditioned $V$.</li>
+      <li><strong>Action-free.</strong> The dual derivation removes the action term entirely, so internet video — where you can't observe actions — works as pretraining data. Every subsequent video-as-reward paper inherits this design choice.</li>
+    </ul>
+
+    <p>
+      Two consequences play out in the rest of this document. <em>LIV</em> (§10.2) adds a language tower to VIP and becomes the canonical pretrained VLM-value used as a frozen front-end in 2024 robot reward papers (FuRL, several Part-VI entries). <em>GVL</em> (§12.2) generalises the "value-as-reward" framing to the frontier-VLM era — instead of training a small encoder on Ego4D, prompt Gemini-1.5-Pro to estimate $V$ directly per frame. Both papers are best understood as VIP's children.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Pretraining loss that <em>is</em> a value function. Action-free, language-free, works on raw internet video. Provides a frozen, zero-shot, dense reward for any task specifiable with a goal image.</span>
+    <span class="k">left</span><span class="v left">Goal-image interface only (no language conditioning — LIV's contribution). Embedding-distance reward is biased toward visual goals; tasks with non-visual targets (force, compliance) don't fit. Single ResNet — capacity-limited compared to later VLMs.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2210.00030">arxiv</a>
+      <a href="https://sites.google.com/view/vip-rl">project</a>
+      <a href="https://github.com/facebookresearch/vip">code</a>
+    </span>
+  </div>
+</div>
+
+<h3 id="sec-10-family"><span class="subnum">10.4</span> The video-pretrained representation family — quick tour</h3>
+
+<p>
+VIP did not appear out of nowhere. It is the cleanest member of a wider 2017–2023 family of papers that pretrain a visual encoder on large-scale video and then repurpose the frozen embedding as a reward signal — typically via embedding distance to a goal frame, or text-prompt similarity. The table groups them; all are routinely used as the reward-front-end underneath later policy work.
+</p>
+
+<table class="compare">
+  <thead><tr><th>Paper</th><th>Year</th><th>Pretraining objective</th><th>How it becomes a reward</th><th>What's distinctive</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://arxiv.org/abs/1704.06888">TCN</a></td><td>2017</td><td>Multi-view time-contrastive triplet loss</td><td>$r = -\|\phi(s_t) - \phi(s_{\text{demo}})\|$</td><td>The <em>ur</em>-paper: every entry below traces lineage here.</td></tr>
+    <tr><td><a href="https://x-irl.github.io/">XIRL</a></td><td>2021</td><td>Temporal Cycle-Consistency across embodiments</td><td>Embedding distance to a goal frame</td><td>Explicitly cross-embodiment (human↔robot morphology gap).</td></tr>
+    <tr><td><a href="https://arxiv.org/abs/2109.01115">LOReL</a></td><td>2021</td><td>Binary classifier on language-annotated sub-optimal data</td><td>The classifier <em>is</em> the reward</td><td>Earliest language-conditioned learned reward for manipulation.</td></tr>
+    <tr><td><a href="https://arxiv.org/abs/2203.12601">R3M</a></td><td>2022</td><td>Time-contrastive + video-language alignment + L1 (Ego4D)</td><td>Embedding distance to goal frame tracks task progress</td><td>The template VIP / LIV / Voltron all build on.</td></tr>
+    <tr><td><a href="https://arxiv.org/abs/2210.03109">MVP</a></td><td>2022</td><td>Masked Auto-Encoder ViT on ~4.5M egocentric frames</td><td>Used as front-end under learned RMs / value heads</td><td>Generative (pixel reconstruction) rather than contrastive.</td></tr>
+    <tr><td><a href="https://arxiv.org/abs/2210.00030">VIP</a> <em>(§10.3)</em></td><td>2022</td><td>Implicit goal-conditioned value (Ego4D)</td><td>$r = -\|\phi(o) - \phi(o_{\text{goal}})\|$ by construction</td><td><strong>Only paper whose loss IS a value function.</strong></td></tr>
+    <tr><td><a href="https://arxiv.org/abs/2302.12766">Voltron</a></td><td>2023</td><td>MAE-style with paired captions on Sth-Sth-v2</td><td>Text-prompt-to-frame similarity</td><td>First ablation of "how much language" helps.</td></tr>
+    <tr><td><a href="https://arxiv.org/abs/2303.18240">VC-1</a></td><td>2023</td><td>MAE ViT on 4,000+ hours from 7 datasets</td><td>Front-end under learned RMs; embedding-distance baseline</td><td>Largest controlled study (CortexBench, 17 tasks).</td></tr>
+    <tr><td><a href="https://arxiv.org/abs/2306.00958">LIV</a> <em>(§10.2)</em></td><td>2023</td><td>VIP + language tower (EpicKitchens + robot)</td><td>$V(\text{obs}, \text{language goal})$ — dense, language-conditioned</td><td>The multimodal extension of VIP — what most 2024 robot RMs use as the frozen front-end.</td></tr>
+  </tbody>
+</table>
+
+<p class="note">
+  <span class="marker">why this family matters</span>
+  When you read a 2024–2025 paper that says "we use a frozen visual encoder," the encoder is almost always one of these — R3M, VC-1, VIP, or LIV. They are the silent infrastructure of modern reward modelling. Papers like <strong>FuRL</strong> (2024) literally plug a frozen LIV in as the reward front-end and add a small fine-tune. The 2026 frontier (LRM, RoboReward, V-JEPA 2) is what happens when this family meets billion-parameter VLM backbones.
+</p>
+
+<!-- ---------- Section 11 ---------- -->
+<h2 id="sec-11"><span class="num">11</span> VIPER — video prediction <em>is</em> the reward<span class="era">2023</span></h2>
+
+<p>
+A different bet from the same year: instead of <em>similarity</em>, use <em>likelihood</em>. Train an autoregressive video prediction model on expert videos. At any rollout frame, ask the video model "how likely was this next frame under the expert distribution?" The log-likelihood <em>is</em> the reward. This is the cleanest extension of IRL into the foundation-model era — the "expert" is now a large video model fit to internet data, and the inner RL loop disappears because $r$ is just a forward pass.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper · keystone</span>
+    <span class="year">2023</span>
+    <span class="sep">·</span>
+    <span class="name">VIPER — Video Prediction Models as Rewards for Reinforcement Learning</span>
+    <span class="authors">Escontrela, Adeniji, Yan, Jain, Peng, Goldberg, Hafner, Abbeel · Berkeley &amp; DeepMind · NeurIPS 2023</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      Take an autoregressive video transformer (VideoGPT-class). Train it on expert task videos. The transformer learns a distribution $p_\psi(o_{t+1} \mid o_{1:t})$ over next-frame tokens. The reward for the agent's actually-observed transition is the model's log-likelihood of that transition: $r_t = \log p_\psi(o_{t+1}^{\text{agent}} \mid o_{1:t}^{\text{agent}})$.
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">architecture · viper (escontrela et al. 2023)</span>
+      <pre class="arch-ascii">
+   expert task videos
+   ──────────────────
+   train autoregressive video model:
+     p_ψ(o_{t+1} | o_{1:t})        (VideoGPT-class)
+
+   ╭──────────────────────────────╮
+   │  pretrained video predictor  │
+   │           p_ψ                │
+   ╰──────────────┬───────────────╯
+                  │
+   ─────────────  │  ──────────────────────────────────────
+   at RL time:    │
+                  ▼
+   ┌─────────────────────────────────────────────────────────┐
+   │  agent rollout:  o_1, a_1, o_2, a_2, ..., o_T           │
+   └────────────────┬────────────────────────────────────────┘
+                    │ at each step
+                    ▼
+        r_t = log p_ψ(o_{t+1} | o_{1:t})    ← reward = "how
+                    │                          expert-like
+                    ▼                          is this frame
+              PPO / SAC                        sequence?"
+
+   tested on 28 tasks across DeepMind Control, Atari, RLBench</pre>
+    </div>
+
+    <p>
+      Three structural properties make VIPER more robust than the cosine-similarity recipes:
+    </p>
+
+    <ul>
+      <li><strong>Densely temporal by construction.</strong> The likelihood is computed per-frame from the rolling context; it naturally rewards <em>trajectories</em> that look expert-like, not just frames that look like the goal.</li>
+      <li><strong>Causally grounded.</strong> Predicting next frames from past frames forces the model to learn dynamics — "what happens after this action" — rather than just "what does success look like." Closer to a true reward signal.</li>
+      <li><strong>Harder to hack via static framing.</strong> Sitting still doesn't help; the video model penalises non-expert-like temporal transitions.</li>
+    </ul>
+
+    <p>
+      VIPER plants the idea that the dominant 2025–2026 frontier extends — see <strong>RoboScape-R</strong> (§17) for the same idea generalized: <em>reward = world-model prediction signal</em>. Diffusion Reward (2024) is essentially VIPER's diffusion-based cousin; UniSim and V-JEPA 2 push the idea further by using the world model for full latent rollouts.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Reward as next-frame log-likelihood under an expert-trained video model. Dense, causally grounded, hard to hack with static framing. Works across DMC, Atari, RLBench.</span>
+    <span class="k">left</span><span class="v left">Video model is per-task-family (trained on expert videos for that task). Inference cost is real — every step needs a forward pass through the predictor. No language conditioning.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2305.14343">arxiv</a>
+      <a href="https://danijar.com/project/viper/">project</a>
+      <a href="https://github.com/Alescontrela/viper_rl">code</a>
+    </span>
+  </div>
+</div>
+
+<!-- ---------- Section 12 ---------- -->
+<h2 id="sec-12"><span class="num">12</span> RL-VLM-F &amp; GVL — VLM as preference and as value<span class="era">2024 – 2025</span></h2>
+
+<p>
+By 2024 the obvious upgrade is to use the new VLMs (Gemini, GPT-4V, GPT-4o) rather than the 2021 CLIP family. Two papers — RL-VLM-F (ICML 2024) and GVL (ICLR 2025) — set the dominant pattern: <strong>prompt a frontier VLM for either a pairwise preference or a frame-by-frame value, and use that as the reward</strong>. Both are zero-shot — no per-task training of any model.
+</p>
+
+<h3 id="sec-12-rlvlmf"><span class="subnum">12.1</span> RL-VLM-F — Christiano '17 with the human replaced</h3>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper</span>
+    <span class="year">2024</span>
+    <span class="sep">·</span>
+    <span class="name">RL-VLM-F — Reinforcement Learning from Vision Language Foundation Model Feedback</span>
+    <span class="authors">Wang, Sun, Liu, Wang, Lyu, Wang, Yang · CMU &amp; UMich · ICML 2024</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      Take Christiano '17. Replace the human with a VLM (Gemini-1.0 or GPT-4V). At every iteration, the system samples a pair of trajectory clips from the agent's rollouts and asks the VLM "given the task description, which clip is closer to completing the task?" A scalar reward model $r_\phi$ is fit to the VLM's pairwise labels via the same Bradley-Terry loss as Section 6. PPO trains on $r_\phi$.
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">architecture · rl-vlm-f (wang et al. 2024)</span>
+      <pre class="arch-ascii">
+   ┌──────────────────────────────────────┐
+   │            RL agent (PPO)            │
+   │     trained on reward r_φ(s, a)      │
+   └──────────────────┬───────────────────┘
+                      │ produces trajectories
+                      ▼
+       sample pairs (σ¹, σ²)
+                      │
+                      ▼
+   ┌─────────────────────────────────────────────┐
+   │   VLM  (Gemini / GPT-4V) labels preference  │
+   │     prompt:                                 │
+   │     "Task: pour water into the cup.         │
+   │      Which video is closer to success?"     │
+   │   → σ¹ ≻ σ²   (no human in loop)            │
+   └──────────────────┬──────────────────────────┘
+                      ▼
+        fit r_φ via Bradley-Terry MLE
+                      │
+                      └─► back to RL agent (top)
+
+   tested on rigid / articulated / deformable manipulation</pre>
+    </div>
+
+    <p>
+      RL-VLM-F is the moment the diagram of Section 6 is run with the human box replaced by a VLM. The structural payoff is enormous — preference collection becomes API calls, not a labelling pipeline. The structural cost: the VLM is now the source of mis-specification, and any VLM bias becomes baked into $r_\phi$. The paper reports results across rigid (block stacking), articulated (drawer), and deformable (rope) manipulation, all without human labels.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Closes the loop: pretrained PbRL (Section 7) + foundation-model labeller (this paper) = a fully automated reward-learning pipeline. No humans, no demos, no Python.</span>
+    <span class="k">left</span><span class="v left">VLM cost (API calls per training step) is real. VLM biases — preference for certain framings, lighting, viewpoints — propagate into $r_\phi$. Reward model is still per-task.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2402.03681">arxiv</a>
+      <a href="https://rlvlmf2024.github.io/">project</a>
+    </span>
+  </div>
+</div>
+
+<h3 id="sec-12-gvl"><span class="subnum">12.2</span> GVL — VLM as a value function</h3>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper · keystone</span>
+    <span class="year">2025</span>
+    <span class="sep">·</span>
+    <span class="name">GVL — Generative Value Learning &nbsp;<span style="font-weight:400;font-size:13px;color:var(--muted);">("Vision Language Models are In-Context Value Learners")</span></span>
+    <span class="authors">Ma, Hejna, Wahid, Fu, Shah, Liang, Xu, Kirmani, Xu, Driess, Xiao, Bastani, Jayaraman, Zhu, Sadigh, Xia · UPenn &amp; Google DeepMind · ICLR 2025</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      GVL pushes one step beyond RL-VLM-F's pairwise format. The argument: <em>pairwise preferences throw away most of the signal a VLM could give us</em>. A VLM looking at a video frame can in principle say <em>how far through the task you are</em>, not just <em>which of two clips is better</em>. The challenge is getting it to do so reliably.
+    </p>
+
+    <p>
+      The trick is delightful. Take the video, <strong>shuffle the frames into random order</strong>, hand the shuffled sequence + the task description to Gemini-1.5-Pro, and ask it to <em>re-order them by task progress</em> and assign each a percentage. The shuffling matters: a VLM shown a coherent video tends to anchor to surface features (motion blur, lighting); shown a shuffled set, it is forced to read each frame for its task-completion content.
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">architecture · gvl (ma et al. 2025)</span>
+      <pre class="arch-ascii">
+   robot video for task T
+   ──────────────────────
+        frame 1  frame 2  frame 3  ...  frame N
+            │
+            │  SHUFFLE order
+            ▼
+        frame 7, frame 2, frame N, frame 1, ...
+
+                            │
+                            ▼
+   ┌────────────────────────────────────────────────────┐
+   │   Gemini-1.5-Pro prompt:                           │
+   │     "Task T. Below are video frames in random      │
+   │      order. Reorder them by task-progress and      │
+   │      assign each a percentage 0–100%."             │
+   └────────────────────────┬───────────────────────────┘
+                            ▼
+              ordered list with values:
+                frame 1 → 12%
+                frame 2 → 38%
+                ...
+                frame N → 96%
+                            │
+                            ▼  reassemble in original order
+              dense per-frame value v_t ∈ [0,100]
+                            │
+                            ▼
+              r_t = v_t − v_{t-1}   (delta-progress)
+                            │
+                            ▼
+              RL agent (or downstream eval)
+
+   tested on 300+ real-world manipulation tasks (no per-task training)</pre>
+    </div>
+
+    <p>
+      The shuffle-and-reorder trick gives GVL three structural wins simultaneously:
+    </p>
+
+    <ul>
+      <li><strong>Dense per-frame value.</strong> Every frame gets a number, not just every clip pair — fixes RoboCLIP/RL-VLM-F's sparsity.</li>
+      <li><strong>VLM is forced to read content.</strong> The shuffle blocks surface-feature anchoring (smooth camera motion, consistent lighting). The VLM has to actually decide "this frame shows more task progress than that one."</li>
+      <li><strong>Zero per-task training.</strong> Same prompt template, any task, any embodiment. The paper reports usable rewards on 300+ real-world tasks spanning multiple labs and robots.</li>
+    </ul>
+
+    <p>
+      GVL's importance for the rest of this document is twofold. First, it is the cleanest <strong>training-free</strong> dense reward model on real robots — a usable baseline that any new paper must beat. Second, it directly inspires the 2025–2026 push to fine-tune (rather than just prompt) VLMs for this role: LRM (§16) is roughly "what if we trained Qwen3-VL on a GVL-style objective?", with predictable gains.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Dense, per-frame, zero-shot, language-conditioned reward across 300+ real-world manipulation tasks. Establishes "VLM as value function" as a viable training-free baseline.</span>
+    <span class="k">left</span><span class="v left">Inference cost — every video needs a Gemini-1.5-Pro call. Calibration is per-prompt (the percentages drift across tasks). Doesn't yet beat fine-tuned RMs on contact-rich tasks.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2411.04549">arxiv</a>
+      <a href="https://generative-value-learning.github.io/">project</a>
+    </span>
+  </div>
+</div>
+
+<!-- ---------- Part IV synthesis ---------- -->
+<div class="synthesis">
+  <span class="syn-label">part IV · closing synthesis</span>
+  <h3 class="syn-title">Three flavours of "VLM as reward"</h3>
+
+  <p>
+    By 2025 the VLM-as-reward family has three working configurations, and they differ along one main axis: <strong>what shape of signal do you extract from the VLM</strong>?
+  </p>
+
+  <table class="compare">
+    <thead><tr><th></th><th>Cosine similarity</th><th>VLM-as-preference</th><th>VLM-as-value</th></tr></thead>
+    <tbody>
+      <tr><td>Representative</td><td>MineCLIP, RoboCLIP</td><td>RL-VLM-F</td><td>VIP, LIV, GVL</td></tr>
+      <tr><td>VLM call shape</td><td>Embed frame &amp; prompt; cosine</td><td>"Which clip is better?"</td><td>"Order these frames by progress."</td></tr>
+      <tr><td>Signal density</td><td>Per frame, low SNR</td><td>Per clip pair</td><td>Per frame, high SNR</td></tr>
+      <tr><td>Calls per training step</td><td>0 (just embed)</td><td>1 per pair</td><td>1 per video (expensive)</td></tr>
+      <tr><td>Per-task training of the VLM?</td><td>No</td><td>No</td><td>No</td></tr>
+      <tr><td>Dominant failure</td><td>Frame-similarity hacking</td><td>VLM bias propagates to $r_\phi$</td><td>Calibration drift across tasks</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    All three live on. <em>Cosine</em> survives wherever cost matters. <em>Preference</em> survives wherever you have abundant VLM compute (a recurring choice when GPT-4o is in the loop). <em>Value</em> — the line that runs VIP → LIV → GVL → LRM / RoboReward — is the form that fine-tunes well and that the 2025–2026 wave of <em>learned</em> reward models extends. We meet that wave in Part VI.
+  </p>
+</div>
+
+<div class="next-up">
+  <span class="label">next up — Part V</span>
+  <p>A parallel branch from the same era. Instead of using an LLM to <em>label</em> the reward, use it to <em>write</em> the reward — emit a Python function the simulator can call. This sidesteps the foundation-model calibration problem entirely; the reward is symbolic and deterministic. The Eureka family.</p>
+</div>
+
+<!-- ============================================================
+     PART V — LLMs WRITE THE REWARD
+     ============================================================ -->
+<div class="part-heading">
+  <span class="part-label">Part V</span>
+  <span class="part-title">LLMs write the reward — program synthesis</span>
+  <span class="part-era">2023 – 2025</span>
+  <p class="part-desc">A clean, almost orthogonal answer to the labelling problem. Rather than having an LLM <em>score</em> states, have it <em>emit Python</em> — a reward function the simulator can call. The reward is symbolic, deterministic, fast, and inspectable; the LLM is consulted only at design time, not at every RL step. This is the Eureka family, and it currently dominates sim-to-real robot learning anywhere you have access to env source.</p>
+</div>
+
+<!-- ---------- Section 13 ---------- -->
+<h2 id="sec-13"><span class="num">13</span> L2R &amp; Text2Reward — first principles<span class="era">2023</span></h2>
+
+<p>
+The germ of the idea: an LLM has seen millions of lines of robotics code; it knows what "distance to goal," "joint smoothness," "contact penalty" look like in Python. Hand it a natural-language task description and the environment's Pythonic state spec, and it can produce a candidate reward function in seconds. Two 2023 papers — <strong>Language-to-Reward (L2R)</strong> at Google DeepMind and <strong>Text2Reward</strong> at HKU/NTU — both arrive at this idea concurrently with slightly different framings.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper</span>
+    <span class="year">2023</span>
+    <span class="sep">·</span>
+    <span class="name">Text2Reward — Reward Shaping with Language Models for Reinforcement Learning</span>
+    <span class="authors">Xie, Yu, Yu, Liu, Shi, Su, Anandkumar, Zhang, Hu · HKU &amp; NTU · ICLR 2024</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      Text2Reward's pipeline is direct. The user provides (1) a task description in English and (2) a "Pythonic" representation of the environment — class names, attributes, helper functions. GPT-4 emits a dense reward function in Python. The function is plugged into the simulator; PPO runs; if the policy fails, a human gives a one-sentence critique ("the cube is being pushed off the table") and GPT-4 rewrites the reward.
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">architecture · text2reward (xie et al. 2023)</span>
+      <pre class="arch-ascii">
+   user provides:
+     • task description (English)
+     • environment Pythonic spec
+       (class names, state attrs, helpers)
+              │
+              ▼
+   ┌─────────────────────────────────────────────────────────┐
+   │   GPT-4 prompt:                                         │
+   │     "Write a Python reward(env) function for: 'pick     │
+   │      up the cube and stack on the green block.'         │
+   │      Use the Env spec below..."                         │
+   └─────────────────────────┬───────────────────────────────┘
+                             ▼
+              candidate reward(env) → Python
+                             │
+                             ▼
+              ┌───────────────────────────┐
+              │   PPO  (simulator + new   │   train policy
+              │   reward function)        │
+              └─────────────┬─────────────┘
+                            │  rollout videos
+                            ▼
+              user one-sentence critique
+              "the cube falls off the table"
+                            │
+                            ▼
+              GPT-4 rewrites reward
+                            │
+                            └─────────► repeat
+
+   matches expert-written reward on 13 of 17 manipulation tasks</pre>
+    </div>
+
+    <p>
+      The headline result: on 13 of 17 manipulation tasks, the LLM-generated reward <em>matches</em> a human-expert-written one — sometimes after zero iterations, sometimes after two or three critique rounds. The structural payoff is large: <span class="hl">an entire stage of robot research (reward engineering) compresses from days to minutes</span>, and the resulting reward is symbolic, fast at training time, and inspectable when it breaks.
+    </p>
+
+    <p>
+      L2R from Google takes a slightly different angle — instead of producing a free-form Python function, it produces a structured reward <em>template</em> that is fed into an MPC controller, not into PPO. The L2R-style template approach is cleaner when there is a known low-level controller; Text2Reward's free-form approach is more general but produces messier reward functions that are easier to hack. Both papers establish the same point: <strong>the LLM is the reward designer, not the reward labeller</strong>.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Compresses reward-engineering from days to minutes. Reward is symbolic, fast at training, inspectable, and editable in human-readable Python.</span>
+    <span class="k">left</span><span class="v left">Needs Python-readable env state — doesn't work on raw pixels alone. LLM still hallucinates impossible state attributes ("env.cube.is_on_table" when the attribute doesn't exist). Requires human-in-the-loop critique to iterate.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2309.11489">arxiv</a>
+      <a href="https://text-to-reward.github.io/">project</a>
+      <a href="https://arxiv.org/abs/2306.08647">L2R (Google)</a>
+    </span>
+  </div>
+</div>
+
+<!-- ---------- Section 14 ---------- -->
+<h2 id="sec-14"><span class="num">14</span> Eureka &amp; DrEureka — closing the loop<span class="era">2023 – 2024</span></h2>
+
+<p>
+Text2Reward needs a human to critique each reward. <strong>Eureka</strong> (NVIDIA + UPenn, ICLR 2024 Oral) removes the human from the loop entirely: train policies on a <em>population</em> of LLM-generated rewards in parallel, evaluate each in simulation, feed the rollout statistics back to GPT-4, ask for a better population, repeat. This is evolutionary search where the LLM is both the mutation operator and the crossover operator. <strong>DrEureka</strong> (RSS 2024) extends Eureka to also generate the domain-randomisation parameters needed for sim-to-real.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper · keystone</span>
+    <span class="year">2024</span>
+    <span class="sep">·</span>
+    <span class="name">Eureka — Human-Level Reward Design via Coding Large Language Models</span>
+    <span class="authors">Ma, Liang, Wang, Huang, Bastani, Jayaraman, Zhu, Fan, Anandkumar · NVIDIA &amp; UPenn &amp; Caltech · ICLR 2024 Oral</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      Eureka's loop:
+    </p>
+
+    <ol>
+      <li>Hand GPT-4 the task description and the env source code.</li>
+      <li>Ask for <em>K</em> candidate reward functions in parallel (typically K=16).</li>
+      <li>Train K policies in IsaacGym simultaneously (this is the part that needs massive GPU parallelism — IsaacGym does it cheaply).</li>
+      <li>Score each policy on a task-specific fitness metric. Compute per-component statistics — which term of the reward was the bottleneck, which was hacked.</li>
+      <li>Feed all that back to GPT-4 with a "here are the candidates and their fitnesses; please produce a better population" prompt.</li>
+      <li>Repeat. Best-so-far reward is the final output.</li>
+    </ol>
+
+    <div class="arch">
+      <span class="arch-label">architecture · eureka (ma et al. 2024)</span>
+      <pre class="arch-ascii">
+   env source code + task description
+                       │
+                       ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │     GPT-4   →   K reward functions (Python)              │
+   └──────────────────────────┬───────────────────────────────┘
+                              ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │     IsaacGym × K  (massively parallel sim)               │
+   │     train K policies, one per reward                     │
+   └──────────────────────────┬───────────────────────────────┘
+                              ▼
+       per-reward fitness + per-component breakdown
+       "reward[2] was hacked: dist-bonus dominated"
+       "reward[7] best fitness 0.82 — close to expert"
+                              │
+                              ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │     GPT-4 prompt:                                        │
+   │     "Here are K rewards and their fitnesses.             │
+   │      Produce a new population of K better ones,          │
+   │      addressing the per-component issues."               │
+   └──────────────────────────┬───────────────────────────────┘
+                              ▼
+                       (back to top, ~5 iters)
+
+   beats human-engineered rewards on 83% of 29 RL tasks
+   across 10 different robot morphologies</pre>
+    </div>
+
+    <p>
+      The headline number is striking: Eureka beats expert-hand-written reward functions on <strong>83% of 29 tasks across 10 robot morphologies</strong>, including a pen-spinning task on a 5-finger dexterous hand that humans had not been able to reward-engineer at all. The structural insight is that the LLM is good at <em>generating</em> reward candidates but not at <em>knowing which are good</em>; coupling it to an outer evolutionary loop that tells it which candidates trained well closes the gap.
+    </p>
+
+    <p>
+      The remaining failure is sim-to-real. Eureka's rewards train great policies in simulation; the policies fall over on the real robot because the sim's physics, friction, sensor noise, and visual rendering are subtly off. <strong>DrEureka</strong> (Ma et al., RSS 2024) fixes this by extending the same loop to also generate <em>domain-randomization parameters</em> alongside the reward — what ranges of friction, mass, contact stiffness, sensor noise to train the policy across. The result: a quadruped trained from Eureka's reward + DrEureka's DR settings transfers to the real Unitree Go1 with zero real-world fine-tuning.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Closed-loop LLM reward design with an outer evolutionary loop. Beats hand-engineered rewards on the great majority of tested tasks. Pen-spinning on a 5-finger hand.</span>
+    <span class="k">left</span><span class="v left">Needs env source — doesn't help on real-robot tasks where you don't have a simulator. The LLM still hallucinates non-existent state attributes occasionally; the eval loop is the only thing that catches it. Computationally expensive: K × full-RL-training per iteration.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/pdf/2310.12931">arxiv</a>
+      <a href="https://eureka-research.github.io/">project</a>
+      <a href="https://github.com/eureka-research/Eureka">code</a>
+      <a href="https://arxiv.org/pdf/2406.01967">DrEureka</a>
+    </span>
+  </div>
+</div>
+
+<h3 id="sec-14-family"><span class="subnum">14.1</span> The Eureka family — quick tour</h3>
+
+<table class="compare">
+  <thead><tr><th>Paper</th><th>Year</th><th>What it adds on top of Eureka</th></tr></thead>
+  <tbody>
+    <tr><td>DrEureka</td><td>2024</td><td>Jointly generates reward + domain-randomisation parameters → sim-to-real transfer on quadrupeds and humanoids.</td></tr>
+    <tr><td>EurekaVerse</td><td>2024</td><td>Generates the <em>environment</em> alongside the reward — curriculum learning where each level is an LLM-synthesized task. CoRL 2024.</td></tr>
+    <tr><td>Auto-MC-Reward</td><td>2024</td><td>Three-LLM-agent loop (Designer / Critic / Analyzer) for Minecraft. CVPR 2024.</td></tr>
+    <tr><td>REvolve</td><td>2024</td><td>Evolutionary LLM reward design with human NL feedback in the loop — tested on autonomous driving and dexterous manipulation.</td></tr>
+    <tr><td>STRIDE</td><td>2025</td><td>Agentic reward design for humanoid locomotion — 2.5× over Eureka on the same tasks.</td></tr>
+  </tbody>
+</table>
+
+<!-- ---------- Part V synthesis ---------- -->
+<div class="synthesis">
+  <span class="syn-label">part V · closing synthesis</span>
+  <h3 class="syn-title">Two answers to the labelling problem</h3>
+
+  <p>
+    Parts IV and V are not in competition — they are <strong>complementary answers to disjoint slices of the problem</strong>. The VLM-as-reward line of Part IV works on raw pixels, on real robots, on tasks where no simulator exists; the LLM-writes-the-reward line of Part V works in simulators with source code and produces a deterministic, fast, hackable Python function. Choosing between them is straightforward:
+  </p>
+
+  <table class="compare">
+    <thead><tr><th></th><th>VLM-as-reward (Part IV)</th><th>LLM-writes-reward (Part V)</th></tr></thead>
+    <tbody>
+      <tr><td>Where the LLM/VLM is consulted</td><td>Every step of training (online)</td><td>Once at design time (offline)</td></tr>
+      <tr><td>Output of the consultation</td><td>Scalar reward / preference / value</td><td>Python function</td></tr>
+      <tr><td>Needs env source?</td><td>No — works on raw pixels</td><td>Yes</td></tr>
+      <tr><td>Calibration</td><td>Per-prompt drift, hackable</td><td>Symbolic, exact</td></tr>
+      <tr><td>Inference cost at RL time</td><td>VLM call per frame / pair</td><td>Negligible (just runs Python)</td></tr>
+      <tr><td>Best for</td><td>Real-robot tasks, ambiguous goals, language-conditioned</td><td>Sim-trained policies, dexterous manipulation, sim-to-real</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    By 2025 most production-style robot learning setups use <em>both</em>: Eureka or DrEureka for the simulator-side reward, and a VLM-based RM (like ReWiND or RoboReward) for evaluating real-robot rollouts and for downstream RLHF fine-tuning. The two families converge in Part VI.
+  </p>
+</div>
+
+<div class="next-up">
+  <span class="label">next up — Part VI</span>
+  <p>The 2025–2026 frontier. Four lines of work, each fixing one residual problem of the previous era: <strong>learned video RMs</strong> (ReWiND, SARM) replace the prompted VLM with a fine-tuned, dense, language-conditioned model; <strong>trajectory verifiers</strong> (Robometer, LRM, RoboReward) become the "RewardBench moment" for robots; <strong>world-model reward</strong> (V-JEPA 2-AC) makes the value function part of the policy itself; and <strong>RLHF on VLAs</strong> (GRAPE) closes the loop to align entire vision-language-action models from preference data.</p>
+</div>
+
+<!-- ============================================================
+     PART VI — 2025–2026 FRONTIER
+     ============================================================ -->
+<div class="part-heading">
+  <span class="part-label">Part VI</span>
+  <span class="part-title">The 2025–2026 frontier — fine-tuned, dense, benchmarked</span>
+  <span class="part-era">2025 – 2026</span>
+  <p class="part-desc">By 2025 the prompted-VLM ceiling is visible: calibration drifts across prompts, costs add up, and tasks with subtle stage structure (pour, fold) defeat zero-shot scoring. Four parallel responses define the current frontier — each one solving a different residual failure of Part IV.</p>
+</div>
+
+<!-- ---------- Section 15 ---------- -->
+<h2 id="sec-15"><span class="num">15</span> ReWiND &amp; SARM — fine-tuned, dense, language-conditioned<span class="era">2025</span></h2>
+
+<p>
+The structural move: stop <em>prompting</em> a frontier VLM and start <em>training</em> a smaller one on robot-specific reward data. This trades zero-shot generality for calibration, latency, and dense temporal signal. <strong>ReWiND</strong> (USC LIRA, CoRL 2025 Oral + RSS Best Paper) and <strong>SARM</strong> (Stanford/Berkeley, 2025) are the two cleanest representatives — and both ship as drop-in LeRobot integrations, which is rare for research code.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper · keystone</span>
+    <span class="year">2025</span>
+    <span class="sep">·</span>
+    <span class="name">ReWiND — Reward Learning from Video with No Demos</span>
+    <span class="authors">Zhang, Zhang, Yang, ..., Itti, Lim · USC LIRA · CoRL 2025 Oral / RSS 2025 Best Paper</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      ReWiND's defining trick is a near-free way to generate failure data. The supervision problem with learned reward models has always been class imbalance: you have lots of successful demos and almost no labeled failures. ReWiND points out that any video <em>played backwards</em> is, with high probability, a labelled failure for the same task — the gripper releasing the cup is "picking it up"; closing the drawer is "opening it." Train a video-language transformer on the union of (forward, success) + (reverse, failure) data, and the resulting RM learns to penalize trajectories that <em>move away from</em> the goal as well as reward those that move toward it.
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">architecture · rewind (zhang et al. 2025)</span>
+      <pre class="arch-ascii">
+   ┌─────────────────────────────────────────────────────────┐
+   │   small demo set per task (~20 successful videos)       │
+   └────────────────────────┬────────────────────────────────┘
+                            │
+              ┌─────────────┴──────────────┐
+              ▼                            ▼
+       (forward, success)           (reversed, failure)
+         label = "doing X"            label = "doing X"
+                                      target reward = ↓
+
+              └─────────────┬──────────────┘
+                            ▼
+   ┌─────────────────────────────────────────────────────────┐
+   │   video-language transformer  r_φ(video, lang)          │
+   │   trained to predict dense progress + final outcome     │
+   └────────────────────────┬────────────────────────────────┘
+                            │
+                            ▼
+              dense reward + success score
+                            │
+                            ▼
+   ┌─────────────────────────────────────────────────────────┐
+   │   downstream RL (PPO / GRPO)  or  best-of-N verifier   │
+   │   bimanual setup: 5× real-world gain vs baselines       │
+   └─────────────────────────────────────────────────────────┘</pre>
+    </div>
+
+    <p>
+      The headline real-world result is a <strong>5× success-rate gain</strong> on bimanual manipulation tasks against the strongest baseline (a fine-tuned LIV variant). The structural reason it works is that the reverse-aug data fixes the gradient: a regular video-RM trained only on successful demos can't tell the policy <em>which way is downhill</em> because it has never seen a failure to learn from. Reverse-aug fills that gap for free.
+    </p>
+
+    <p>
+      ReWiND's place in the arc: it is the moment <em>specialised, fine-tuned, robot-only reward models become competitive with prompted frontier VLMs</em> on real manipulation. The frontier-VLM line continues (GVL still wins at zero-shot breadth), but for any single task family with a small demo set, a fine-tuned ReWiND-style model is the new default.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Cheap failure-data trick (reverse-augmentation) turns a small demo set into a usable balanced training set. 5× real-world bimanual gain. RSS Best Paper.</span>
+    <span class="k">left</span><span class="v left">Still per-task-family — the model is small enough that you train one per task category. Reverse-augmentation breaks for tasks with reversible dynamics ("place a cup gently" is symmetric to "pick a cup gently").</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2505.10911">arxiv</a>
+      <a href="https://rewind-reward.github.io/">project</a>
+    </span>
+  </div>
+</div>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper</span>
+    <span class="year">2025</span>
+    <span class="sep">·</span>
+    <span class="name">SARM — Stage-Aware Reward Modeling</span>
+    <span class="authors">Chen, Yu, Schwager, Abbeel et al. · Stanford / Berkeley · 2025</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      SARM addresses a different residual problem: long-horizon, multi-stage tasks (folding a T-shirt, setting a table) where the duration of each stage varies from one episode to the next. A monolithic progress predictor (GVL-style or ReWiND-style) fits the average duration and is then wrong on every episode that deviates. SARM trains a <strong>two-headed</strong> video transformer that emits both (a) the current stage label and (b) the within-stage progress — both supervised from a small set of stage-annotated demos.
+    </p>
+
+    <p>
+      The clean contribution is the LeRobot integration — SARM ships as a first-party reward provider you can drop into any LeRobot policy training loop, which makes it the easiest fine-tuned video RM to actually use as of 2025. Combined with the ReWiND-style reverse-augmentation trick, it is currently the strongest open recipe for long-horizon real-world tasks.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Variable-duration multi-stage tasks (T-shirt folding) where monolithic progress predictors fail. Native LeRobot integration.</span>
+    <span class="k">left</span><span class="v left">Needs stage annotations on the demo set — a few minutes of human labeling per task. Fixed stage taxonomy per task family.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2509.25358">arxiv</a>
+      <a href="https://qianzhong-chen.github.io/sarm.github.io/">project</a>
+      <a href="https://huggingface.co/docs/lerobot/en/sarm">LeRobot docs</a>
+    </span>
+  </div>
+</div>
+
+<!-- ---------- Section 16 ---------- -->
+<h2 id="sec-16"><span class="num">16</span> Robometer / LRM / RoboReward — the RewardBench moment for robots<span class="era">2026</span></h2>
+
+<p>
+A 2026 trio that, taken together, do for robots what RewardBench did for LLMs in 2024: they make reward models a benchmarked, leaderboard-able category with a clear notion of "this RM is better than that one." The structural shift is from <em>"a reward model that helps train one task"</em> to <em>"a general-purpose verifier you can drop in over any VLA, any task, any embodiment"</em>.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper · keystone</span>
+    <span class="year">2026</span>
+    <span class="sep">·</span>
+    <span class="name">Robometer — A General Reward Model for Robot Manipulation</span>
+    <span class="authors">RSS 2026 · arXiv 2603.02115</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      Robometer is in many ways the first paper that treats robot reward modelling as a <em>data problem</em> rather than an <em>architecture problem</em>. The team assembles <strong>RBM-1M</strong> — over a million robot trajectories spanning multiple embodiments, lighting conditions, tasks, and crucially <em>including failures and suboptimal episodes</em>. The model is a pretrained VLM head with two training objectives:
+    </p>
+
+    <ul>
+      <li><strong>Frame-level progress</strong> — dense per-frame value, GVL-style but learned from data rather than prompted.</li>
+      <li><strong>Trajectory-level preference</strong> — Bradley-Terry head over pairs of full trajectories.</li>
+    </ul>
+
+    <p>
+      Trained on both objectives jointly, the model learns from successful, suboptimal, and failed trajectories alike — the second objective gives signal even when both trajectories in a pair are unsuccessful (one was less bad). Performance on the companion <strong>RoboReward-Bench</strong> and on real-robot RL fine-tuning is well above prior fine-tuned RMs.
+    </p>
+
+    <p>
+      Two siblings extend the same line in 2026:
+    </p>
+
+    <ul>
+      <li><strong>LRM (Large Reward Models)</strong> — Tsinghua + collaborators. Qwen3-VL 4B/8B trained on 24 sources including Open X-Embodiment and HOI data. Designed specifically to be plugged into online closed-loop RL fine-tuning; reports <strong>+13 pp real-robot success</strong> in 30 RL iterations.</li>
+      <li><strong>RoboReward 4B / 8B</strong> — also Qwen3-VL backbone, trained on 45k scored episodes from OXE + RoboArena. Ships <strong>RoboReward-Bench</strong>, the first leaderboard for robot RMs across 22 VLM baselines. Notably beats GPT-5 and Gemini-Robotics-ER on real-robot tasks.</li>
+    </ul>
+
+    <p>
+      The three together are the "<a href="reward_models_survey.html#sec3-bench">RewardBench</a> moment" for robotics: a benchmark, a public model family, and a paper that demonstrates scaling-and-curation beats clever architecture. The same shape of result that Skywork-Reward-V2 produced for LLMs in 2025.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">General-purpose, benchmarked robot RM. Trains usefully from suboptimal and failed trajectories. RoboReward-Bench provides a leaderboard the rest of the field can target.</span>
+    <span class="k">left</span><span class="v left">All three are very recent — limited independent replication. Real-robot evaluation is still small-scale compared to LLM benchmarks. Hard to know how much performance is dataset-driven vs model-driven.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2603.02115">Robometer arxiv</a>
+      <a href="https://robometer.github.io/">project</a>
+      <a href="https://arxiv.org/abs/2603.16065">LRM arxiv</a>
+      <a href="https://arxiv.org/abs/2601.00675">RoboReward arxiv</a>
+    </span>
+  </div>
+</div>
+
+<h3 id="sec-16-rover"><span class="subnum">16.1</span> RoVer — RM as a test-time VLA verifier</h3>
+
+<p>
+A close cousin worth mentioning: <strong>RoVer</strong> (arXiv 2510.10975, 2025) takes the same trained-RM idea and uses it not for training but for <em>test-time best-of-N over a frozen VLA</em>. At inference, sample K action candidates from OpenVLA / π0 / RDT, score each with RoVer, execute the best. This is the robot analogue of the "PRM as verifier" pattern in math reasoning (§2 of the companion survey). It is the cheapest way to get reward-model value with no policy training at all.
+</p>
+
+<!-- ---------- Section 17 ---------- -->
+<h2 id="sec-17"><span class="num">17</span> World-model reward — V-JEPA 2 and RoboScape-R<span class="era">2025 – 2026</span></h2>
+
+<p>
+A fundamentally different bet: stop training the reward model as a <em>separate</em> object. Instead, train a world model — a function $p_\psi(o_{t+1} \mid o_{1:t}, a_t)$ — and let the world model implicitly define the reward. Two flavours: (a) a <strong>value head</strong> on top of the world model's latent (V-JEPA 2), and (b) an <strong>intrinsic reward</strong> derived from world-model prediction error or disagreement (RoboScape-R, VIPER's spiritual heir).
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper · keystone</span>
+    <span class="year">2026</span>
+    <span class="sep">·</span>
+    <span class="name">V-JEPA 2 / V-JEPA 2-AC — a Self-Supervised Video World Model</span>
+    <span class="authors">Bardes, Garrido, ... LeCun, et al. · Meta FAIR · 2025/2026</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      V-JEPA 2 is a self-supervised video encoder trained on <strong>1M+ hours of internet video plus 62 hours of robot video</strong> with the JEPA (joint-embedding predictive architecture) objective — predict <em>future-frame embeddings</em> from past-frame embeddings, without reconstructing pixels. The trained encoder doubles as a value function: latent distance between the current frame and a goal-frame embedding is a usable, dense, zero-shot reward.
+    </p>
+
+    <div class="arch">
+      <span class="arch-label">architecture · v-jepa 2-ac (meta fair 2025/2026)</span>
+      <pre class="arch-ascii">
+   ┌────────────────────────────────────────────────────────────┐
+   │   pretrain on 1M+ hours internet video + 62h robot         │
+   │                                                            │
+   │   JEPA objective:                                          │
+   │      enc(o_{t+1..}) ≈ predictor(enc(o_{..t}))              │
+   │      in latent space, masked-prediction style              │
+   └─────────────────────────┬──────────────────────────────────┘
+                             ▼
+   ┌────────────────────────────────────────────────────────────┐
+   │   V-JEPA 2 latent encoder    z_t = enc(o_t)                │
+   └─────────────────────────┬──────────────────────────────────┘
+                             │
+        ┌────────────────────┼─────────────────────┐
+        ▼                    ▼                     ▼
+   z_goal             z_current               z_imagined_rollout
+   (target frame)     (now)                   (under policy)
+        │                    │                     │
+        └───────┬────────────┘                     ▼
+                ▼                            value head
+       r = − d(z_goal, z_current)         V(z_imag) → score
+       (dense reward)                     (rollout in latent)
+                │                                  │
+                ▼                                  ▼
+       RL agent / verifier             latent MPC planning
+
+   zero-shot transfer to new robots, new labs, new tasks</pre>
+    </div>
+
+    <p>
+      Two structural properties make V-JEPA 2 the most credible "world-model-as-reward" candidate so far:
+    </p>
+
+    <ul>
+      <li><strong>Scaled pretraining.</strong> 1M+ hours of video is large enough that the latent encodes generic physical intuition — object permanence, contact, support. The value signal generalizes across embodiments and labs that the model has never seen, in a way no per-task RM does.</li>
+      <li><strong>Latent rollouts at test time.</strong> The companion V-JEPA 2-AC adds an action-conditioned predictor on top of the encoder, enabling latent-space MPC — imagine K candidate action sequences, roll each one in latent, pick the one with the best terminal $V$. The reward, the value function, and the world model are <em>the same object</em>.</li>
+    </ul>
+
+    <p>
+      What V-JEPA 2 is <em>not</em>: it is not a turnkey policy. The reward signal is sometimes noisy on tasks where the goal can't be cleanly described as a target frame embedding (compliant pouring, force-aware contact). And the model is heavy — running it as the reward on every RL step is the expensive end of the spectrum.
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Reward = value head on a scaled self-supervised video world model. Zero-shot transfers across embodiments and labs. Reward, value, and world model unified.</span>
+    <span class="k">left</span><span class="v left">Goal-image-based reward is awkward for tasks without a clean target frame (compliant tasks, language-only goals). Heavy at inference. Latent MPC is sample-efficient but not yet competitive on contact-rich tasks.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2506.09985">arxiv</a>
+      <a href="https://github.com/facebookresearch/vjepa2">code</a>
+    </span>
+  </div>
+</div>
+
+<h3 id="sec-17-roboscape"><span class="subnum">17.1</span> RoboScape-R — intrinsic reward from world-model disagreement</h3>
+
+<p>
+A different angle on the same theme: <strong>RoboScape-R</strong> (arXiv 2512.03556, late 2025) trains an embodied world model and derives the reward from <em>state-transition disagreement</em> — frames where the world model predicts confidently but turns out to be wrong are surprising, and surprise drives exploration. The objective is "intrinsic" in the curiosity-driven RL sense, but with a foundation-model world model rather than a small ensemble. Reports <strong>+37.5% out-of-distribution</strong> performance gains. The conceptual ancestor is VIPER (§11); the structural difference is that RoboScape-R derives reward from the world model's own dynamics rather than from expert-video likelihood.
+</p>
+
+<p>
+The deeper lineage RoboScape-R is reviving is the <strong>intrinsic-motivation</strong> family of classical deep RL — <a href="https://arxiv.org/abs/1705.05363">ICM</a> (Pathak 2017, inverse-dynamics prediction error), <a href="https://arxiv.org/abs/1810.12894">RND</a> (Burda 2018, prediction error vs a fixed random network), <a href="https://arxiv.org/abs/1906.04161">Disagreement</a> (Pathak 2019, ensemble forward-model variance), and <a href="https://arxiv.org/abs/2005.05960">Plan2Explore</a> (Sekar 2020, disagreement on a world model) — all of which produce reward from "surprise" alone. These work well on Atari and exploration benchmarks but were never strong as the <em>sole</em> reward for manipulation, because manipulation tasks need <em>directed</em> surprise (the surprise of inserting a peg, not the surprise of dropping it). RoboScape-R is the first paper that makes this lineage competitive on real-robot tasks, by routing the surprise signal through a foundation-model world model that already knows what "ordinary" manipulation looks like.
+</p>
+
+<!-- ---------- Section 18 ---------- -->
+<h2 id="sec-18"><span class="num">18</span> GRAPE — RLHF directly on a VLA<span class="era">2025</span></h2>
+
+<p>
+The last move of the current era: close the loop. Take an already-trained VLA (OpenVLA, π0), apply <strong>DPO-style preference alignment</strong> on real-robot trajectories. The reward model is implicit (DPO bakes it into the policy update); the preferences come from VLM-generated stage constraints rather than human labels. The result is the cleanest open recipe for "RLHF for robots" — RM design and policy fine-tuning are now one operation.
+</p>
+
+<p>
+A precursor worth naming: <strong><a href="https://arxiv.org/abs/2309.10150">Q-Transformer</a></strong> (Chebotar et al., DeepMind, 2023) put an autoregressive Q-function over discretised action tokens directly on top of a VLA backbone — the original "VLA with critic." It is not RLHF (the reward signal is offline scalar success, not preference) but it establishes the architectural pattern that 2025 critic-head papers (CO-RFT, <a href="https://arxiv.org/abs/2507.07969">Q-chunking</a>, <a href="https://arxiv.org/abs/2502.05450">ConRFT</a>) all extend. GRAPE's DPO-implicit-reward route and Q-Transformer's explicit-critic route are the two main forms of "RL fine-tuning a VLA" in 2025.
+</p>
+
+<div class="paper">
+  <div class="paper-head">
+    <span class="tag">paper · keystone</span>
+    <span class="year">2025</span>
+    <span class="sep">·</span>
+    <span class="name">GRAPE — Generalizing Robot Policy via Preference Alignment</span>
+    <span class="authors">Zhang, Chen, Liang, Wang, Wang, Mei, Zhao, Wang, Lu, Ji, Jia, Lu, Tang · aiming-lab · 2024/2025</span>
+  </div>
+  <div class="paper-body">
+    <p>
+      GRAPE's loop:
+    </p>
+
+    <ol>
+      <li>Start from a pretrained VLA (OpenVLA-7B).</li>
+      <li>Roll out many trajectories on real / sim tasks. Sort each trajectory into success vs failure via a VLM-generated stage-constraint check.</li>
+      <li>Construct (good, bad) trajectory pairs.</li>
+      <li>Apply DPO: update the VLA so it raises log-likelihood of good trajectories relative to bad ones, regularised against the pretrained reference policy.</li>
+      <li>Repeat.</li>
+    </ol>
+
+    <div class="arch">
+      <span class="arch-label">architecture · grape (zhang et al. 2025)</span>
+      <pre class="arch-ascii">
+   ┌────────────────────────────────────────────────────┐
+   │   pretrained VLA  π_ref  (OpenVLA-7B)              │
+   └──────────────────────┬─────────────────────────────┘
+                          │ rollouts
+                          ▼
+        many trajectories on tasks
+                          │
+                          ▼
+   ┌────────────────────────────────────────────────────┐
+   │   VLM evaluator   →   per-stage constraints        │
+   │     "did the gripper close around the cup?"        │
+   │     "was the cup placed on the table?"             │
+   └──────────────────────┬─────────────────────────────┘
+                          ▼
+            (good trajectory, bad trajectory) pairs
+                          │
+                          ▼
+   ┌────────────────────────────────────────────────────┐
+   │   DPO update on the VLA:                           │
+   │   raise log-π(good) − log-π(bad)                   │
+   │   with KL regulariser to π_ref                     │
+   └──────────────────────┬─────────────────────────────┘
+                          ▼
+              new policy π_θ
+                          │
+                          └─────► (back to rollouts)
+
+   no explicit reward model — DPO absorbs it into the policy</pre>
+    </div>
+
+    <p>
+      The shape of this loop is structurally the same as IPL (§8) — preferences in, no explicit reward model, policy updates directly. The pieces that are new in 2025: the policy is a 7B-parameter VLA (not a small MLP); the preferences come from a VLM evaluator (not a human); the stage-constraint formalism gives the VLM something concrete to check against rather than an open-ended "is this good." The result is a real-world preference-aligned VLA without any human in the loop after pretraining.
+    </p>
+
+    <p>
+      GRAPE is the meeting point of every line in this document. <em>The reward model</em> (from Part III) is implicit in the DPO loss. <em>The labeller</em> (from Part IV) is a VLM, not a human. <em>The policy</em> (from the VLA literature) is itself the pretrained foundation model. Every component of the loop has been replaced by a foundation model, and the result trains in a few hundred GPU-hours. <span class="hl">This is what the hand-built-reward era became, after thirty years of replacing each component with a learned one.</span>
+    </p>
+  </div>
+  <div class="paper-meta">
+    <span class="k">solved</span><span class="v solved">Cleanest open recipe for RLHF-on-VLA. Reward model absorbed into the DPO loss; preferences generated by a VLM with stage constraints; aligns a 7B VLA without human labels.</span>
+    <span class="k">left</span><span class="v left">DPO inherits all of DPO's known issues (overconfidence collapse, reward gap explosion). VLM stage-evaluator can be wrong; mistakes propagate into the policy. Still single-embodiment per training run.</span>
+    <span class="k">links</span><span class="v links">
+      <a href="https://arxiv.org/abs/2411.19309">arxiv</a>
+      <a href="https://github.com/aiming-lab/GRAPE">code</a>
+    </span>
+  </div>
+</div>
+
+<!-- ---------- Part VI synthesis ---------- -->
+<div class="synthesis">
+  <span class="syn-label">part VI · closing synthesis</span>
+  <h3 class="syn-title">Four answers to "what does a reward model look like in 2026?"</h3>
+
+  <table class="compare">
+    <thead><tr><th></th><th>Fine-tuned dense RM</th><th>Trained verifier</th><th>World-model value</th><th>RLHF on VLA (no RM)</th></tr></thead>
+    <tbody>
+      <tr><td>Representative</td><td>ReWiND, SARM</td><td>Robometer, LRM, RoboReward, RoVer</td><td>V-JEPA 2-AC, RoboScape-R</td><td>GRAPE</td></tr>
+      <tr><td>When called</td><td>Per frame at training time</td><td>Per trajectory at test or training</td><td>Per latent-rollout step</td><td>Once per DPO update</td></tr>
+      <tr><td>What it provides</td><td>Dense, language-conditioned reward</td><td>Trajectory / step score</td><td>Latent value, latent rollouts</td><td>Implicit reward via preference</td></tr>
+      <tr><td>Best for</td><td>Per-task-family RL fine-tuning</td><td>Best-of-N over a frozen VLA; benchmarking</td><td>Cross-embodiment transfer, latent MPC</td><td>Aligning an already-trained VLA</td></tr>
+      <tr><td>What it left</td><td>Per-task-family scope</td><td>Real-world eval is still small-scale</td><td>Heavy at inference; awkward for non-frame goals</td><td>All of DPO's pathologies</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    None of these is a winner. They cover different operating points along the same axis: <em>how much do you want to train, how much do you want to verify, and where do you want the foundation model in the loop?</em> A serious 2026 robot stack will use several of them — Eureka-style for sim reward, a Robometer-class verifier for episode scoring, ReWiND-style for per-task RL fine-tuning, and GRAPE-style for final preference alignment of the deployed VLA.
+  </p>
+</div>
+
+<!-- ============================================================
+     PART VII — SYNTHESIS
+     ============================================================ -->
+<div class="part-heading">
+  <span class="part-label">Part VII</span>
+  <span class="part-title">Synthesis — the throughline and what's left</span>
+  <span class="part-era">looking back, looking forward</span>
+  <p class="part-desc">Three closing sections — the historical throughline that ties every previous Part together, the open problems that none of these models solve yet, and a curated reading list.</p>
+</div>
+
+<!-- ---------- Section 19 ---------- -->
+<h2 id="sec-19"><span class="num">19</span> The throughline — one bottleneck moving down the chain<span class="era">retrospective</span></h2>
+
+<p>
+There is exactly one story this document tells, and it is worth saying clearly. Every generation of robot reward model has been forced into existence by the <strong>labelling bottleneck</strong> of the previous generation. The bottleneck moves, but it never goes away.
+</p>
+
+<table class="compare">
+  <thead><tr><th>Generation</th><th>Era</th><th>Where the supervision came from</th><th>What broke it</th></tr></thead>
+  <tbody>
+    <tr><td>Engineered shaping</td><td>1990s–2010s</td><td>Engineer writes Python</td><td>Compositional tasks; reward hacking; can't shape what you can't measure</td></tr>
+    <tr><td>VICE, IRL</td><td>2010s</td><td>Goal images / expert trajectories</td><td>Per-task collection effort; nested RL inner loop; underdetermined $r$</td></tr>
+    <tr><td>PbRL (Christiano '17, PEBBLE)</td><td>2017–2023</td><td>Human pairwise preferences online</td><td>Human-in-loop can't scale to fleets / many tasks</td></tr>
+    <tr><td>Video-pretrained value (TCN, R3M, VIP, LIV)</td><td>2017–2023</td><td>Self-supervised on internet / egocentric video</td><td>Goal-image / language interface limited; visual-only goals</td></tr>
+    <tr><td>VLM-as-reward (MineCLIP, RoboCLIP, RL-VLM-F, GVL)</td><td>2022–2025</td><td>Pretrained VLM, prompted</td><td>Calibration drift; cost; weak temporal signal</td></tr>
+    <tr><td>LLM-writes-reward (Eureka, DrEureka)</td><td>2023–2025</td><td>LLM emits Python at design time</td><td>Needs env source; doesn't help on raw-pixel real-robot tasks</td></tr>
+    <tr><td>Fine-tuned dense RM (ReWiND, SARM)</td><td>2025</td><td>Curated demo set + reverse-aug failures</td><td>Per-task-family scope</td></tr>
+    <tr><td>Trained verifier + RoboReward-Bench (Robometer, LRM, RoboReward)</td><td>2026</td><td>Large multi-source trajectory dataset (RBM-1M)</td><td>Independent replication still pending</td></tr>
+    <tr><td>World-model reward (V-JEPA 2-AC, RoboScape-R)</td><td>2025–2026</td><td>1M+ hours internet video, self-supervised</td><td>Goal-frame format awkward for non-visual goals</td></tr>
+    <tr><td>RLHF on VLA (GRAPE)</td><td>2025</td><td>VLM-evaluated stage constraints + DPO</td><td>DPO pathologies; VLM evaluator errors propagate</td></tr>
+  </tbody>
+</table>
+
+<div class="pullquote">
+  <span class="lead">the one-line story</span>
+  <p>Each generation moves the supervision signal from a more expensive source (engineer, demonstrator, human labeller) to a cheaper one (CLIP, GPT-4V, fine-tuned VLM, world model) — and inherits a new failure mode in the process. The frontier is always one bottleneck away from being solved.</p>
+</div>
+
+<!-- ---------- Section 20 ---------- -->
+<h2 id="sec-20"><span class="num">20</span> Open problems — what 2026 hasn't fixed<span class="era">forward look</span></h2>
+
+<p>
+A short list, in rough order of how much they're holding the field back:
+</p>
+
+<div class="key-points">
+  <span class="label">Open problems</span>
+  <ol>
+    <li><div class="item"><span class="head">Force, contact, and compliance are not in the reward signal.</span><span class="body">Every RM in this document looks at <em>visible</em> state — images, videos, language. None of them score "the agent applied 3 N too much force at the contact" or "the wrist was 5° too stiff." Tasks where the difference between success and failure is force-driven (pouring without spilling, grasping a deformable object, contact-rich assembly) are systematically under-served. This is the gap the "force-aware RM" subfield will fill — see <a href="../et_robotics/plan.html">the manipulation plan doc</a> for the related policy-side story.</span></div></li>
+
+    <li><div class="item"><span class="head">Reward models don't know they're wrong.</span><span class="body">RewardDance's scaling-law study is the first serious look at how reward variance behaves as RMs scale — but uncertainty estimation, OOD detection, and "the RM should refuse to score this" remain mostly absent. The 2026 trio (Robometer / LRM / RoboReward) are confident-by-default; reward hacking will hit them hard the moment they're deployed in scale.</span></div></li>
+
+    <li><div class="item"><span class="head">The benchmark moment isn't really here yet.</span><span class="body">RoboReward-Bench is a start, but it covers a tiny fraction of what RewardBench does on the LLM side. We need benchmarks for: dexterous hands, deformable objects, multi-stage tasks, contact-rich tasks, and cross-embodiment generalization. Without them, every new RM paper reports favorable numbers on its own slice.</span></div></li>
+
+    <li><div class="item"><span class="head">Cross-embodiment transfer of $r_\phi$ is mostly unsolved.</span><span class="body">A reward model trained on Franka data degrades sharply on UR5 or Allegro. V-JEPA 2 is the closest to embodiment-agnostic — but its goal-image interface is still per-embodiment. A 2026 robot RM that runs the same way on twenty different morphologies does not yet exist.</span></div></li>
+
+    <li><div class="item"><span class="head">No good story for very long horizons.</span><span class="body">SARM gets to dozens-of-stage tasks (fold a T-shirt). Nothing on the public list handles "tidy the kitchen for 30 minutes" — that needs reward decomposition, hierarchical RMs, and probably an explicit task-graph signal that no current foundation model emits cleanly.</span></div></li>
+
+    <li><div class="item"><span class="head">RLHF-on-VLA is fragile.</span><span class="body">GRAPE is the cleanest open recipe, but it inherits all of DPO's known pathologies (overconfidence collapse, reward-gap explosion) <em>plus</em> the propagation of VLM-evaluator errors into the policy. The robot-side analogue of "the o3 over-optimisation post" (Lambert, 2025) is being written right now — expect 2026 papers documenting concrete failure cases.</span></div></li>
+  </ol>
+</div>
+
+<!-- ---------- Section 21 ---------- -->
+<h2 id="sec-21"><span class="num">21</span> Resources<span class="era">reading list</span></h2>
+
+<p>
+Curated; biased toward newer work. The flat catalogue (with every entry's link, GitHub, training source, etc.) lives in the companion <a href="reward_models_survey.html">survey table</a>.
+</p>
+
+<h3 id="sec-21-surveys"><span class="subnum">21.1</span> Surveys</h3>
+<ul>
+  <li><a href="https://arxiv.org/abs/2504.12328">A Comprehensive Survey of Reward Models</a> (Apr 2025) — general taxonomy across LLM, robotics, and multimodal.</li>
+  <li><a href="https://www.techrxiv.org/users/934012/articles/1366553/">A Survey on RL of Vision-Language-Action Models</a> (Nov 2025) + the companion <a href="https://github.com/Denghaoyuan123/Awesome-RL-VLA">Awesome-RL-VLA</a> list — the right entry point for the robot side.</li>
+  <li><a href="https://arxiv.org/abs/2508.13073">Large VLM-based VLAs for Manipulation</a> (Aug 2025) — VLM-RM shaping covered as a core dimension.</li>
+  <li><a href="https://ntumars.github.io/wm-robot-survey/">World Model for Robot Learning</a> (2026) — value / reward heads on world models.</li>
+</ul>
+
+<h3 id="sec-21-keystones"><span class="subnum">21.2</span> Keystone papers from this doc</h3>
+<table class="compare">
+  <thead><tr><th>Year</th><th>Paper</th><th>Where it fits</th></tr></thead>
+  <tbody>
+    <tr><td>2017</td><td><a href="https://arxiv.org/abs/1706.03741">Deep RL from Human Preferences</a></td><td>§6 — Founded PbRL</td></tr>
+    <tr><td>2019</td><td><a href="https://arxiv.org/abs/1904.07854">VICE</a></td><td>§4 — Sparse success classifier</td></tr>
+    <tr><td>2021</td><td><a href="https://arxiv.org/abs/2106.05091">PEBBLE</a></td><td>§7 — Practical PbRL</td></tr>
+    <tr><td>2022</td><td><a href="https://arxiv.org/abs/2206.08853">MineDojo (MineCLIP)</a></td><td>§9 — First VLM-as-reward at scale</td></tr>
+    <tr><td>2022</td><td><a href="https://arxiv.org/abs/2210.00030">VIP</a></td><td>§10.3 — Pretraining loss IS a value function</td></tr>
+    <tr><td>2023</td><td><a href="https://arxiv.org/abs/2306.00958">LIV</a> · <a href="https://arxiv.org/abs/2310.07899">RoboCLIP</a></td><td>§10 — Crossover to real robots</td></tr>
+    <tr><td>2023</td><td><a href="https://arxiv.org/abs/2305.14343">VIPER</a></td><td>§11 — Video prediction as reward</td></tr>
+    <tr><td>2024</td><td><a href="https://arxiv.org/pdf/2310.12931">Eureka</a> · <a href="https://arxiv.org/pdf/2406.01967">DrEureka</a></td><td>§14 — LLM writes the reward</td></tr>
+    <tr><td>2024</td><td><a href="https://arxiv.org/abs/2402.03681">RL-VLM-F</a></td><td>§12.1 — VLM as preference labeller</td></tr>
+    <tr><td>2025</td><td><a href="https://arxiv.org/abs/2411.04549">GVL</a></td><td>§12.2 — VLM as value</td></tr>
+    <tr><td>2025</td><td><a href="https://arxiv.org/abs/2505.10911">ReWiND</a></td><td>§15 — Reverse-aug failure data</td></tr>
+    <tr><td>2023</td><td><a href="https://arxiv.org/abs/2309.10150">Q-Transformer</a></td><td>§18 — VLA with critic (precursor)</td></tr>
+    <tr><td>2025</td><td><a href="https://arxiv.org/abs/2411.19309">GRAPE</a></td><td>§18 — RLHF on a VLA</td></tr>
+    <tr><td>2026</td><td><a href="https://arxiv.org/abs/2506.09985">V-JEPA 2</a></td><td>§17 — World-model value</td></tr>
+    <tr><td>2026</td><td><a href="https://arxiv.org/abs/2603.02115">Robometer</a> · <a href="https://arxiv.org/abs/2601.00675">RoboReward</a> · <a href="https://arxiv.org/abs/2603.16065">LRM</a></td><td>§16 — The RewardBench moment</td></tr>
+  </tbody>
+</table>
+
+<h3 id="sec-21-blogs"><span class="subnum">21.3</span> Blog posts &amp; lab pages</h3>
+<ul>
+  <li><a href="https://openai.com/index/faulty-reward-functions/">OpenAI — Faulty Reward Functions in the Wild</a> — the canonical reward-hacking story (§3).</li>
+  <li><a href="https://openai.com/research/learning-from-human-preferences">OpenAI — Learning from Human Preferences</a> — the original blog accompaniment to Christiano '17.</li>
+  <li><a href="https://blogs.nvidia.com/blog/eureka-robotics-research/">NVIDIA — Eureka</a> — accessible overview of LLM reward design.</li>
+  <li><a href="https://rai-inst.com/resources/blog/corl-round-up/">RAI Institute — CoRL 2024 round-up</a> — surveys the reward-learning-from-language-feedback wave.</li>
+  <li><a href="https://robohub.org/teaching-robot-policies-without-new-demonstrations-interview-with-jiahui-zhang-and-jesse-zhang/">Robohub — ReWiND interview</a> — first-person walk-through of §15.</li>
+  <li><a href="https://www.interconnects.ai/p/openais-o3-over-optimization-is-back">Interconnects — o3, over-optimization is back</a> — the LLM-side reward-hacking discussion that the robot side is about to inherit.</li>
+</ul>
+
+<h3 id="sec-21-related"><span class="subnum">21.4</span> Related docs in this collection</h3>
+<ul>
+  <li><a href="reward_models_survey.html">Reward Models — Survey table</a> — flat catalogue, ~90 models across robotics / LLM / PRM / vision, with links and one-line comments.</li>
+  <li><a href="../vla/vla.html">VLA — from policies up</a> — the policy-side companion: ACT, Diffusion Policy, π0, OpenVLA, etc. The story this document is the reward-side complement to.</li>
+  <li><a href="../et_robotics/plan.html">Manipulation strategy plan</a> — the practical-deployment side: which methods to actually run, with hardware and timelines.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>
