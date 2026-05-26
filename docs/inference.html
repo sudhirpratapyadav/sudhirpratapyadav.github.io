@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GR00T Policy Inference — Hierarchical Control</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+<style>
+:root {
+  --bg:           #fbfbfd;
+  --surface:      #ffffff;
+  --text:         #0f172a;
+  --text-soft:    #475569;
+  --muted:        #64748b;
+  --rule:         #e5e7eb;
+  --rule-soft:    #f1f5f9;
+
+  --indigo:       #6366f1;
+  --indigo-soft:  #eef2ff;
+  --indigo-deep:  #4338ca;
+  --violet:       #8b5cf6;
+  --violet-soft:  #f5f3ff;
+  --emerald:      #10b981;
+  --emerald-soft: #ecfdf5;
+  --amber:        #f59e0b;
+  --amber-soft:   #fffbeb;
+  --rose:         #f43f5e;
+  --rose-soft:    #fff1f2;
+  --sky:          #0ea5e9;
+  --sky-soft:     #f0f9ff;
+  --slate-soft:   #f8fafc;
+
+  --shadow-sm:    0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow:       0 4px 14px rgba(15, 23, 42, 0.06);
+  --shadow-lg:    0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Top navigation bar ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text);
+}
+.brand .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
+.crumb-sep { color: var(--rule); }
+.crumb-current { color: var(--text-soft); font-weight: 500; }
+.topbar-spacer { flex: 1; }
+.topbar a.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px;
+  background: var(--indigo-soft);
+  color: var(--indigo-deep);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+/* ---------- Page layout ---------- */
+.page {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 40px 32px 200px 32px;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 56px;
+}
+@media (max-width: 1100px) {
+  .page { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  nav.toc { display: none; }
+}
+
+article { max-width: 980px; min-width: 0; }
+
+/* ---------- Sidebar nav ---------- */
+nav.toc {
+  position: sticky;
+  top: 80px;
+  align-self: start;
+  font-size: 14px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+nav.toc .toc-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+nav.toc ol { list-style: none; padding: 0; margin: 0; }
+nav.toc ol ol { padding-left: 14px; margin-top: 4px; border-left: 1px solid var(--rule); }
+nav.toc li { margin: 4px 0; }
+nav.toc a {
+  display: block;
+  padding: 6px 10px;
+  color: var(--text-soft);
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.12s ease;
+}
+nav.toc a:hover {
+  background: var(--slate-soft);
+  color: var(--text);
+}
+nav.toc a.active {
+  background: var(--indigo-soft);
+  color: var(--indigo-deep);
+  font-weight: 600;
+}
+
+/* ---------- Typography ---------- */
+h1 {
+  font-size: 2.4em;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0 0 12px 0;
+  background: linear-gradient(135deg, var(--text) 0%, var(--indigo-deep) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.subtitle {
+  font-size: 1.1em;
+  color: var(--muted);
+  margin: 0 0 48px 0;
+  line-height: 1.55;
+  max-width: 760px;
+}
+.subtitle a { color: var(--indigo); }
+
+h2 {
+  font-size: 1.55em;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 56px 0 18px 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+h2:first-of-type { border-top: none; padding-top: 0; }
+h2 .num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+h3 {
+  font-size: 1.18em;
+  font-weight: 600;
+  margin: 36px 0 12px 0;
+  color: var(--text);
+}
+
+p { margin: 12px 0; color: var(--text-soft); }
+p strong { color: var(--text); font-weight: 600; }
+
+ol, ul { color: var(--text-soft); padding-left: 1.4em; }
+li { margin: 6px 0; }
+li strong { color: var(--text); }
+
+a {
+  color: var(--indigo);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+  transition: border-color 0.12s ease;
+}
+a:hover { border-bottom-color: var(--indigo); }
+
+code, .mono {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: 0.86em;
+  background: var(--slate-soft);
+  color: var(--indigo-deep);
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--rule);
+}
+
+hr { border: none; border-top: 1px dashed var(--rule); margin: 32px 0; }
+
+/* ---------- Blockquote (callout) ---------- */
+blockquote {
+  margin: 22px 0;
+  padding: 14px 18px 14px 18px;
+  background: var(--amber-soft);
+  border-left: 4px solid var(--amber);
+  border-radius: 0 8px 8px 0;
+  color: var(--text);
+  font-size: 14.5px;
+}
+blockquote p { margin: 4px 0; color: var(--text); }
+blockquote strong { color: #92400e; }
+
+/* ---------- Code blocks ---------- */
+pre {
+  margin: 18px 0;
+  padding: 16px 18px;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 10px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  box-shadow: var(--shadow-sm);
+}
+pre code {
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}
+.code-comment { color: #94a3b8; font-style: italic; }
+.code-kw { color: #c084fc; }
+.code-str { color: #86efac; }
+.code-fn { color: #93c5fd; }
+.code-num { color: #fcd34d; }
+
+/* ---------- Tables ---------- */
+.table-wrap {
+  margin: 20px 0;
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  background: var(--surface);
+}
+table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--text);
+  background: var(--slate-soft);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+table td {
+  padding: 10px 12px;
+  color: var(--text-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+}
+table tr:last-child td { border-bottom: none; }
+table tr:hover td { background: var(--slate-soft); }
+table td strong, table th strong { color: var(--text); }
+table td code, table th code { font-size: 12.5px; }
+
+/* ---------- Mermaid container ---------- */
+.mermaid-wrap {
+  margin: 22px 0;
+  padding: 22px 18px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+  text-align: center;
+}
+.mermaid {
+  display: inline-block;
+  min-width: 100%;
+}
+
+/* ---------- Pullquote / emphasis ---------- */
+.pullquote {
+  margin: 24px 0;
+  padding: 6px 0 6px 20px;
+  border-left: 4px solid var(--indigo);
+  font-size: 1.05em;
+  line-height: 1.55;
+  color: var(--text);
+  font-weight: 500;
+}
+.pullquote .lead {
+  display: block;
+  font-weight: 700;
+  font-size: 0.78em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--indigo);
+  margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ---------- Section intro card ---------- */
+.lede {
+  margin: 0 0 36px 0;
+  padding: 18px 22px;
+  background: linear-gradient(180deg, var(--indigo-soft), transparent 90%);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+.lede strong { color: var(--indigo-deep); }
+.lede p { margin: 0; color: var(--text); }
+.lede p + p { margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="brand"><span class="dot"></span>GR00T Inference</span>
+    <span class="crumb-sep">/</span>
+    <a href="./" style="color:var(--text-soft);border:none;">Docs</a>
+    <span class="crumb-sep">/</span>
+    <span class="crumb-current">Hierarchical control</span>
+    <span class="topbar-spacer"></span>
+    <a class="pill" href="#top">↑ Top</a>
+  </div>
+</div>
+
+<div class="page">
+
+<nav class="toc">
+  <div class="toc-label">Contents</div>
+  <ol>
+    <li><a href="#block-diagram">1 · Block diagram</a></li>
+    <li><a href="#control-block">2 · Control-block diagram</a>
+      <ol>
+        <li><a href="#signal-legend">2.1 Signal legend</a></li>
+        <li><a href="#control-diagram">2.2 Block diagram</a></li>
+        <li><a href="#feedback-reasoning">2.3 Why this feedback shape</a></li>
+        <li><a href="#rates-latency">2.4 Rates &amp; latencies</a></li>
+        <li><a href="#pico-compare">2.5 vs. Pico teleop</a></li>
+      </ol>
+    </li>
+    <li><a href="#two-clocks">3 · Two clocks</a></li>
+    <li><a href="#inference-loop">4 · The inference loop</a></li>
+    <li><a href="#get-action">5 · Inside <code>policy.get_action()</code></a></li>
+    <li><a href="#real-robot">6 · Real-robot loop</a></li>
+    <li><a href="#tldr">7 · TL;DR hierarchy</a></li>
+  </ol>
+</nav>
+
+<article id="top">
+
+<h1>GR00T Policy Inference</h1>
+<p class="subtitle">Hierarchical control architecture — how a trained GR00T manipulation policy runs on the real Unitree G1.</p>
+
+<div class="lede">
+  <p>The trained GR00T manipulation policy is a <strong>chunked / receding-horizon</strong> policy, not a single-step controller. Inference runs at a slow outer rate (a heavy VLM + diffusion forward pass), but it emits an <strong>action chunk</strong> of <code>H</code> future actions (default <code>H = 16</code>) that are streamed out one-by-one at the 50 Hz control rate. The existing WBC stack stays unchanged underneath — the policy simply replaces the Pico VR teleop input.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="block-diagram"><span class="num">1</span> Block diagram</h2>
+
+<div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TD
+    subgraph SENSORS["Sensors (live, 50 Hz)"]
+        CAM["Cameras (camera_host:5555)"]
+        STATE["Robot state via state_processor.py (DDS subscriber)"]
+        LANG["Task prompt (text, e.g. 'pour water from jug')"]
+    end
+
+    subgraph POLICY["GR00T Policy (outer loop, ~3 Hz)"]
+        OBS["prepare_observation_data : tokenize images/state, build parsed_obs"]
+        VLM["Eagle VLM backbone : vision + language -> vl_embs, sa_embs"]
+        DIT["Action DiT (diffusion transformer)<br/>TensorRT engine via TensorRTDiTWrapper<br/>iterative denoising"]
+        CHUNK["action_chunk : H=16 future actions"]
+        OBS --> VLM --> DIT --> CHUNK
+    end
+
+    subgraph STREAM["Action streaming (inner loop, 50 Hz)"]
+        DISPATCH["Dispatch one action per tick<br/>(replaces pico_streamer.py output)"]
+    end
+
+    subgraph WBC["WBC Stack (unchanged, 50 Hz)"]
+        TELEOP["run_teleop_policy_loop.py<br/>IK + InterpolationPolicy + DecoupledWBC"]
+        CTRL["run_g1_control_loop.py<br/>ONNX Balance/Walk RL policy<br/>(switch threshold = 0.05)"]
+        DDS["command_sender.py -> rt/lowcmd DDS"]
+        MOTORS["35 motors on Unitree G1"]
+        TELEOP --> CTRL --> DDS --> MOTORS
+    end
+
+    CAM --> OBS
+    STATE --> OBS
+    LANG --> OBS
+    CHUNK --> DISPATCH
+    DISPATCH --> TELEOP
+</pre>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="control-block"><span class="num">2</span> Control-block diagram</h2>
+
+<p>The diagram above shows <em>data flow</em> through the software stack. This one is drawn in classical control-block style: signals are named, dimensions and update rates are annotated, and the <strong>physical feedback loop closes through the robot itself</strong> (motors move the body → IMU/encoders re-read the new state).</p>
+
+<p>All sizes and key names below are taken from the trained checkpoint's <code>experiment_cfg/conf.yaml</code> and <code>dataset_statistics.json</code> (embodiment <code>unitree_g1_full_body_with_waist_height_nav_cmd</code>).</p>
+
+<h3 id="signal-legend">2.1 Signal legend</h3>
+
+<p>Each signal carries a <strong>specific physical quantity</strong> — position, velocity, torque, or something else. The table also makes explicit <em>which fields are actually consumed at each stage</em> (e.g. GR00T reads positions only, the motor cmd is full PD+feedforward).</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Signal</th><th>Quantity type</th><th>Contents</th><th>Dim</th><th>Rate</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>I_t</code></td><td>image</td><td>RGB frame, <code>ego_view</code> camera (head cam, <code>192.168.123.164:5555</code>)</td><td><code>256x256x3</code> (cropped from <code>230x230</code>)</td><td>50 Hz capture, sampled ~3 Hz</td></tr>
+    <tr><td><code>L</code></td><td>text</td><td>Task prompt, <code>annotation.human.task_description</code> (constant per episode)</td><td>—</td><td>1× per episode</td></tr>
+    <tr><td><code>q</code></td><td><strong>position</strong> (rad)</td><td>All 35 joint positions from <code>motor_state[i].q</code></td><td>35</td><td>50 Hz</td></tr>
+    <tr><td><code>dq</code></td><td><strong>velocity</strong> (rad/s)</td><td>All 35 joint velocities from <code>motor_state[i].dq</code></td><td>35</td><td>50 Hz</td></tr>
+    <tr><td><code>tau_est</code></td><td><strong>torque estimate</strong> (Nm)</td><td>Measured torque from <code>motor_state[i].tau_est</code></td><td>35</td><td>50 Hz</td></tr>
+    <tr><td><code>ddq</code></td><td><strong>acceleration</strong> (rad/s²)</td><td>Joint accelerations</td><td>35</td><td>50 Hz</td></tr>
+    <tr><td>IMU</td><td>orientation + ang.vel + lin.acc</td><td><code>imu_state.quaternion</code> (w,x,y,z) + <code>gyroscope</code> + <code>accelerometer</code> + torso IMU</td><td>4 + 3 + 3 + 7</td><td>50 Hz</td></tr>
+    <tr><td>base odom</td><td>position + linear velocity</td><td><code>odo_state.position</code> + <code>linear_velocity</code></td><td>3 + 3</td><td>50 Hz</td></tr>
+    <tr><td><code>s_t</code> (GR00T input)</td><td><strong>positions only</strong></td><td>Subset of <code>q</code>, grouped: <code>left_leg</code>(6) + <code>right_leg</code>(6) + <code>waist</code>(3) + <code>left_arm</code>(7) + <code>right_arm</code>(7) + <code>left_hand</code> + <code>right_hand</code>. <strong>No dq, no tau.</strong> <code>state_history_length = 1</code></td><td>~36 + hands (padded to <code>max_state_dim=132</code>)</td><td>sampled ~3 Hz</td></tr>
+    <tr><td><code>a_chunk</code> (GR00T output)</td><td><strong>target positions + setpoints</strong></td><td>16 future steps × 7 groups: <code>left_arm</code>(7) + <code>right_arm</code>(7) + <code>left_hand</code> + <code>right_hand</code> + <code>waist</code>(3) → <strong>target joint angles</strong>; <code>base_height_command</code>(1) → <strong>target height (m)</strong>; <code>navigate_command</code>(3) → <strong>base velocity setpoint (vx, vy, vyaw)</strong></td><td>padded to <code>max_action_dim=132</code> × <code>H=16</code></td><td>~3 Hz</td></tr>
+    <tr><td><code>a_t</code></td><td>one slice of <code>a_chunk</code></td><td>Single-tick target positions + base setpoints</td><td>same per-group breakdown</td><td>50 Hz</td></tr>
+    <tr><td>Balance/Walk ONNX output</td><td><strong>delta around default pose</strong></td><td>15 leg joints, then <code>target_q = action * 0.25 + default_angles</code></td><td>15</td><td>50 Hz</td></tr>
+    <tr><td><code>u_motor</code> (per motor on <code>rt/lowcmd</code>)</td><td><strong>PD + feedforward</strong></td><td><code>cmd.q</code> (target position) + <code>cmd.dq</code> (target velocity, usually 0 for upper body) + <code>cmd.tau</code> (feedforward torque, usually 0 for upper body) + <code>cmd.kp</code> (pos gain) + <code>cmd.kd</code> (vel gain). Motor onboard computes <code>tau_applied = kp*(cmd.q − q) + kd*(cmd.dq − dq) + cmd.tau</code></td><td>5 fields × 35 motors</td><td>50 Hz</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>Per-stage cheat sheet — what each consumer actually reads/writes:</strong></p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Stage</th><th>Reads</th><th>Writes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>state_processor.py</code> (DDS subscriber)</td><td>raw <code>q</code>, <code>dq</code>, <code>tau_est</code>, <code>ddq</code>, IMU, odometry</td><td>concatenated <code>obs_vector</code></td></tr>
+    <tr><td>→ GR00T policy</td><td><strong>positions <code>q</code> only</strong> + image + text prompt</td><td>target positions + base height + (vx, vy, vyaw)</td></tr>
+    <tr><td>→ IK + InterpolationPolicy</td><td>GR00T upper-body targets</td><td><strong>target <code>q</code> for arm/hand joints</strong></td></tr>
+    <tr><td>→ Balance/Walk ONNX</td><td>leg <code>q</code>, <code>dq</code>, IMU, base velocity setpoint</td><td><strong>delta-from-default → target <code>q</code> for legs</strong></td></tr>
+    <tr><td>→ <code>command_sender.py</code></td><td>all combined targets</td><td><strong>per motor: <code>q</code>, <code>dq</code>, <code>tau</code>, <code>kp</code>, <code>kd</code></strong> (full PD + feedforward) onto <code>rt/lowcmd</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<blockquote>
+<p><strong>Important:</strong> GR00T is not a torque controller. It outputs target joint positions; the low-level PD loop in each motor does the actual force production. The "torque" you see on <code>rt/lowcmd</code> (<code>cmd.tau</code>) is a feedforward term, typically zero in this stack except where the RL policy populates it.</p>
+</blockquote>
+
+<h3 id="control-diagram">2.2 Block diagram</h3>
+
+<div class="mermaid-wrap">
+<pre class="mermaid">
+%%{init: {"flowchart": {"useMaxWidth": false, "htmlLabels": true}, "themeVariables": {"fontSize": "20px"}}}%%
+flowchart LR
+    subgraph PLANT["PLANT - Unitree G1 + environment"]
+        BODY["Rigid body, 35 actuated DOF<br/>Hands + arms + waist + legs<br/><i>onboard motor PD: tau = kp(q*-q) + kd(dq*-dq) + tau_ff</i>"]
+        SENS["IMU + joint encoders + cameras<br/><i>measures: q, dq, tau_est, ddq, quat, gyro, accel</i>"]
+        BODY -- "physical motion" --> SENS
+    end
+
+    subgraph PERCEPT["Perception (50 Hz)"]
+        STATE_PROC["state_processor.py<br/>DDS rt/lowstate -> obs_vector<br/><i>[q, dq, tau_est, ddq, IMU]</i>"]
+        CAMSRV["camera_server<br/>(192.168.123.164:5555)<br/>-> I_t (256x256x3)"]
+    end
+
+    subgraph POLICY["GR00T Policy (outer ~3 Hz, on dGPU)"]
+        BUILDOBS["prepare_observation_data<br/>tokenize I_t, normalize s_t (positions only), embed L<br/>state_history_length = 1"]
+        VLM["Eagle VLM backbone<br/>(Cosmos-Reason2-2B, qwen)<br/>-> vl_embs, sa_embs"]
+        DIT["Action DiT (TensorRT)<br/>num_inference_timesteps = 4<br/>action_horizon = 40, use first 16"]
+        BUILDOBS --> VLM --> DIT
+    end
+
+    subgraph BUFFER["Action buffer (FIFO, ~3 Hz refill / 50 Hz drain)"]
+        QUE["a_chunk = [a_t, ..., a_t+15]<br/><i>target positions for arms/hands/waist<br/>+ base_height (m) + (vx, vy, vyaw)</i>"]
+    end
+
+    subgraph WBC["WBC stack (50 Hz)"]
+        IK["run_teleop_policy_loop.py<br/>IK + InterpolationPolicy<br/><i>target arm q* -> joint refs</i>"]
+        SWITCH{"|nav_cmd| &lt; 0.05 ?"}
+        BAL["Balance ONNX<br/><i>in: leg q, dq, IMU<br/>out: 15 leg deltas</i>"]
+        WALK["Walk ONNX<br/><i>in: leg q, dq, IMU, vel setpt<br/>out: 15 leg deltas</i>"]
+        MERGE["DecoupledWBC<br/>upper-body refs + leg targets<br/><i>q* = action * 0.25 + default_angles</i>"]
+        IK --> MERGE
+        SWITCH -- "yes (stand)" --> BAL --> MERGE
+        SWITCH -- "no (walk)" --> WALK --> MERGE
+    end
+
+    SENDER["command_sender.py<br/>writes per-motor (q*, dq*, tau_ff, kp, kd)<br/>DDS publish rt/lowcmd @ 50 Hz"]
+
+    L[/"Task prompt L<br/>(constant per episode)"/] -- "text" --> BUILDOBS
+    CAMSRV -- "I_t (RGB image)" --> BUILDOBS
+    STATE_PROC -- "s_t = joint positions q only" --> BUILDOBS
+    DIT -- "a_chunk every ~330 ms<br/>(target q + base setpoints)" --> QUE
+    QUE -- "a_t @ 50 Hz<br/>upper-body target q*" --> IK
+    QUE -- "navigate_command<br/>(vx, vy, vyaw)" --> SWITCH
+    STATE_PROC -- "leg q, dq + IMU" --> BAL
+    STATE_PROC -- "leg q, dq + IMU" --> WALK
+    MERGE -- "combined target q* (35 joints)" --> SENDER
+    SENDER -- "rt/lowcmd DDS<br/>q*, dq*, tau_ff, kp, kd per motor" --> BODY
+
+    SENS -- "q, dq, tau_est, ddq, IMU<br/>rt/lowstate DDS @ 50 Hz" --> STATE_PROC
+    SENS -- "RGB frames" --> CAMSRV
+</pre>
+</div>
+
+<h3 id="feedback-reasoning">2.3 Why this is the right way to draw feedback</h3>
+
+<p>The only <strong>real</strong> feedback in the system is the <strong>closed-loop through the plant</strong>:</p>
+
+<pre><code>policy -> action -> motors -> physical robot moves -> sensors observe new state -> back into policy</code></pre>
+
+<p>There is no shortcut wire that sends state back into the policy <em>bypassing the robot</em>. Each outer tick the policy re-reads <code>s_t</code> because the robot has physically changed pose since the last tick.</p>
+
+<h3 id="rates-latency">2.4 Per-block update rates and latencies</h3>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Block</th><th>Rate</th><th>Latency contribution</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Camera capture</td><td>~50 Hz</td><td>depends on camera; sampled by policy at ~3 Hz</td></tr>
+    <tr><td><code>state_processor.py</code> (DDS)</td><td>50 Hz</td><td>&lt; 1 ms</td></tr>
+    <tr><td>Observation tokenize/normalize</td><td>~3 Hz</td><td>tens of ms (CPU, prefetched async)</td></tr>
+    <tr><td>Eagle VLM backbone</td><td>~3 Hz</td><td>dominant cost on dGPU</td></tr>
+    <tr><td>Action DiT (TensorRT, 4 denoising steps)</td><td>~3 Hz</td><td>reduced ~3-5x vs PyTorch</td></tr>
+    <tr><td>Action buffer drain</td><td>50 Hz</td><td>1 tick = 20 ms</td></tr>
+    <tr><td>IK + DecoupledWBC</td><td>50 Hz</td><td>a few ms</td></tr>
+    <tr><td>Balance/Walk ONNX</td><td>50 Hz</td><td>~1 ms each (per <code>g1_gear_wbc_policy.py</code>)</td></tr>
+    <tr><td><code>command_sender.py</code> (DDS publish)</td><td>50 Hz</td><td>&lt; 1 ms</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>So end-to-end <strong>camera-to-motor</strong> latency for a <em>fresh</em> policy decision is roughly <strong>one outer-tick period (~330 ms)</strong> plus a few ms of WBC, <em>but</em> because actions are streamed from a chunk, the <strong>motor command updates every 20 ms</strong> — only one in 16 of those motor commands rides on a brand-new policy decision.</p>
+
+<h3 id="pico-compare">2.5 Comparison with the original Pico teleop path</h3>
+
+<p>Same diagram, but the GR00T block is replaced by <code>pico_streamer.py</code>:</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Source of upper-body targets + nav_cmd</th><th>Pico teleop</th><th>GR00T inference</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Producer</td><td><code>pico_streamer.py</code> (VR headset)</td><td><code>policy.get_action()</code> (GR00T)</td></tr>
+    <tr><td>Inputs to producer</td><td>Human pose + joystick</td><td><code>I_t</code>, <code>s_t</code>, <code>L</code></td></tr>
+    <tr><td>Rate of producer</td><td>50 Hz (VR pose stream)</td><td>~3 Hz (chunk) → 50 Hz drain</td></tr>
+    <tr><td>Downstream consumers</td><td>IK + DecoupledWBC + Balance/Walk ONNX</td><td><strong>identical</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Everything from the FIFO downward is unchanged between teleop and autonomous inference.</p>
+
+<!-- ============================================================ -->
+<h2 id="two-clocks"><span class="num">3</span> Two clocks</h2>
+
+<ul>
+  <li><strong>Outer (policy) clock — ~3 Hz:</strong> one heavy forward pass every <code>H</code> control ticks. This is what TensorRT accelerates by swapping the PyTorch DiT for a TRT engine (<code>replace_dit_with_tensorrt</code>, <code>TensorRTDiTWrapper</code>).</li>
+  <li><strong>Inner (control) clock — 50 Hz:</strong> the <code>H = 16</code> actions from the latest chunk are dispatched one per tick into the WBC teleop input. The WBC stack (IK + RL standing/walking policies) keeps producing motor commands at 50 Hz regardless.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="inference-loop"><span class="num">4</span> The inference loop (heart of it)</h2>
+
+<p>From <code>scripts/deployment/standalone_inference_script.py</code> (<code>run_single_trajectory</code>, line 371):</p>
+
+<pre><code><span class="code-comment"># Setup once</span>
+policy = Gr00tPolicy(checkpoint_path, embodiment_tag, modality_configs, ...)
+policy = replace_dit_with_tensorrt(policy, trt_engine_path)   <span class="code-comment"># swap DiT for TRT engine</span>
+
+executor = ThreadPoolExecutor(max_workers=1)
+future_obs = executor.submit(prepare_observation_data, ...)   <span class="code-comment"># prefetch step 0</span>
+
+<span class="code-kw">for</span> step_idx, step_count <span class="code-kw">in</span> enumerate(step_counts):           <span class="code-comment"># stride = action_horizon</span>
+    parsed_obs = future_obs.result()                          <span class="code-comment"># block until obs ready</span>
+
+    <span class="code-comment"># Prefetch next obs on CPU while GPU runs inference on current one</span>
+    <span class="code-kw">if</span> step_idx + 1 &lt; len(step_counts):
+        future_obs = executor.submit(prepare_observation_data, ..., next_step_count, ...)
+
+    <span class="code-comment"># &gt;&gt;&gt; the actual inference call &lt;&lt;&lt;</span>
+    action_chunk, _ = policy.get_action(parsed_obs)           <span class="code-comment"># VLM + DiT forward</span>
+
+    <span class="code-comment"># Stream H future actions at the control rate</span>
+    action_chunk = parse_action_gr00t(action_chunk)
+    <span class="code-kw">for</span> j <span class="code-kw">in</span> range(action_horizon):
+        send_or_record(concat_per_key(action_chunk, j))
+</code></pre>
+
+<blockquote>
+<p><strong>Note:</strong> <code>standalone_inference_script.py</code> runs against a <strong>recorded LeRobot dataset</strong> (offline replay/eval). On the real robot, <code>loader[traj_id]</code> is replaced by <strong>live sensors</strong>, and the inner <code>send_or_record(...)</code> becomes <strong>publish to the WBC teleop input</strong> (the same ROS topic <code>pico_streamer.py</code> currently writes to).</p>
+</blockquote>
+
+<!-- ============================================================ -->
+<h2 id="get-action"><span class="num">5</span> What <code>policy.get_action()</code> does internally</h2>
+
+<ol>
+  <li><strong>Image branch:</strong> camera frames → vision encoder (Eagle VLM backbone).</li>
+  <li><strong>State branch:</strong> proprioceptive state vector → state encoder.</li>
+  <li><strong>Language branch:</strong> task prompt → tokenizer (cached if the prompt is constant).</li>
+  <li><strong>Backbone fusion:</strong> Eagle VLM produces <code>vl_embs</code> (vision+language) and <code>sa_embs</code> (state+action) embeddings.</li>
+  <li><strong>Action DiT:</strong> a <strong>diffusion transformer</strong> denoises a noise tensor over several timesteps, conditioned on <code>vl_embs</code> + <code>sa_embs</code>, producing the action chunk. <strong>This is the part swapped out for a TensorRT engine</strong> (<code>TensorRTDiTWrapper.__call__</code>, line 132 — called once per denoising step).</li>
+  <li><strong>Output:</strong> dict of per-modality action chunks → flattened into per-joint trajectories.</li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="real-robot"><span class="num">6</span> Real-robot loop (pseudocode)</h2>
+
+<pre><code><span class="code-kw">while</span> task_running:
+    parsed_obs = build_obs_from(live_cameras, live_state, task_prompt)
+    action_chunk, _ = policy.get_action(parsed_obs)            <span class="code-comment"># ~1x per H ticks (TRT)</span>
+    <span class="code-kw">for</span> a <span class="code-kw">in</span> action_chunk:                                     <span class="code-comment"># stream at 50 Hz</span>
+        publish_to_teleop_input(a)                             <span class="code-comment"># where pico_streamer used to write</span>
+        wait_until_next_control_tick()
+</code></pre>
+
+<ul>
+  <li><code>publish_to_teleop_input(a)</code> lands on the same ROS topic / streamer hook in <code>run_teleop_policy_loop.py</code> that the Pico headset normally feeds.</li>
+  <li><code>run_g1_control_loop.py</code> keeps running unchanged below, consuming those targets and producing motor commands at 50 Hz via DDS.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="tldr"><span class="num">7</span> TL;DR — the hierarchy</h2>
+
+<pre><code>[outer ~3 Hz]   policy.get_action(obs)  -&gt;  16-step action chunk         (GR00T VLM + DiT, TRT)
+[inner 50 Hz]   stream chunk action-by-action to WBC teleop input
+[inner 50 Hz]   run_teleop_policy_loop.py     : IK + DecoupledWBC
+[inner 50 Hz]   run_g1_control_loop.py        : ONNX Balance/Walk RL  -&gt;  rt/lowcmd DDS  -&gt;  motors</code></pre>
+
+</article>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    securityLevel: 'loose',
+    flowchart: {
+      htmlLabels: true,
+      curve: 'basis',
+      useMaxWidth: true
+    },
+    themeVariables: {
+      fontFamily: 'Inter, sans-serif',
+      primaryColor: '#eef2ff',
+      primaryTextColor: '#0f172a',
+      primaryBorderColor: '#6366f1',
+      lineColor: '#64748b',
+      secondaryColor: '#f5f3ff',
+      tertiaryColor: '#f8fafc'
+    }
+  });
+
+  // TOC active-link tracking
+  const tocLinks = document.querySelectorAll('nav.toc a');
+  const headings = Array.from(document.querySelectorAll('article h2, article h3'));
+  function updateActive() {
+    let current = null;
+    for (const h of headings) {
+      const rect = h.getBoundingClientRect();
+      if (rect.top <= 120) current = h.id;
+    }
+    tocLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+</script>
+
+</body>
+</html>
