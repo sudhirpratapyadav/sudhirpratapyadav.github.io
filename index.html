@@ -5,17 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sudhir Pratap Yadav, Robotics Engineer</title>
 <meta name="description" content="Robotics engineer and PhD candidate at IIT Jodhpur. Manipulation, robot learning, sim-to-real transfer and SLAM.">
-
 <meta property="og:title" content="Sudhir Pratap Yadav, Robotics Engineer">
 <meta property="og:description" content="Robotics engineer and PhD candidate at IIT Jodhpur. Manipulation, robot learning, sim-to-real transfer and SLAM.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://sudhirpratapyadav.github.io/">
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
       crossorigin="anonymous" referrerpolicy="no-referrer">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
-
 <style>
   :root{
     --ink:#16161a;
@@ -117,11 +113,31 @@
   /* ---------- video ---------- */
   video{ display:block; width:100%; max-height:460px; margin-top:12px; border-radius:5px; background:#000; }
   .vcap{ font-size:.84rem; color:var(--muted); margin-top:5px; }
+
+  video{ display:block; width:100%; max-height:470px; border-radius:5px; background:#000; }
+  .lead{ margin-top:12px; }
+  .vcap{ font-size:.84rem; color:var(--muted); margin-top:5px; }
+  .thumbs{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
+  .thumbs a{ border:none; display:block; }
+  .thumbs img{ width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:4px; display:block; background:var(--panel); }
+  .thumbs a:hover img{ opacity:.85; }
+  .more{ display:inline-block; margin-top:10px; font-size:.9rem; font-weight:600; }
+  .gallery{ display:grid; grid-template-columns:1fr 1fr; gap:22px 18px; margin-top:6px; }
+  .gallery .wide{ grid-column:1 / -1; }
+  .gallery img{ width:100%; border-radius:5px; border:1px solid var(--rule); display:block; }
+  .tasks{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:6px; }
+  .tasks video{ max-height:none; aspect-ratio:4/3; object-fit:cover; }
+  .tasks .vcap{ font-size:.76rem; margin-top:2px; }
+  .back{ display:inline-block; margin-top:34px; font-size:.9rem; }
+  .detail h3{ font-size:1rem; color:var(--ink); margin:24px 0 4px; }
+  .detail p{ margin:0; }
+  .pagelinks{ margin-top:12px; font-size:.9rem; }
+  .pagelinks a{ display:inline-block; margin-right:16px; }
+  @media (max-width:620px){ .gallery, .tasks{ grid-template-columns:1fr 1fr; } .gallery{ grid-template-columns:1fr; } .thumbs{ grid-template-columns:1fr 1fr; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-
 <header>
   <div class="top">
     <div class="top-text">
@@ -137,18 +153,19 @@
     </div>
     <img id="pic" src="images/profile_pic.jpg" alt="Sudhir Pratap Yadav">
   </div>
-
   <p class="intro">
     I am a robotics engineer with ten years of experience across hardware, control, perception and
     robot learning. I am a PhD candidate at IIT&nbsp;Jodhpur, working on continual learning and
-    sim-to-real transfer for manipulation, and I plan to submit my thesis in December 2026. I also
-    do contract work for robotics startups on industrial arms, humanoids and mobile robots.
+    sim-to-real transfer for manipulation. I also do contract work for robotics startups on
+    industrial arms, humanoids and mobile robots.
+  </p>
+  <p class="pagelinks" style="margin-top:14px">Project pages:
+    <a href="projects/sim-to-real/">Sim-to-real manipulation with Gaussian-splat simulation</a> · <a href="projects/slam-vio/">Stereo-inertial SLAM and monocular VIO</a> · <a href="projects/continual-learning/">Continual learning for manipulation</a> · <a href="projects/quadruped/">Custom quadruped robot</a> · <a href="projects/manipulation/">Manipulation control and teleoperation</a> · <a href="projects/humanoid/">Humanoid manipulation</a> · <a href="projects/mobile-robots/">Hospital delivery and inspection robot</a> · <a href="projects/simulation/">Simulation projects</a>
   </p>
 </header>
 
 <section>
   <h2>Recent work</h2>
-
   <div class="item">
     <div class="item-head">
       <div class="item-title">Sim-to-real manipulation with Gaussian-splat simulation</div>
@@ -162,8 +179,11 @@
       <li>Training runs with 21,504 parallel environments on 7 A100 GPUs. Throughput per GPU is 6.5 times higher than in the first version.</li>
       <li>With FastTD3, the peg-in-hole teacher policy trains in about 30 minutes, compared with about 8 hours with PPO.</li>
     </ul>
-    <video controls preload="none" playsinline poster="media/sim2real_ur5.jpg"><source src="media/sim2real_ur5.mp4" type="video/mp4"></video>
-    <div class="vcap">The policy trained in simulation picking a bottle on the real UR5.</div>
+    <div class="lead"><video controls playsinline preload="none" poster="projects/sim-to-real/media/real_pick.jpg"><source src="projects/sim-to-real/media/real_pick.mp4" type="video/mp4"></video></div>
+    <div class="vcap">The RGB-only policy trained in simulation picking a bottle on the real UR5.</div>
+    <div class="thumbs"><a href="projects/sim-to-real/" title="Simulation: picking a lying bottle, with the rendered wrist camera view."><img loading="lazy" src="projects/sim-to-real/media/sim_lying_bottle.jpg" alt="Simulation: picking a lying bottle, with the rendered wrist camera view."></a><a href="projects/sim-to-real/" title="Real recording and reconstructed simulation side by side for a DROID scene."><img loading="lazy" src="projects/sim-to-real/media/droid_real_vs_sim.jpg" alt="Real recording and reconstructed simulation side by side for a DROID scene."></a><a href="projects/sim-to-real/" title="First successful pick on the real robot (October 2026)."><img loading="lazy" src="projects/sim-to-real/media/real_first_success.jpg" alt="First successful pick on the real robot (October 2026)."></a><a href="projects/sim-to-real/" title="Novel views of a reconstructed DROID scene."><img loading="lazy" src="projects/sim-to-real/media/droid_flythrough.jpg" alt="Novel views of a reconstructed DROID scene."></a></div>
+    <a class="more" href="projects/sim-to-real/">More details, videos and images →</a>
+    <div class="meta"></div>
   </div>
   <div class="item">
     <div class="item-head">
@@ -176,14 +196,16 @@
       <li>On a test loop, drift was reduced from 1.47 m with odometry alone to 0.17 m with loop closure. ORB-SLAM3 gave 0.14 to 0.17 m on the same data.</li>
       <li>Tracking delay on the Jetson Nano was reduced from 78 ms to 8 ms.</li>
     </ul>
-    <video controls preload="none" playsinline poster="media/slam_loop_closure.jpg"><source src="media/slam_loop_closure.mp4" type="video/mp4"></video>
-    <div class="vcap">Mapping one floor of a building with loop closure (video is 4 times faster than real time).</div>
-    <div class="meta"><a href="https://github.com/sudhirpratapyadav/anchorflow-vio"><i class="fab fa-github"></i>anchorflow-vio</a></div>
+    <div class="lead"><video controls playsinline preload="none" poster="projects/slam-vio/media/loop_closure.jpg"><source src="projects/slam-vio/media/loop_closure.mp4" type="video/mp4"></video></div>
+    <div class="vcap">Mapping one floor of a building with loop closure (4 times faster).</div>
+    <div class="thumbs"><a href="projects/slam-vio/" title="Trajectory and point cloud of a room."><img loading="lazy" src="projects/slam-vio/media/home_slam.jpg" alt="Trajectory and point cloud of a room."></a><a href="projects/slam-vio/" title="Dense reconstruction of a room."><img loading="lazy" src="projects/slam-vio/media/home_reconstruction.jpg" alt="Dense reconstruction of a room."></a><a href="projects/slam-vio/" title="Maps from two variants of the dense mapping."><img loading="lazy" src="projects/slam-vio/media/slam_map_A_vs_B.png" alt="Maps from two variants of the dense mapping."></a><a href="projects/slam-vio/" title="Top view of the test loop."><img loading="lazy" src="projects/slam-vio/media/loop1_topview.png" alt="Top view of the test loop."></a></div>
+    <a class="more" href="projects/slam-vio/">More details, videos and images →</a>
+    <div class="meta"><a href="https://github.com/sudhirpratapyadav/anchorflow-vio"><i class="fab fa-github"></i>anchorflow-vio on GitHub</a></div>
   </div>
   <div class="item">
     <div class="item-head">
       <div class="item-title">Continual learning for manipulation</div>
-      <div class="item-date">2023 – 2026</div>
+      <div class="item-date">2023 – present</div>
     </div>
     <div class="item-org">PhD thesis · mjlab · reinforcement learning</div>
     <p>My thesis is about adding new manipulation skills to one policy without storing the data of earlier tasks. I built a benchmark of 37 manipulation tasks and trained a separate teacher policy for each task. The teachers are then combined into one network one after another.</p>
@@ -191,9 +213,11 @@
       <li>One network reached 87.6% average success over 15 tasks. The baseline without consolidation reached 79.5%.</li>
       <li>A single combined policy performed four tasks on a real 7-DOF arm without fine-tuning on the hardware.</li>
     </ul>
-    <video controls loop preload="none" playsinline poster="media/cl_benchmark_grid.jpg"><source src="media/cl_benchmark_grid.mp4" type="video/mp4"></video>
+    <div class="lead"><video controls loop playsinline preload="none" poster="projects/continual-learning/media/benchmark_grid.jpg"><source src="projects/continual-learning/media/benchmark_grid.mp4" type="video/mp4"></video></div>
     <div class="vcap">Eight of the 37 benchmark tasks.</div>
-    <div class="meta"><a href="https://github.com/sudhirpratapyadav/mjlab"><i class="fab fa-github"></i>mjlab fork</a></div>
+    <div class="thumbs"><a href="projects/continual-learning/" title="Flip Switch Franka"><img loading="lazy" src="projects/continual-learning/media/tasks/Flip-Switch-Franka.jpg" alt="Flip Switch Franka"></a><a href="projects/continual-learning/" title="Slide Window Franka"><img loading="lazy" src="projects/continual-learning/media/tasks/Slide-Window-Franka.jpg" alt="Slide Window Franka"></a><a href="projects/continual-learning/" title="Throw To Bin Franka"><img loading="lazy" src="projects/continual-learning/media/tasks/Throw-To-Bin-Franka.jpg" alt="Throw To Bin Franka"></a><a href="projects/continual-learning/" title="Tool Pull Franka"><img loading="lazy" src="projects/continual-learning/media/tasks/Tool-Pull-Franka.jpg" alt="Tool Pull Franka"></a></div>
+    <a class="more" href="projects/continual-learning/">More details, videos and images →</a>
+    <div class="meta"><a href="https://github.com/sudhirpratapyadav/mjlab"><i class="fab fa-github"></i>mjlab fork on GitHub</a><a href="https://doi.org/10.1017/S0263574724000705"><i class="fas fa-link"></i>Robotica 2024 paper</a></div>
   </div>
   <div class="item">
     <div class="item-head">
@@ -202,25 +226,29 @@
     </div>
     <div class="item-org">with L Square Labs · CAD · 3D printing · MuJoCo · RL</div>
     <p>I designed, 3D-printed and assembled a 12-joint quadruped. The walking policy is trained with reinforcement learning in MuJoCo and transferred to the robot. The robot walks untethered at 0.3 m/s and did not fall in the recorded trials.</p>
-    <video controls preload="none" playsinline poster="media/quadruped.jpg"><source src="media/quadruped.mp4" type="video/mp4"></video>
-    <div class="vcap">Summary video of the quadruped project.</div>
-    <div class="meta"><a href="https://www.lsquarelabs.com/locomotion"><i class="fas fa-link"></i>Project page</a><a href="https://github.com/sudhirpratapyadav/quad_cad"><i class="fab fa-github"></i>CAD</a></div>
+    <div class="lead"><video controls playsinline preload="none" poster="projects/quadruped/media/summary.jpg"><source src="projects/quadruped/media/summary.mp4" type="video/mp4"></video></div>
+    <div class="vcap">Summary video of the project.</div>
+    <div class="thumbs"><a href="projects/quadruped/" title="Walking on the real robot."><img loading="lazy" src="projects/quadruped/media/walking.jpg" alt="Walking on the real robot."></a><a href="projects/quadruped/" title="The robot in a simulated scene reconstructed with Gaussian splatting."><img loading="lazy" src="projects/quadruped/media/gsplat_sim.jpg" alt="The robot in a simulated scene reconstructed with Gaussian splatting."></a><a href="projects/quadruped/" title="The robot balancing on the floor."><img loading="lazy" src="projects/quadruped/media/hardware_balance.jpg" alt="The robot balancing on the floor."></a><a href="projects/quadruped/" title="First test with a single leg and inverse kinematics."><img loading="lazy" src="projects/quadruped/media/single_leg_test.jpg" alt="First test with a single leg and inverse kinematics."></a></div>
+    <a class="more" href="projects/quadruped/">More details, videos and images →</a>
+    <div class="meta"><a href="https://www.lsquarelabs.com/locomotion"><i class="fas fa-link"></i>Project page at L Square Labs</a><a href="https://github.com/sudhirpratapyadav/quad_cad"><i class="fab fa-github"></i>CAD on GitHub</a></div>
   </div>
   <div class="item">
     <div class="item-head">
       <div class="item-title">Manipulation control and teleoperation</div>
-      <div class="item-date">2025 – 2026</div>
+      <div class="item-date">2024 – 2026</div>
     </div>
-    <div class="item-org">Kinova Gen3 · xArm6 · RealSense / ZED · Meta Quest 3</div>
-    <p>I wrote control and perception software for an xArm6 (250 Hz) and a Kinova Gen3 (1 kHz torque control). It is operated from a browser and has five controllers, including gravity compensation and Cartesian impedance control. It also has four metric depth models and SAM2 segmentation. Separately, I built VR teleoperation with a Meta Quest 3 for collecting demonstrations, and a version of hand teleoperation that runs completely in the browser with MuJoCo WebAssembly and a webcam.</p>
-    <video controls preload="none" playsinline poster="media/kinova_gravity_comp.jpg"><source src="media/kinova_gravity_comp.mp4" type="video/mp4"></video>
+    <div class="item-org">Kinova Gen3 · xArm6 · Franka · UR5 · RealSense / ZED · Meta Quest 3</div>
+    <p>I wrote control and perception software for an xArm6 (250 Hz) and a Kinova Gen3 (1 kHz torque control). It is operated from a browser and has five controllers, including gravity compensation and Cartesian impedance control. It also has four metric depth models and SAM2 segmentation. I also built VR teleoperation with a Meta Quest 3 for collecting demonstrations.</p>
+    <div class="lead"><video controls playsinline preload="none" poster="projects/manipulation/media/kinova_gravity_comp.jpg"><source src="projects/manipulation/media/kinova_gravity_comp.mp4" type="video/mp4"></video></div>
     <div class="vcap">Gravity compensation on the Kinova Gen3 with torque control.</div>
+    <div class="thumbs"><a href="projects/manipulation/" title="Live point cloud and arm control in the browser (2 times faster)."><img loading="lazy" src="projects/manipulation/media/viewer_3d.jpg" alt="Live point cloud and arm control in the browser (2 times faster)."></a><a href="projects/manipulation/" title="Kinova Gen3 picking objects from a plate."><img loading="lazy" src="projects/manipulation/media/kinova_pick.jpg" alt="Kinova Gen3 picking objects from a plate."></a><a href="projects/manipulation/" title="Depth, segmentation and point cloud from one camera (2 times faster)."><img loading="lazy" src="projects/manipulation/media/vision_3d.jpg" alt="Depth, segmentation and point cloud from one camera (2 times faster)."></a><a href="projects/manipulation/" title="Peg-in-hole on a real Franka arm."><img loading="lazy" src="projects/manipulation/media/peg_in_hole_real.jpg" alt="Peg-in-hole on a real Franka arm."></a></div>
+    <a class="more" href="projects/manipulation/">More details, videos and images →</a>
+    <div class="meta"><a href="https://github.com/sudhirpratapyadav/object_pose"><i class="fab fa-github"></i>object_pose on GitHub</a><a href="https://github.com/sudhirpratapyadav/manipulator_teleop"><i class="fab fa-github"></i>manipulator_teleop on GitHub</a><a href="https://github.com/sudhirpratapyadav/act"><i class="fab fa-github"></i>act on GitHub</a></div>
   </div>
 </section>
 
 <section>
   <h2>Experience</h2>
-
   <div class="item">
     <div class="item-head">
       <div class="item-title">Freelance Robotics Engineer (contract)</div>
@@ -229,14 +257,14 @@
     <div class="item-org">Remote <span class="sub">· robotics startups in the US and India</span></div>
     <ul>
       <li><b>Industrial two-arm cell (FANUC CR-7iA/L).</b> I designed and built the software for the cell. Tasks are written as JSON plans made of general skills such as move, pick, place, detect and measure. The same software runs the MuJoCo simulation and the real cell. I wrote 762 of the 880 commits in the ROS 2, Python, C++ and React codebase.</li>
-      <li><b>Humanoid manipulation (Unitree G1, NVIDIA GR00T N1.7), tech lead, May to Nov 2026.</b> I led the technical work of the team and was responsible for simulation and reinforcement learning. I fine-tuned a frozen GR00T policy with Diffusion Steering RL in simulation, which increased full-task success from 48.3% to 78.3%. I also built an RL pick task with an 11-DOF dexterous hand and a VR teleoperation system that supports six different hands.</li>
+      <li><b>Humanoid manipulation (Unitree G1, NVIDIA GR00T N1.7), tech lead, May to Nov 2026.</b> I led the technical work of the team and was responsible for simulation and reinforcement learning. I fine-tuned a frozen GR00T policy with Diffusion Steering RL in simulation, which increased full-task success from 48.3% to 78.3%. I also built an RL pick task with an 11-DOF dexterous hand and a VR teleoperation system that supports six different hands. <a href="projects/humanoid/">Project page</a></li>
       <li><b>Robot learning.</b> I built a dataset of 1,167 manipulation episodes with success and failure labels, trained reward models (mean absolute error 0.032, compared with about 0.2 for a published baseline) and tested RL fine-tuning of VLA policies. I also trained a 29-DOF arm and hand policy to take a test tube out of a rack with about 99% success in simulation.</li>
-      <li><b>Hospital delivery and datacenter inspection robot (Clearpath Husky).</b> I built the robot software: Nav2 navigation, MuJoCo simulation, a server on the robot and a web console for the operator.</li>
+      <li><b>Hospital delivery and datacenter inspection robot (Clearpath Husky).</b> I built the robot software: Nav2 navigation, MuJoCo simulation, a server on the robot and a web console for the operator. <a href="projects/mobile-robots/">Project page</a></li>
     </ul>
-    <video controls preload="none" playsinline poster="media/vr_teleop_hands.jpg"><source src="media/vr_teleop_hands.mp4" type="video/mp4"></video>
-    <div class="vcap">VR teleoperation of the G1 arms with dexterous hands in MuJoCo (view from the headset).</div>
-    <video controls preload="none" playsinline poster="media/hospital_robot.jpg"><source src="media/hospital_robot.mp4" type="video/mp4"></video>
-    <div class="vcap">Operator console of the hospital delivery robot.</div>
+    <div class="vcap" style="margin-top:12px">Humanoid manipulation</div>
+    <div class="thumbs"><a href="projects/humanoid/" title="VR teleoperation of the G1 arms with dexterous hands in MuJoCo (view from the headset)."><img loading="lazy" src="projects/humanoid/media/vr_teleop.jpg" alt="VR teleoperation of the G1 arms with dexterous hands in MuJoCo (view from the headset)."></a><a href="projects/humanoid/" title="Simulated factory workstation."><img loading="lazy" src="projects/humanoid/media/factory_sim.jpg" alt="Simulated factory workstation."></a><a href="projects/humanoid/" title="The Unitree G1 at the work table."><img loading="lazy" src="projects/humanoid/media/g1_table.jpg" alt="The Unitree G1 at the work table."></a></div>
+    <div class="vcap" style="margin-top:12px">Hospital delivery robot</div>
+    <div class="thumbs"><a href="projects/mobile-robots/" title="Operator console during a delivery in the simulated hospital (4 times faster)."><img loading="lazy" src="projects/mobile-robots/media/console.jpg" alt="Operator console during a delivery in the simulated hospital (4 times faster)."></a><a href="projects/mobile-robots/" title="Robot camera view in the simulated hospital."><img loading="lazy" src="projects/mobile-robots/media/hospital_sim.jpg" alt="Robot camera view in the simulated hospital."></a><a href="projects/mobile-robots/" title="Mapping with the Husky (2 times faster)."><img loading="lazy" src="projects/mobile-robots/media/husky_slam.jpg" alt="Mapping with the Husky (2 times faster)."></a><a href="projects/mobile-robots/" title="Teleoperation from a phone."><img loading="lazy" src="projects/mobile-robots/media/phone_teleop.jpg" alt="Teleoperation from a phone."></a></div>
     <div class="meta">
       <a href="docs/inference.html"><i class="fas fa-file-lines"></i>Notes: GR00T policy inference</a>
       <a href="docs/teleop.md"><i class="fas fa-file-lines"></i>Notes: teleoperation and data collection</a>
@@ -288,17 +316,21 @@
   <h2>Other projects</h2>
   <div class="item">
     <div class="item-head">
-      <div class="item-title">vani: voice dictation for Linux</div>
-      <div class="item-date">2026</div>
+      <div class="item-title">Simulation projects</div>
+      <div class="item-date">2023 – 2026</div>
     </div>
+    <div class="item-org">Unity · Isaac Sim · MuJoCo</div>
+    <p>Simulation environments I built for different projects: a desert environment with a 3D LiDAR model in Unity, deformable objects in Isaac Sim, and MuJoCo models of new mechanisms.</p>
+    <div class="thumbs"><a href="projects/simulation/" title="Desert simulation in Unity with the 3D LiDAR point cloud in ROS (4 times faster)."><img loading="lazy" src="projects/simulation/media/desert_sim.jpg" alt="Desert simulation in Unity with the 3D LiDAR point cloud in ROS (4 times faster)."></a><a href="projects/simulation/" title="Deformable objects in Isaac Sim."><img loading="lazy" src="projects/simulation/media/deformable.jpg" alt="Deformable objects in Isaac Sim."></a><a href="projects/simulation/" title="Plant with deformable stems in Isaac Sim."><img loading="lazy" src="projects/simulation/media/strawberry.jpg" alt="Plant with deformable stems in Isaac Sim."></a><a href="projects/simulation/" title="Six-axis parallel robot in MuJoCo."><img loading="lazy" src="projects/simulation/media/parallel_robot.jpg" alt="Six-axis parallel robot in MuJoCo."></a></div>
+    <a class="more" href="projects/simulation/">More details, videos and images →</a>
+  </div>
+  <div class="item">
+    <div class="item-head"><div class="item-title">vani: voice dictation for Linux</div><div class="item-date">2026</div></div>
     <p>A dictation tool for Linux. You say a wake word or press a key, speak, and the text is typed into the active window. The wake word is detected on the local machine.</p>
     <div class="meta"><a href="https://github.com/sudhirpratapyadav/vani"><i class="fab fa-github"></i>GitHub</a></div>
   </div>
   <div class="item">
-    <div class="item-head">
-      <div class="item-title">unity_ros_lidar_3d and manipulation_gym</div>
-      <div class="item-date">2023</div>
-    </div>
+    <div class="item-head"><div class="item-title">unity_ros_lidar_3d and manipulation_gym</div><div class="item-date">2023</div></div>
     <p>A Unity package that simulates a 3D LiDAR and publishes to ROS, and a set of Isaac Gym environments for robot arms.</p>
     <div class="meta">
       <a href="https://github.com/sudhirpratapyadav/unity_ros_lidar_3d"><i class="fab fa-github"></i>unity_ros_lidar_3d</a>
@@ -308,7 +340,7 @@
   <details>
     <summary>Earlier projects (2015–2024)</summary>
     <div class="archive">
-      <div class="a-row"><span>3D human skeleton tracking from RGB-D: 2D detector + depth triangulation, real-time renderer (RealSense D455)</span><span class="a-yr">2024</span></div>
+      <div class="a-row"><span>3D human skeleton tracking from RGB-D: 2D detector and depth triangulation, real-time renderer (RealSense D455)</span><span class="a-yr">2024</span></div>
       <div class="a-row"><span>Multi-agent ecosystem simulation in Unity: organism behaviours, planning, environmental response</span><span class="a-yr">2024</span></div>
       <div class="a-row"><span>Visual servoing on a TurtleBot: camera-in-hand target tracking and following</span><span class="a-yr">2023</span></div>
       <div class="a-row"><span>3D reconstruction of a desert environment: comparison of NeRF approaches on simulated and real data</span><span class="a-yr">2023</span></div>
@@ -339,42 +371,26 @@
 <section>
   <h2>Education</h2>
   <div class="item">
-    <div class="item-head">
-      <div class="item-title">Ph.D., Robotics and Mobility Systems, IIT Jodhpur</div>
-      <div class="item-date">2023 – 2026 (expected)</div>
-    </div>
+    <div class="item-head"><div class="item-title">Ph.D., Robotics and Mobility Systems, IIT Jodhpur</div><div class="item-date">2023 – present</div></div>
     <div class="item-org">CGPA 10.0/10.0</div>
   </div>
   <div class="item">
-    <div class="item-head">
-      <div class="item-title">B.Tech., Electrical Engineering, IIT Jodhpur</div>
-      <div class="item-date">2014 – 2018</div>
-    </div>
+    <div class="item-head"><div class="item-title">B.Tech., Electrical Engineering, IIT Jodhpur</div><div class="item-date">2014 – 2018</div></div>
     <div class="item-org">CGPA 8.64/10.0 <span class="sub">· Academic Distinction Award, 2016–17</span></div>
   </div>
   <div class="item">
-    <div class="item-head">
-      <div class="item-title">Civil Services Examination preparation</div>
-      <div class="item-date">2018 – 2021</div>
-    </div>
+    <div class="item-head"><div class="item-title">Civil Services Examination preparation</div><div class="item-date">2018 – 2021</div></div>
   </div>
 </section>
 
 <section>
   <h2>Teaching</h2>
   <div class="item">
-    <p style="margin-top:0">
-      I have been a teaching assistant for Experimental Robotics at IIT Jodhpur and have conducted
-      ROS workshops. I was Head (2015) and Mentor (2016) of the IIT Jodhpur Robotics Club, and a
-      Coursera mentor for the course Robotics: Estimation and Learning (2017).
-    </p>
+    <p style="margin-top:0">I have been a teaching assistant for Experimental Robotics at IIT Jodhpur and have conducted ROS workshops. I was Head (2015) and Mentor (2016) of the IIT Jodhpur Robotics Club, and a Coursera mentor for the course Robotics: Estimation and Learning (2017).</p>
   </div>
 </section>
 
-<footer>
-  Source on <a href="https://github.com/sudhirpratapyadav/sudhirpratapyadav.github.io">GitHub</a>.
-</footer>
-
+<footer>Source on <a href="https://github.com/sudhirpratapyadav/sudhirpratapyadav.github.io">GitHub</a>.</footer>
 </div>
 </body>
 </html>

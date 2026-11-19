@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hospital delivery and inspection robot | Sudhir Pratap Yadav</title>
+<meta name="description" content="I built the software for an autonomous hospital delivery robot, which was later adapted for datacenter inspection. It includes navigation, simulation, a server on the robot and a web console for the o">
+<meta property="og:title" content="Hospital delivery and inspection robot | Sudhir Pratap Yadav">
+<meta property="og:description" content="I built the software for an autonomous hospital delivery robot, which was later adapted for datacenter inspection. It includes navigation, simulation, a server on the robot and a web console for the o">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+<style>
+  :root{
+    --ink:#16161a;
+    --body:#33333b;
+    --muted:#71717f;
+    --accent:#2d325a;
+    --rule:#e2e2e8;
+    --bg:#ffffff;
+    --panel:#f7f7f9;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#f0f0f4; --body:#c6c6d0; --muted:#8b8b99;
+      --accent:#a8b0e8; --rule:#2b2b33; --bg:#131318; --panel:#1b1b21;
+    }
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--body);
+    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:820px; margin:0 auto; padding:0 22px 90px; }
+  a{ color:var(--accent); text-decoration:none; border-bottom:1px solid transparent; }
+  a:hover{ border-bottom-color:currentColor; }
+
+  /* ---------- header ---------- */
+  header{ padding:60px 0 30px; }
+  .top{ display:flex; gap:26px; align-items:flex-start; flex-wrap:wrap; }
+  .top-text{ flex:1; min-width:260px; }
+  h1{ margin:0; font-size:2.35rem; line-height:1.1; letter-spacing:-.5px; color:var(--ink); font-weight:700; }
+  .tagline{ margin:8px 0 0; font-size:1.06rem; color:var(--accent); font-weight:600; }
+  #pic{
+    width:132px; height:132px; border-radius:50%; object-fit:cover;
+    border:3px solid var(--bg); box-shadow:0 2px 14px rgba(0,0,0,.18); flex:0 0 auto;
+  }
+  .links{ margin-top:16px; display:flex; flex-wrap:wrap; gap:8px 18px; font-size:.92rem; }
+  .links a{ color:var(--muted); }
+  .links i{ width:15px; text-align:center; margin-right:5px; color:var(--accent); }
+
+  .intro{ margin:26px 0 0; font-size:1.05rem; color:var(--body); }
+  .intro em{ color:var(--ink); font-style:normal; font-weight:600; }
+
+  /* ---------- sections ---------- */
+  section{ margin-top:46px; }
+  h2{
+    font-size:.82rem; text-transform:uppercase; letter-spacing:.13em; font-weight:700;
+    color:var(--muted); margin:0 0 18px; padding-bottom:8px; border-bottom:1px solid var(--rule);
+  }
+
+  /* ---------- item ---------- */
+  .item{ margin-bottom:26px; }
+  .item:last-child{ margin-bottom:0; }
+  .item-head{ display:flex; justify-content:space-between; align-items:baseline; gap:14px; flex-wrap:wrap; }
+  .item-title{ font-weight:650; color:var(--ink); font-size:1.02rem; }
+  .item-date{ font-size:.84rem; color:var(--muted); white-space:nowrap; }
+  .item-org{ font-size:.9rem; color:var(--accent); font-weight:600; margin-top:1px; }
+  .item-org .sub{ color:var(--muted); font-weight:400; }
+  .item p{ margin:7px 0 0; font-size:.955rem; }
+  .item ul{ margin:7px 0 0; padding-left:19px; font-size:.955rem; }
+  .item li{ margin-bottom:4px; }
+  .item li::marker{ color:var(--accent); }
+
+  .n{ font-weight:700; color:var(--ink); }
+
+  .meta{ margin-top:8px; font-size:.85rem; }
+  .meta a{ display:inline-block; margin-right:14px; color:var(--muted); }
+  .meta i{ margin-right:4px; }
+
+  /* ---------- highlight panel ---------- */
+  .panel{
+    background:var(--panel); border-left:3px solid var(--accent);
+    padding:16px 18px; border-radius:0 5px 5px 0; margin-bottom:26px;
+  }
+  .panel .item-title{ font-size:1.04rem; }
+
+  /* ---------- skills ---------- */
+  .skills p{ margin:0 0 8px; font-size:.94rem; }
+  .skills b{ color:var(--ink); }
+
+  /* ---------- archive ---------- */
+  details{ margin-top:8px; }
+  summary{ cursor:pointer; color:var(--muted); font-size:.9rem; }
+  summary:hover{ color:var(--accent); }
+  .archive{ margin-top:14px; font-size:.92rem; }
+  .archive .a-row{ padding:5px 0; border-bottom:1px solid var(--rule); display:flex; justify-content:space-between; gap:14px; }
+  .archive .a-row:last-child{ border-bottom:none; }
+  .archive .a-yr{ color:var(--muted); white-space:nowrap; font-size:.85rem; }
+
+  footer{ margin-top:56px; padding-top:20px; border-top:1px solid var(--rule); font-size:.86rem; color:var(--muted); }
+
+  @media (max-width:620px){
+    header{ padding-top:38px; }
+    h1{ font-size:1.9rem; }
+    #pic{ width:96px; height:96px; }
+  }
+
+  /* ---------- video ---------- */
+  video{ display:block; width:100%; max-height:460px; margin-top:12px; border-radius:5px; background:#000; }
+  .vcap{ font-size:.84rem; color:var(--muted); margin-top:5px; }
+
+  video{ display:block; width:100%; max-height:470px; border-radius:5px; background:#000; }
+  .lead{ margin-top:12px; }
+  .vcap{ font-size:.84rem; color:var(--muted); margin-top:5px; }
+  .thumbs{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
+  .thumbs a{ border:none; display:block; }
+  .thumbs img{ width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:4px; display:block; background:var(--panel); }
+  .thumbs a:hover img{ opacity:.85; }
+  .more{ display:inline-block; margin-top:10px; font-size:.9rem; font-weight:600; }
+  .gallery{ display:grid; grid-template-columns:1fr 1fr; gap:22px 18px; margin-top:6px; }
+  .gallery .wide{ grid-column:1 / -1; }
+  .gallery img{ width:100%; border-radius:5px; border:1px solid var(--rule); display:block; }
+  .tasks{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:6px; }
+  .tasks video{ max-height:none; aspect-ratio:4/3; object-fit:cover; }
+  .tasks .vcap{ font-size:.76rem; margin-top:2px; }
+  .back{ display:inline-block; margin-top:34px; font-size:.9rem; }
+  .detail h3{ font-size:1rem; color:var(--ink); margin:24px 0 4px; }
+  .detail p{ margin:0; }
+  .pagelinks{ margin-top:12px; font-size:.9rem; }
+  .pagelinks a{ display:inline-block; margin-right:16px; }
+  @media (max-width:620px){ .gallery, .tasks{ grid-template-columns:1fr 1fr; } .gallery{ grid-template-columns:1fr; } .thumbs{ grid-template-columns:1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header style="padding-bottom:10px">
+  <a href="../../">← Sudhir Pratap Yadav</a>
+  <h1 style="margin-top:18px;font-size:1.9rem">Hospital delivery and inspection robot</h1>
+  <div class="tagline" style="font-size:.95rem">Contract work · Clearpath Husky · ROS 2 · Nav2 · MuJoCo · React · 2026</div>
+  <p class="intro">I built the software for an autonomous hospital delivery robot, which was later adapted for datacenter inspection. It includes navigation, simulation, a server on the robot and a web console for the operator.</p>
+  <div class="pagelinks meta"><a href="https://github.com/sudhirpratapyadav/husky_robot_ws"><i class="fab fa-github"></i>husky_robot_ws on GitHub</a></div>
+</header>
+<section style="margin-top:20px">
+<h2>Videos and images</h2>
+<div class="gallery">
+<div class="wide"><video controls playsinline preload="none" poster="media/console.jpg"><source src="media/console.mp4" type="video/mp4"></video><div class="vcap">Operator console during a delivery in the simulated hospital (4 times faster).</div></div>
+<div><video controls playsinline preload="none" poster="media/hospital_sim.jpg"><source src="media/hospital_sim.mp4" type="video/mp4"></video><div class="vcap">Robot camera view in the simulated hospital.</div></div>
+<div><video controls playsinline preload="none" poster="media/husky_slam.jpg"><source src="media/husky_slam.mp4" type="video/mp4"></video><div class="vcap">Mapping with the Husky (2 times faster).</div></div>
+<div><video controls playsinline preload="none" poster="media/phone_teleop.jpg"><source src="media/phone_teleop.mp4" type="video/mp4"></video><div class="vcap">Teleoperation from a phone.</div></div>
+</div>
+</section>
+<section class="detail">
+<h2>Details</h2>
+<h3>Robot software</h3>
+<p>The robot is a Clearpath Husky with ROS 2 and Nav2. I built the navigation setup, the mapping, and a server on the robot (FastAPI) that connects the robot to the web console. Production and development versions run as separate services so that changes can be tested without stopping the robot.</p>
+<h3>Operator console</h3>
+<p>The console is a React web app that works on a phone and on a desktop. The operator selects a destination on the map, follows the robot and its camera, and can stop it at any time.</p>
+<h3>Simulation</h3>
+<p>The same software runs against a simulated hospital and a simulated datacenter hall in MuJoCo and Gazebo. This was used to test multi-room deliveries and inspection routes before running on the robot.</p>
+</section>
+<a class="back" href="../../">← Back to the main page</a>
+
+<footer>Source on <a href="https://github.com/sudhirpratapyadav/sudhirpratapyadav.github.io">GitHub</a>.</footer>
+</div>
+</body>
+</html>
