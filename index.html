@@ -8,389 +8,276 @@
 <meta property="og:title" content="Sudhir Pratap Yadav, Robotics Engineer">
 <meta property="og:description" content="Robotics engineer and PhD candidate at IIT Jodhpur. Manipulation, robot learning, sim-to-real transfer and SLAM.">
 <meta property="og:type" content="website">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-      crossorigin="anonymous" referrerpolicy="no-referrer">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
 <style>
-  :root{
-    --ink:#16161a;
-    --body:#33333b;
-    --muted:#71717f;
-    --accent:#2d325a;
-    --rule:#e2e2e8;
-    --bg:#ffffff;
-    --panel:#f7f7f9;
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --ink:#f0f0f4; --body:#c6c6d0; --muted:#8b8b99;
-      --accent:#a8b0e8; --rule:#2b2b33; --bg:#131318; --panel:#1b1b21;
-    }
-  }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    margin:0; background:var(--bg); color:var(--body);
-    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{ max-width:820px; margin:0 auto; padding:0 22px 90px; }
-  a{ color:var(--accent); text-decoration:none; border-bottom:1px solid transparent; }
-  a:hover{ border-bottom-color:currentColor; }
-
-  /* ---------- header ---------- */
-  header{ padding:60px 0 30px; }
-  .top{ display:flex; gap:26px; align-items:flex-start; flex-wrap:wrap; }
-  .top-text{ flex:1; min-width:260px; }
-  h1{ margin:0; font-size:2.35rem; line-height:1.1; letter-spacing:-.5px; color:var(--ink); font-weight:700; }
-  .tagline{ margin:8px 0 0; font-size:1.06rem; color:var(--accent); font-weight:600; }
-  #pic{
-    width:132px; height:132px; border-radius:50%; object-fit:cover;
-    border:3px solid var(--bg); box-shadow:0 2px 14px rgba(0,0,0,.18); flex:0 0 auto;
-  }
-  .links{ margin-top:16px; display:flex; flex-wrap:wrap; gap:8px 18px; font-size:.92rem; }
-  .links a{ color:var(--muted); }
-  .links i{ width:15px; text-align:center; margin-right:5px; color:var(--accent); }
-
-  .intro{ margin:26px 0 0; font-size:1.05rem; color:var(--body); }
-  .intro em{ color:var(--ink); font-style:normal; font-weight:600; }
-
-  /* ---------- sections ---------- */
-  section{ margin-top:46px; }
-  h2{
-    font-size:.82rem; text-transform:uppercase; letter-spacing:.13em; font-weight:700;
-    color:var(--muted); margin:0 0 18px; padding-bottom:8px; border-bottom:1px solid var(--rule);
-  }
-
-  /* ---------- item ---------- */
-  .item{ margin-bottom:26px; }
-  .item:last-child{ margin-bottom:0; }
-  .item-head{ display:flex; justify-content:space-between; align-items:baseline; gap:14px; flex-wrap:wrap; }
-  .item-title{ font-weight:650; color:var(--ink); font-size:1.02rem; }
-  .item-date{ font-size:.84rem; color:var(--muted); white-space:nowrap; }
-  .item-org{ font-size:.9rem; color:var(--accent); font-weight:600; margin-top:1px; }
-  .item-org .sub{ color:var(--muted); font-weight:400; }
-  .item p{ margin:7px 0 0; font-size:.955rem; }
-  .item ul{ margin:7px 0 0; padding-left:19px; font-size:.955rem; }
-  .item li{ margin-bottom:4px; }
-  .item li::marker{ color:var(--accent); }
-
-  .n{ font-weight:700; color:var(--ink); }
-
-  .meta{ margin-top:8px; font-size:.85rem; }
-  .meta a{ display:inline-block; margin-right:14px; color:var(--muted); }
-  .meta i{ margin-right:4px; }
-
-  /* ---------- highlight panel ---------- */
-  .panel{
-    background:var(--panel); border-left:3px solid var(--accent);
-    padding:16px 18px; border-radius:0 5px 5px 0; margin-bottom:26px;
-  }
-  .panel .item-title{ font-size:1.04rem; }
-
-  /* ---------- skills ---------- */
-  .skills p{ margin:0 0 8px; font-size:.94rem; }
-  .skills b{ color:var(--ink); }
-
-  /* ---------- archive ---------- */
-  details{ margin-top:8px; }
-  summary{ cursor:pointer; color:var(--muted); font-size:.9rem; }
-  summary:hover{ color:var(--accent); }
-  .archive{ margin-top:14px; font-size:.92rem; }
-  .archive .a-row{ padding:5px 0; border-bottom:1px solid var(--rule); display:flex; justify-content:space-between; gap:14px; }
-  .archive .a-row:last-child{ border-bottom:none; }
-  .archive .a-yr{ color:var(--muted); white-space:nowrap; font-size:.85rem; }
-
-  footer{ margin-top:56px; padding-top:20px; border-top:1px solid var(--rule); font-size:.86rem; color:var(--muted); }
-
-  @media (max-width:620px){
-    header{ padding-top:38px; }
-    h1{ font-size:1.9rem; }
-    #pic{ width:96px; height:96px; }
-  }
-
-  /* ---------- video ---------- */
-  video{ display:block; width:100%; max-height:460px; margin-top:12px; border-radius:5px; background:#000; }
-  .vcap{ font-size:.84rem; color:var(--muted); margin-top:5px; }
-
-  video{ display:block; width:100%; max-height:470px; border-radius:5px; background:#000; }
-  .lead{ margin-top:12px; }
-  .vcap{ font-size:.84rem; color:var(--muted); margin-top:5px; }
-  .thumbs{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
-  .thumbs a{ border:none; display:block; }
-  .thumbs img{ width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:4px; display:block; background:var(--panel); }
-  .thumbs a:hover img{ opacity:.85; }
-  .more{ display:inline-block; margin-top:10px; font-size:.9rem; font-weight:600; }
-  .gallery{ display:grid; grid-template-columns:1fr 1fr; gap:22px 18px; margin-top:6px; }
-  .gallery .wide{ grid-column:1 / -1; }
-  .gallery img{ width:100%; border-radius:5px; border:1px solid var(--rule); display:block; }
-  .tasks{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:6px; }
-  .tasks video{ max-height:none; aspect-ratio:4/3; object-fit:cover; }
-  .tasks .vcap{ font-size:.76rem; margin-top:2px; }
-  .back{ display:inline-block; margin-top:34px; font-size:.9rem; }
-  .detail h3{ font-size:1rem; color:var(--ink); margin:24px 0 4px; }
-  .detail p{ margin:0; }
-  .pagelinks{ margin-top:12px; font-size:.9rem; }
-  .pagelinks a{ display:inline-block; margin-right:16px; }
-  @media (max-width:620px){ .gallery, .tasks{ grid-template-columns:1fr 1fr; } .gallery{ grid-template-columns:1fr; } .thumbs{ grid-template-columns:1fr 1fr; } }
+:root{--ink:#111418;--text:#2b3038;--muted:#667085;--line:#e7e9ee;--soft:#f5f6f8;--accent:#1b5fc1;--accent-soft:#eaf1fc}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#fff;color:var(--text);font:15.5px/1.65 Inter,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:940px;margin:0 auto;padding:0 24px 80px}
+nav.top{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+nav.top .in{max-width:940px;margin:0 auto;padding:11px 24px;display:flex;gap:22px;align-items:center;font-size:14px}
+nav.top .brand{font-weight:600;color:var(--ink);margin-right:auto}
+nav.top a{color:var(--muted)} nav.top a:hover{color:var(--ink);text-decoration:none}
+/* hero */
+.hero{display:grid;grid-template-columns:1fr 170px;gap:36px;align-items:center;padding:54px 0 18px}
+.hero h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:40px;line-height:1.1;margin:0;color:var(--ink);letter-spacing:-.3px}
+.hero .role{margin-top:8px;font-size:16px;color:var(--muted)}
+.hero p{margin:16px 0 0}
+.hero img{width:170px;height:170px;border-radius:50%;object-fit:cover}
+.links{margin-top:16px;font-size:14px;display:flex;flex-wrap:wrap;gap:6px 18px}
+.links a{color:var(--ink);font-weight:500} .links i{color:var(--muted);margin-right:6px}
+/* sections */
+h2.sec{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:24px;color:var(--ink);margin:56px 0 6px;scroll-margin-top:60px}
+.sec-note{color:var(--muted);font-size:14px;margin:0 0 10px}
+/* project rows */
+.row{display:grid;grid-template-columns:300px 1fr;gap:26px;padding:22px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:none}
+.row .media{display:block;border-radius:8px;overflow:hidden;background:var(--soft);aspect-ratio:16/10}
+.row .media video,.row .media img{width:100%;height:100%;object-fit:cover;display:block}
+.row h3{margin:0;font-size:18px;line-height:1.35;color:var(--ink);font-weight:600}
+.row h3 a{color:var(--ink)}
+.meta-line{font-size:13px;color:var(--muted);margin-top:3px}
+.row p{margin:8px 0 0;font-size:15px}
+.keys{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:10px}
+.key{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-size:12.5px;color:var(--text)}
+.key b{color:var(--ink)}
+.rlinks{margin-top:10px;font-size:14px;display:flex;flex-wrap:wrap;gap:4px 16px}
+.rlinks a{font-weight:500}
+/* experience */
+.xp{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:18px 0;border-top:1px solid var(--line)}
+.xp:first-of-type{border-top:none}
+.xp .when{font-size:13.5px;color:var(--muted);padding-top:2px}
+.xp h3{margin:0;font-size:16.5px;color:var(--ink);font-weight:600}
+.xp .org{font-size:14px;color:var(--muted)}
+.xp p{margin:8px 0 0}
+.sub{display:grid;grid-template-columns:120px 1fr;gap:16px;margin-top:16px;align-items:start}
+.sub .th{display:block;border-radius:6px;overflow:hidden;aspect-ratio:16/10;background:var(--soft)}
+.sub .th img{width:100%;height:100%;object-fit:cover;display:block}
+.sub b{color:var(--ink)} .sub p{margin:3px 0 0;font-size:14.5px}
+.sub.notimg{grid-template-columns:1fr}
+details{margin-top:14px} summary{cursor:pointer;color:var(--muted);font-size:14px}
+.arch{font-size:14px;margin-top:8px} .arch div{display:flex;justify-content:space-between;gap:14px;padding:6px 0;border-bottom:1px solid var(--line)} .arch span:last-child{color:var(--muted);white-space:nowrap}
+/* small cards */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
+.card{border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.card h4{margin:0;font-size:15px;color:var(--ink)} .card p{margin:6px 0 0;font-size:14px} .card .rlinks{margin-top:8px}
+.simple p{margin:6px 0}
+.simple b{color:var(--ink)}
+.edu{display:flex;justify-content:space-between;gap:12px;padding:6px 0} .edu span:last-child{color:var(--muted);white-space:nowrap;font-size:14px}
+footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+/* project page */
+.pp-head{text-align:center;padding:46px 0 10px}
+.pp-head .crumb{text-align:left;font-size:14px;margin-bottom:22px}
+.pp-head h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:38px;line-height:1.15;margin:0 auto;max-width:760px;color:var(--ink)}
+.pp-head .meta-line{font-size:14.5px;margin-top:10px}
+.btns{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:18px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:#1f2328;color:#fff;border-radius:999px;padding:8px 18px;font-size:14px;font-weight:500}
+.btn:hover{background:#000;text-decoration:none} .btn.light{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+.herov{margin-top:28px} .herov video{width:100%;border-radius:10px;display:block;background:#000;max-height:560px}
+.cap{font-size:13px;color:var(--muted);margin-top:6px;text-align:center}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:28px}
+.stat{background:var(--soft);border-radius:10px;padding:16px 18px}
+.stat .v{font-size:24px;font-weight:700;color:var(--ink);letter-spacing:-.3px}
+.stat .l{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.4}
+.narrow{max-width:760px;margin:0 auto}
+.narrow h2{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:24px;color:var(--ink);margin:44px 0 8px}
+.narrow h3{font-size:16.5px;color:var(--ink);margin:26px 0 4px}
+.narrow p{margin:0}
+.lead{font-size:16.5px}
+.gal{display:grid;grid-template-columns:1fr 1fr;gap:22px 20px;margin-top:10px}
+.gal video,.gal img{width:100%;border-radius:8px;display:block;background:#000}
+.gal img{background:#fff;border:1px solid var(--line)}
+.gal .cap{text-align:left}
+.tasks{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.tasks video{width:100%;border-radius:6px;display:block;aspect-ratio:4/3;object-fit:cover}
+.tasks .cap{text-align:left;font-size:12px;margin-top:3px}
+.others{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:12px}
+.others a{color:var(--ink);font-size:13.5px;font-weight:500;line-height:1.35}
+.others img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:6px;display:block;margin-bottom:6px}
+@media (max-width:720px){
+ .hero{grid-template-columns:1fr;gap:18px}.hero img{width:120px;height:120px;order:-1}
+ .row,.xp{grid-template-columns:1fr;gap:12px}.cards{grid-template-columns:1fr}
+ .gal{grid-template-columns:1fr}.tasks,.others{grid-template-columns:1fr 1fr}
+ nav.top .in a:not(.brand){display:none}
+ .hero h1{font-size:32px}.pp-head h1{font-size:28px}
+}
 </style>
 </head>
 <body>
+<nav class="top"><div class="in"><a class="brand" href="#">Sudhir Pratap Yadav</a><a href="#projects">Projects</a><a href="#experience">Experience</a><a href="#publication">Publication</a><a href="#education">Education</a></div></nav>
 <div class="wrap">
-<header>
-  <div class="top">
-    <div class="top-text">
-      <h1>Sudhir Pratap Yadav</h1>
-      <div class="tagline">Robotics engineer: manipulation, robot learning, sim-to-real, SLAM</div>
-      <div class="links">
-        <a href="mailto:sudhirpratapyadav@gmail.com"><i class="fas fa-envelope"></i>sudhirpratapyadav@gmail.com</a>
-        <a href="https://github.com/sudhirpratapyadav"><i class="fab fa-github"></i>GitHub</a>
-        <a href="https://www.linkedin.com/in/sudhir-pratap-yadav"><i class="fab fa-linkedin"></i>LinkedIn</a>
-        <a href="https://x.com/sudhirPyadav"><i class="fab fa-x-twitter"></i>X</a>
-        <a href="https://www.youtube.com/@SudhirYadav-kz6ts"><i class="fab fa-youtube"></i>YouTube</a>
-      </div>
+<section class="hero">
+  <div>
+    <h1>Sudhir Pratap Yadav</h1>
+    <div class="role">Robotics engineer · PhD candidate, IIT Jodhpur</div>
+    <p>I work on robot manipulation, robot learning, sim-to-real transfer and SLAM, and have ten years of
+    experience across hardware, control, perception and learning. My PhD research at IIT&nbsp;Jodhpur is on
+    continual learning and sim-to-real transfer for manipulation. I also do contract work for robotics
+    startups on industrial arms, humanoids and mobile robots.</p>
+    <div class="links">
+      <a href="mailto:sudhirpratapyadav@gmail.com"><i class="fas fa-envelope"></i>Email</a>
+      <a href="https://github.com/sudhirpratapyadav"><i class="fab fa-github"></i>GitHub</a>
+      <a href="https://www.linkedin.com/in/sudhir-pratap-yadav"><i class="fab fa-linkedin"></i>LinkedIn</a>
+      <a href="https://x.com/sudhirPyadav"><i class="fab fa-x-twitter"></i>X</a>
+      <a href="https://www.youtube.com/@SudhirYadav-kz6ts"><i class="fab fa-youtube"></i>YouTube</a>
     </div>
-    <img id="pic" src="images/profile_pic.jpg" alt="Sudhir Pratap Yadav">
   </div>
-  <p class="intro">
-    I am a robotics engineer with ten years of experience across hardware, control, perception and
-    robot learning. I am a PhD candidate at IIT&nbsp;Jodhpur, working on continual learning and
-    sim-to-real transfer for manipulation. I also do contract work for robotics startups on
-    industrial arms, humanoids and mobile robots.
-  </p>
-  <p class="pagelinks" style="margin-top:14px">Project pages:
-    <a href="projects/sim-to-real/">Sim-to-real manipulation with Gaussian-splat simulation</a> · <a href="projects/slam-vio/">Stereo-inertial SLAM and monocular VIO</a> · <a href="projects/continual-learning/">Continual learning for manipulation</a> · <a href="projects/quadruped/">Custom quadruped robot</a> · <a href="projects/manipulation/">Manipulation control and teleoperation</a> · <a href="projects/humanoid/">Humanoid manipulation</a> · <a href="projects/mobile-robots/">Hospital delivery and inspection robot</a> · <a href="projects/simulation/">Simulation projects</a>
-  </p>
-</header>
+  <img src="images/profile_pic.jpg" alt="Sudhir Pratap Yadav">
+</section>
 
-<section>
-  <h2>Recent work</h2>
-  <div class="item">
-    <div class="item-head">
-      <div class="item-title">Sim-to-real manipulation with Gaussian-splat simulation</div>
-      <div class="item-date">2026</div>
-    </div>
-    <div class="item-org">PhD research · UR5 · MuJoCo-Warp · Gaussian splatting</div>
+<h2 class="sec" id="projects">Projects</h2>
+<p class="sec-note">Each project has its own page with more videos, images and details.</p>
+<div class="row">
+  <a class="media" href="projects/sim-to-real/"><video autoplay muted loop playsinline preload="metadata" poster="projects/sim-to-real/media/preview.jpg"><source src="projects/sim-to-real/media/preview.mp4" type="video/mp4"></video></a>
+  <div>
+    <h3><a href="projects/sim-to-real/">Sim-to-real manipulation with Gaussian-splat simulation</a></h3>
+    <div class="meta-line">PhD research · UR5 · MuJoCo-Warp · Gaussian splatting · 2026</div>
     <p>I train camera policies in simulation and run them on a real UR5 with an OnRobot RG2 gripper and wrist cameras. The simulator is MuJoCo-Warp, and the camera images are rendered from a Gaussian-splat scan of the lab. No real robot data is used for training.</p>
-    <ul>
-      <li>An RGB-only policy picked the bottle in 21 of 29 attempts on the real robot (72%).</li>
-      <li>A policy that uses camera point clouds reached 98.9% success over 5,120 simulated episodes.</li>
-      <li>Training runs with 21,504 parallel environments on 7 A100 GPUs. Throughput per GPU is 6.5 times higher than in the first version.</li>
-      <li>With FastTD3, the peg-in-hole teacher policy trains in about 30 minutes, compared with about 8 hours with PPO.</li>
-    </ul>
-    <div class="lead"><video controls playsinline preload="none" poster="projects/sim-to-real/media/real_pick.jpg"><source src="projects/sim-to-real/media/real_pick.mp4" type="video/mp4"></video></div>
-    <div class="vcap">The RGB-only policy trained in simulation picking a bottle on the real UR5.</div>
-    <div class="thumbs"><a href="projects/sim-to-real/" title="Simulation: picking a lying bottle, with the rendered wrist camera view."><img loading="lazy" src="projects/sim-to-real/media/sim_lying_bottle.jpg" alt="Simulation: picking a lying bottle, with the rendered wrist camera view."></a><a href="projects/sim-to-real/" title="Real recording and reconstructed simulation side by side for a DROID scene."><img loading="lazy" src="projects/sim-to-real/media/droid_real_vs_sim.jpg" alt="Real recording and reconstructed simulation side by side for a DROID scene."></a><a href="projects/sim-to-real/" title="First successful pick on the real robot (October 2026)."><img loading="lazy" src="projects/sim-to-real/media/real_first_success.jpg" alt="First successful pick on the real robot (October 2026)."></a><a href="projects/sim-to-real/" title="Novel views of a reconstructed DROID scene."><img loading="lazy" src="projects/sim-to-real/media/droid_flythrough.jpg" alt="Novel views of a reconstructed DROID scene."></a></div>
-    <a class="more" href="projects/sim-to-real/">More details, videos and images →</a>
-    <div class="meta"></div>
+    <div class="keys"><span class="key"><b>21 / 29</b> picks on the real UR5 with a policy trained only in simulation</span><span class="key"><b>98.9%</b> success over 5,120 simulated episodes</span><span class="key"><b>6.5×</b> higher training throughput per GPU</span></div>
+    <div class="rlinks"><a href="projects/sim-to-real/">Project page</a></div>
   </div>
-  <div class="item">
-    <div class="item-head">
-      <div class="item-title">Stereo-inertial SLAM and monocular VIO</div>
-      <div class="item-date">2026</div>
-    </div>
-    <div class="item-org">Jetson Nano · RealSense D455 · GTSAM · Basalt</div>
+</div>
+<div class="row">
+  <a class="media" href="projects/slam-vio/"><video autoplay muted loop playsinline preload="metadata" poster="projects/slam-vio/media/preview.jpg"><source src="projects/slam-vio/media/preview.mp4" type="video/mp4"></video></a>
+  <div>
+    <h3><a href="projects/slam-vio/">Stereo-inertial SLAM and monocular VIO</a></h3>
+    <div class="meta-line">Jetson Nano · RealSense D455 · GTSAM · Basalt · 2026</div>
     <p>AnchorFlow-VIO is an open-source monocular visual-inertial odometry system based on Basalt. I evaluated it on the LaMAria benchmark, and it runs at 84 frames per second on a desktop CPU. I also built a stereo-inertial SLAM system for a small mobile robot with a Jetson Nano 4&nbsp;GB. It has loop closure, dense mapping and relocalisation.</p>
-    <ul>
-      <li>On a test loop, drift was reduced from 1.47 m with odometry alone to 0.17 m with loop closure. ORB-SLAM3 gave 0.14 to 0.17 m on the same data.</li>
-      <li>Tracking delay on the Jetson Nano was reduced from 78 ms to 8 ms.</li>
-    </ul>
-    <div class="lead"><video controls playsinline preload="none" poster="projects/slam-vio/media/loop_closure.jpg"><source src="projects/slam-vio/media/loop_closure.mp4" type="video/mp4"></video></div>
-    <div class="vcap">Mapping one floor of a building with loop closure (4 times faster).</div>
-    <div class="thumbs"><a href="projects/slam-vio/" title="Trajectory and point cloud of a room."><img loading="lazy" src="projects/slam-vio/media/home_slam.jpg" alt="Trajectory and point cloud of a room."></a><a href="projects/slam-vio/" title="Dense reconstruction of a room."><img loading="lazy" src="projects/slam-vio/media/home_reconstruction.jpg" alt="Dense reconstruction of a room."></a><a href="projects/slam-vio/" title="Maps from two variants of the dense mapping."><img loading="lazy" src="projects/slam-vio/media/slam_map_A_vs_B.png" alt="Maps from two variants of the dense mapping."></a><a href="projects/slam-vio/" title="Top view of the test loop."><img loading="lazy" src="projects/slam-vio/media/loop1_topview.png" alt="Top view of the test loop."></a></div>
-    <a class="more" href="projects/slam-vio/">More details, videos and images →</a>
-    <div class="meta"><a href="https://github.com/sudhirpratapyadav/anchorflow-vio"><i class="fab fa-github"></i>anchorflow-vio on GitHub</a></div>
+    <div class="keys"><span class="key"><b>0.17 m</b> loop drift with loop closure</span><span class="key"><b>8 ms</b> tracking delay on the Jetson Nano</span><span class="key"><b>84 fps</b> AnchorFlow-VIO on a desktop CPU</span></div>
+    <div class="rlinks"><a href="projects/slam-vio/">Project page</a><a href="https://github.com/sudhirpratapyadav/anchorflow-vio"><i class="fab fa-github"></i> anchorflow-vio on GitHub</a></div>
   </div>
-  <div class="item">
-    <div class="item-head">
-      <div class="item-title">Continual learning for manipulation</div>
-      <div class="item-date">2023 – present</div>
-    </div>
-    <div class="item-org">PhD thesis · mjlab · reinforcement learning</div>
+</div>
+<div class="row">
+  <a class="media" href="projects/continual-learning/"><video autoplay muted loop playsinline preload="metadata" poster="projects/continual-learning/media/preview.jpg"><source src="projects/continual-learning/media/preview.mp4" type="video/mp4"></video></a>
+  <div>
+    <h3><a href="projects/continual-learning/">Continual learning for manipulation</a></h3>
+    <div class="meta-line">PhD thesis · mjlab · reinforcement learning · 2023 – present</div>
     <p>My thesis is about adding new manipulation skills to one policy without storing the data of earlier tasks. I built a benchmark of 37 manipulation tasks and trained a separate teacher policy for each task. The teachers are then combined into one network one after another.</p>
-    <ul>
-      <li>One network reached 87.6% average success over 15 tasks. The baseline without consolidation reached 79.5%.</li>
-      <li>A single combined policy performed four tasks on a real 7-DOF arm without fine-tuning on the hardware.</li>
-    </ul>
-    <div class="lead"><video controls loop playsinline preload="none" poster="projects/continual-learning/media/benchmark_grid.jpg"><source src="projects/continual-learning/media/benchmark_grid.mp4" type="video/mp4"></video></div>
-    <div class="vcap">Eight of the 37 benchmark tasks.</div>
-    <div class="thumbs"><a href="projects/continual-learning/" title="Flip Switch Franka"><img loading="lazy" src="projects/continual-learning/media/tasks/Flip-Switch-Franka.jpg" alt="Flip Switch Franka"></a><a href="projects/continual-learning/" title="Slide Window Franka"><img loading="lazy" src="projects/continual-learning/media/tasks/Slide-Window-Franka.jpg" alt="Slide Window Franka"></a><a href="projects/continual-learning/" title="Throw To Bin Franka"><img loading="lazy" src="projects/continual-learning/media/tasks/Throw-To-Bin-Franka.jpg" alt="Throw To Bin Franka"></a><a href="projects/continual-learning/" title="Tool Pull Franka"><img loading="lazy" src="projects/continual-learning/media/tasks/Tool-Pull-Franka.jpg" alt="Tool Pull Franka"></a></div>
-    <a class="more" href="projects/continual-learning/">More details, videos and images →</a>
-    <div class="meta"><a href="https://github.com/sudhirpratapyadav/mjlab"><i class="fab fa-github"></i>mjlab fork on GitHub</a><a href="https://doi.org/10.1017/S0263574724000705"><i class="fas fa-link"></i>Robotica 2024 paper</a></div>
+    <div class="keys"><span class="key"><b>37</b> manipulation tasks in the benchmark</span><span class="key"><b>87.6%</b> average success over 15 tasks with one network</span><span class="key"><b>4</b> tasks run by one policy on a real 7-DOF arm</span></div>
+    <div class="rlinks"><a href="projects/continual-learning/">Project page</a><a href="https://github.com/sudhirpratapyadav/mjlab"><i class="fab fa-github"></i> mjlab fork on GitHub</a><a href="https://doi.org/10.1017/S0263574724000705"><i class="fas fa-link"></i> Robotica 2024 paper</a></div>
   </div>
-  <div class="item">
-    <div class="item-head">
-      <div class="item-title">Custom quadruped robot</div>
-      <div class="item-date">2025 – present</div>
-    </div>
-    <div class="item-org">with L Square Labs · CAD · 3D printing · MuJoCo · RL</div>
+</div>
+<div class="row">
+  <a class="media" href="projects/quadruped/"><video autoplay muted loop playsinline preload="metadata" poster="projects/quadruped/media/preview.jpg"><source src="projects/quadruped/media/preview.mp4" type="video/mp4"></video></a>
+  <div>
+    <h3><a href="projects/quadruped/">Custom quadruped robot</a></h3>
+    <div class="meta-line">with L Square Labs · CAD · 3D printing · MuJoCo · RL · 2025 – present</div>
     <p>I designed, 3D-printed and assembled a 12-joint quadruped. The walking policy is trained with reinforcement learning in MuJoCo and transferred to the robot. The robot walks untethered at 0.3 m/s and did not fall in the recorded trials.</p>
-    <div class="lead"><video controls playsinline preload="none" poster="projects/quadruped/media/summary.jpg"><source src="projects/quadruped/media/summary.mp4" type="video/mp4"></video></div>
-    <div class="vcap">Summary video of the project.</div>
-    <div class="thumbs"><a href="projects/quadruped/" title="Walking on the real robot."><img loading="lazy" src="projects/quadruped/media/walking.jpg" alt="Walking on the real robot."></a><a href="projects/quadruped/" title="The robot in a simulated scene reconstructed with Gaussian splatting."><img loading="lazy" src="projects/quadruped/media/gsplat_sim.jpg" alt="The robot in a simulated scene reconstructed with Gaussian splatting."></a><a href="projects/quadruped/" title="The robot balancing on the floor."><img loading="lazy" src="projects/quadruped/media/hardware_balance.jpg" alt="The robot balancing on the floor."></a><a href="projects/quadruped/" title="First test with a single leg and inverse kinematics."><img loading="lazy" src="projects/quadruped/media/single_leg_test.jpg" alt="First test with a single leg and inverse kinematics."></a></div>
-    <a class="more" href="projects/quadruped/">More details, videos and images →</a>
-    <div class="meta"><a href="https://www.lsquarelabs.com/locomotion"><i class="fas fa-link"></i>Project page at L Square Labs</a><a href="https://github.com/sudhirpratapyadav/quad_cad"><i class="fab fa-github"></i>CAD on GitHub</a></div>
+    <div class="keys"><span class="key"><b>12</b> joints, 3D-printed robot</span><span class="key"><b>0.3 m/s</b> untethered walking</span><span class="key"><b>0</b> falls in the recorded trials</span></div>
+    <div class="rlinks"><a href="projects/quadruped/">Project page</a><a href="https://www.lsquarelabs.com/locomotion"><i class="fas fa-link"></i> Project page at L Square Labs</a><a href="https://github.com/sudhirpratapyadav/quad_cad"><i class="fab fa-github"></i> CAD on GitHub</a></div>
   </div>
-  <div class="item">
-    <div class="item-head">
-      <div class="item-title">Manipulation control and teleoperation</div>
-      <div class="item-date">2024 – 2026</div>
-    </div>
-    <div class="item-org">Kinova Gen3 · xArm6 · Franka · UR5 · RealSense / ZED · Meta Quest 3</div>
+</div>
+<div class="row">
+  <a class="media" href="projects/manipulation/"><video autoplay muted loop playsinline preload="metadata" poster="projects/manipulation/media/preview.jpg"><source src="projects/manipulation/media/preview.mp4" type="video/mp4"></video></a>
+  <div>
+    <h3><a href="projects/manipulation/">Manipulation control and teleoperation</a></h3>
+    <div class="meta-line">Kinova Gen3 · xArm6 · Franka · UR5 · RealSense / ZED · Meta Quest 3 · 2024 – 2026</div>
     <p>I wrote control and perception software for an xArm6 (250 Hz) and a Kinova Gen3 (1 kHz torque control). It is operated from a browser and has five controllers, including gravity compensation and Cartesian impedance control. It also has four metric depth models and SAM2 segmentation. I also built VR teleoperation with a Meta Quest 3 for collecting demonstrations.</p>
-    <div class="lead"><video controls playsinline preload="none" poster="projects/manipulation/media/kinova_gravity_comp.jpg"><source src="projects/manipulation/media/kinova_gravity_comp.mp4" type="video/mp4"></video></div>
-    <div class="vcap">Gravity compensation on the Kinova Gen3 with torque control.</div>
-    <div class="thumbs"><a href="projects/manipulation/" title="Live point cloud and arm control in the browser (2 times faster)."><img loading="lazy" src="projects/manipulation/media/viewer_3d.jpg" alt="Live point cloud and arm control in the browser (2 times faster)."></a><a href="projects/manipulation/" title="Kinova Gen3 picking objects from a plate."><img loading="lazy" src="projects/manipulation/media/kinova_pick.jpg" alt="Kinova Gen3 picking objects from a plate."></a><a href="projects/manipulation/" title="Depth, segmentation and point cloud from one camera (2 times faster)."><img loading="lazy" src="projects/manipulation/media/vision_3d.jpg" alt="Depth, segmentation and point cloud from one camera (2 times faster)."></a><a href="projects/manipulation/" title="Peg-in-hole on a real Franka arm."><img loading="lazy" src="projects/manipulation/media/peg_in_hole_real.jpg" alt="Peg-in-hole on a real Franka arm."></a></div>
-    <a class="more" href="projects/manipulation/">More details, videos and images →</a>
-    <div class="meta"><a href="https://github.com/sudhirpratapyadav/object_pose"><i class="fab fa-github"></i>object_pose on GitHub</a><a href="https://github.com/sudhirpratapyadav/manipulator_teleop"><i class="fab fa-github"></i>manipulator_teleop on GitHub</a><a href="https://github.com/sudhirpratapyadav/act"><i class="fab fa-github"></i>act on GitHub</a></div>
+    <div class="keys"><span class="key"><b>1 kHz</b> torque control on the Kinova Gen3</span><span class="key"><b>5</b> controllers, including Cartesian impedance</span><span class="key"><b>4</b> metric depth models</span></div>
+    <div class="rlinks"><a href="projects/manipulation/">Project page</a><a href="https://github.com/sudhirpratapyadav/object_pose"><i class="fab fa-github"></i> object_pose on GitHub</a><a href="https://github.com/sudhirpratapyadav/manipulator_teleop"><i class="fab fa-github"></i> manipulator_teleop on GitHub</a></div>
   </div>
-</section>
+</div>
 
-<section>
-  <h2>Experience</h2>
-  <div class="item">
-    <div class="item-head">
-      <div class="item-title">Freelance Robotics Engineer (contract)</div>
-      <div class="item-date">Mar 2026 – present</div>
-    </div>
-    <div class="item-org">Remote <span class="sub">· robotics startups in the US and India</span></div>
-    <ul>
-      <li><b>Industrial two-arm cell (FANUC CR-7iA/L).</b> I designed and built the software for the cell. Tasks are written as JSON plans made of general skills such as move, pick, place, detect and measure. The same software runs the MuJoCo simulation and the real cell. I wrote 762 of the 880 commits in the ROS 2, Python, C++ and React codebase.</li>
-      <li><b>Humanoid manipulation (Unitree G1, NVIDIA GR00T N1.7), tech lead, May to Nov 2026.</b> I led the technical work of the team and was responsible for simulation and reinforcement learning. I fine-tuned a frozen GR00T policy with Diffusion Steering RL in simulation, which increased full-task success from 48.3% to 78.3%. I also built an RL pick task with an 11-DOF dexterous hand and a VR teleoperation system that supports six different hands. <a href="projects/humanoid/">Project page</a></li>
-      <li><b>Robot learning.</b> I built a dataset of 1,167 manipulation episodes with success and failure labels, trained reward models (mean absolute error 0.032, compared with about 0.2 for a published baseline) and tested RL fine-tuning of VLA policies. I also trained a 29-DOF arm and hand policy to take a test tube out of a rack with about 99% success in simulation.</li>
-      <li><b>Hospital delivery and datacenter inspection robot (Clearpath Husky).</b> I built the robot software: Nav2 navigation, MuJoCo simulation, a server on the robot and a web console for the operator. <a href="projects/mobile-robots/">Project page</a></li>
-    </ul>
-    <div class="vcap" style="margin-top:12px">Humanoid manipulation</div>
-    <div class="thumbs"><a href="projects/humanoid/" title="VR teleoperation of the G1 arms with dexterous hands in MuJoCo (view from the headset)."><img loading="lazy" src="projects/humanoid/media/vr_teleop.jpg" alt="VR teleoperation of the G1 arms with dexterous hands in MuJoCo (view from the headset)."></a><a href="projects/humanoid/" title="Simulated factory workstation."><img loading="lazy" src="projects/humanoid/media/factory_sim.jpg" alt="Simulated factory workstation."></a><a href="projects/humanoid/" title="The Unitree G1 at the work table."><img loading="lazy" src="projects/humanoid/media/g1_table.jpg" alt="The Unitree G1 at the work table."></a></div>
-    <div class="vcap" style="margin-top:12px">Hospital delivery robot</div>
-    <div class="thumbs"><a href="projects/mobile-robots/" title="Operator console during a delivery in the simulated hospital (4 times faster)."><img loading="lazy" src="projects/mobile-robots/media/console.jpg" alt="Operator console during a delivery in the simulated hospital (4 times faster)."></a><a href="projects/mobile-robots/" title="Robot camera view in the simulated hospital."><img loading="lazy" src="projects/mobile-robots/media/hospital_sim.jpg" alt="Robot camera view in the simulated hospital."></a><a href="projects/mobile-robots/" title="Mapping with the Husky (2 times faster)."><img loading="lazy" src="projects/mobile-robots/media/husky_slam.jpg" alt="Mapping with the Husky (2 times faster)."></a><a href="projects/mobile-robots/" title="Teleoperation from a phone."><img loading="lazy" src="projects/mobile-robots/media/phone_teleop.jpg" alt="Teleoperation from a phone."></a></div>
-    <div class="meta">
-      <a href="docs/inference.html"><i class="fas fa-file-lines"></i>Notes: GR00T policy inference</a>
-      <a href="docs/teleop.md"><i class="fas fa-file-lines"></i>Notes: teleoperation and data collection</a>
-      <a href="docs/reward_models.html"><i class="fas fa-file-lines"></i>Notes: reward models</a>
+<h2 class="sec" id="experience">Experience</h2>
+<div class="xp">
+  <div class="when">Mar 2026 – present</div>
+  <div>
+    <h3>Freelance Robotics Engineer (contract)</h3>
+    <div class="org">Remote, for robotics startups in the US and India</div>
+    <div class="sub"><a class="th" href="projects/humanoid/"><img loading="lazy" src="projects/humanoid/media/preview.jpg" alt=""></a>
+      <div><b>Humanoid manipulation, tech lead (Unitree G1, NVIDIA GR00T N1.7), May – Nov 2026.</b><p>I led the technical work of the team and was responsible for simulation and reinforcement learning. Fine-tuning a frozen GR00T policy with Diffusion Steering RL increased full-task success in simulation from 48.3% to 78.3%. I also built an RL pick task with an 11-DOF dexterous hand and a VR teleoperation system that supports six different hands. <a href="projects/humanoid/">Project page →</a></p></div></div>
+    <div class="sub"><a class="th" href="projects/mobile-robots/"><img loading="lazy" src="projects/mobile-robots/media/preview.jpg" alt=""></a>
+      <div><b>Hospital delivery and datacenter inspection robot (Clearpath Husky).</b><p>I built the robot software: Nav2 navigation, MuJoCo simulation, a server on the robot and a web console for the operator. <a href="projects/mobile-robots/">Project page →</a></p></div></div>
+    <div class="sub notimg"><div><b>Industrial two-arm cell (FANUC CR-7iA/L).</b><p>I designed and built the software for the cell. Tasks are written as JSON plans made of general skills such as move, pick, place, detect and measure, and the same software runs the MuJoCo simulation and the real cell. I wrote 762 of the 880 commits in the ROS 2, Python, C++ and React codebase.</p></div></div>
+    <div class="sub notimg"><div><b>Robot learning: reward models and RL for VLA policies.</b><p>I built a dataset of 1,167 manipulation episodes with success and failure labels, trained reward models (mean absolute error 0.032, compared with about 0.2 for a published baseline) and tested RL fine-tuning of VLA policies. I also trained a 29-DOF arm and hand policy to take a test tube out of a rack with about 99% success in simulation.</p></div></div>
+    <div class="rlinks" style="margin-top:14px">
+      <a href="docs/inference.html"><i class="fas fa-file-lines"></i> Notes: GR00T policy inference</a>
+      <a href="docs/teleop.md"><i class="fas fa-file-lines"></i> Notes: teleoperation</a>
+      <a href="docs/reward_models.html"><i class="fas fa-file-lines"></i> Notes: reward models</a>
     </div>
   </div>
-  <div class="item">
-    <div class="item-head">
-      <div class="item-title">Robotics Engineer</div>
-      <div class="item-date">Sep 2024 – Feb 2026</div>
-    </div>
-    <div class="item-org">Black Coffee Robotics <span class="sub">· remote</span></div>
-    <p>I built MoveIt Pro behaviours and a differential inverse-kinematics planner plugin used in client projects, and optimised ROS 2 sonar mapping on embedded hardware. I also built Isaac Sim and Gazebo environments for deformable-object manipulation and gripper development.</p>
-  </div>
-  <div class="item">
-    <div class="item-head">
-      <div class="item-title">Research Engineer</div>
-      <div class="item-date">Sep 2021 – Jan 2023</div>
-    </div>
-    <div class="item-org">TIH iHub Drishti, IIT Jodhpur</div>
-    <p>I worked on vision-based navigation for a quadcopter in environments without GPS, and on RL methods for learning several vision-based manipulation tasks. The second work led to the Robotica paper.</p>
-  </div>
-  <details>
-    <summary>Earlier positions</summary>
-    <div class="archive">
-      <div class="a-row"><span><b>Junior Research Fellow</b>, IIT Jodhpur. Unity simulation of a desert environment with a custom 3D LiDAR model.</span><span class="a-yr">2023</span></div>
-      <div class="a-row"><span><b>Intern</b>, TCS Innovation Lab. ROS interface for the TAL BRABO industrial arm <a href="https://github.com/sudhirpratapyadav/TAL_BRABO">(docs)</a>.</span><span class="a-yr">2017</span></div>
-      <div class="a-row"><span><b>Intern</b>, Robotics Research Centre, IIIT Hyderabad. Kinematics and balance control of a 26-DOF humanoid.</span><span class="a-yr">2016</span></div>
-    </div>
-  </details>
-</section>
+</div>
+<div class="xp">
+  <div class="when">Sep 2024 – Feb 2026</div>
+  <div><h3>Robotics Engineer</h3><div class="org">Black Coffee Robotics, remote</div>
+  <p>I built MoveIt Pro behaviours and a differential inverse-kinematics planner plugin used in client projects, and optimised ROS 2 sonar mapping on embedded hardware. I also built Isaac Sim and Gazebo environments for deformable-object manipulation and gripper development.</p></div>
+</div>
+<div class="xp">
+  <div class="when">Sep 2021 – Jan 2023</div>
+  <div><h3>Research Engineer</h3><div class="org">TIH iHub Drishti, IIT Jodhpur</div>
+  <p>I worked on vision-based navigation for a quadcopter in environments without GPS, and on RL methods for learning several vision-based manipulation tasks. The second work led to the Robotica paper.</p></div>
+</div>
+<div class="xp">
+  <div class="when">2016 – 2023</div>
+  <div><h3>Earlier positions</h3>
+  <div class="arch">
+    <div><span><b>Junior Research Fellow</b>, IIT Jodhpur. Unity simulation of a desert environment with a custom 3D LiDAR model.</span><span>2023</span></div>
+    <div><span><b>Intern</b>, TCS Innovation Lab. ROS interface for the TAL BRABO industrial arm (<a href="https://github.com/sudhirpratapyadav/TAL_BRABO">docs</a>).</span><span>2017</span></div>
+    <div><span><b>Intern</b>, Robotics Research Centre, IIIT Hyderabad. Kinematics and balance control of a 26-DOF humanoid.</span><span>2016</span></div>
+  </div></div>
+</div>
 
-<section>
-  <h2>Publication</h2>
-  <div class="item">
-    <div class="item-head">
-      <div class="item-title">Learning vision-based robotic manipulation tasks sequentially in offline reinforcement learning settings</div>
-      <div class="item-date">2024</div>
-    </div>
-    <div class="item-org">Robotica, 1–16 <span class="sub">· Yadav SP, Nagar R, Shah SV</span></div>
-    <div class="meta">
-      <a href="https://doi.org/10.1017/S0263574724000705"><i class="fas fa-link"></i>Paper</a>
-      <a href="https://arxiv.org/abs/2301.13450"><i class="ai ai-arxiv"></i>arXiv</a>
-    </div>
-  </div>
-</section>
+<h2 class="sec" id="publication">Publication</h2>
+<div class="simple">
+  <p><b>Learning vision-based robotic manipulation tasks sequentially in offline reinforcement learning settings.</b><br>
+  S. P. Yadav, R. Nagar, S. V. Shah. <i>Robotica</i>, 2024.<br>
+  <a href="https://doi.org/10.1017/S0263574724000705">Paper</a> · <a href="https://arxiv.org/abs/2301.13450">arXiv</a></p>
+</div>
 
-<section>
-  <h2>Other projects</h2>
-  <div class="item">
-    <div class="item-head">
-      <div class="item-title">Simulation projects</div>
-      <div class="item-date">2023 – 2026</div>
-    </div>
-    <div class="item-org">Unity · Isaac Sim · MuJoCo</div>
-    <p>Simulation environments I built for different projects: a desert environment with a 3D LiDAR model in Unity, deformable objects in Isaac Sim, and MuJoCo models of new mechanisms.</p>
-    <div class="thumbs"><a href="projects/simulation/" title="Desert simulation in Unity with the 3D LiDAR point cloud in ROS (4 times faster)."><img loading="lazy" src="projects/simulation/media/desert_sim.jpg" alt="Desert simulation in Unity with the 3D LiDAR point cloud in ROS (4 times faster)."></a><a href="projects/simulation/" title="Deformable objects in Isaac Sim."><img loading="lazy" src="projects/simulation/media/deformable.jpg" alt="Deformable objects in Isaac Sim."></a><a href="projects/simulation/" title="Plant with deformable stems in Isaac Sim."><img loading="lazy" src="projects/simulation/media/strawberry.jpg" alt="Plant with deformable stems in Isaac Sim."></a><a href="projects/simulation/" title="Six-axis parallel robot in MuJoCo."><img loading="lazy" src="projects/simulation/media/parallel_robot.jpg" alt="Six-axis parallel robot in MuJoCo."></a></div>
-    <a class="more" href="projects/simulation/">More details, videos and images →</a>
+<h2 class="sec" id="other">Other projects</h2>
+<div class="row">
+  <a class="media" href="projects/simulation/"><video autoplay muted loop playsinline preload="metadata" poster="projects/simulation/media/preview.jpg"><source src="projects/simulation/media/preview.mp4" type="video/mp4"></video></a>
+  <div><h3><a href="projects/simulation/">Simulation projects</a></h3><div class="meta-line">Unity · Isaac Sim · MuJoCo · 2023 – 2026</div>
+  <p>Simulation environments I built for different projects: a desert environment with a 3D LiDAR model in Unity, deformable objects in Isaac Sim, and MuJoCo models of new mechanisms.</p><div class="rlinks"><a href="projects/simulation/">Project page</a></div></div>
+</div>
+<div class="cards">
+  <div class="card"><h4>vani</h4><p>Voice dictation for Linux. A wake word or a key starts recording, and the text is typed into the active window.</p><div class="rlinks"><a href="https://github.com/sudhirpratapyadav/vani"><i class="fab fa-github"></i> Code</a></div></div>
+  <div class="card"><h4>unity_ros_lidar_3d</h4><p>A Unity package that simulates a 3D LiDAR and publishes point clouds to ROS.</p><div class="rlinks"><a href="https://github.com/sudhirpratapyadav/unity_ros_lidar_3d"><i class="fab fa-github"></i> Code</a></div></div>
+  <div class="card"><h4>manipulation_gym</h4><p>Isaac Gym environments for training robot arms with reinforcement learning.</p><div class="rlinks"><a href="https://github.com/sudhirpratapyadav/manipulation_gym"><i class="fab fa-github"></i> Code</a></div></div>
+</div>
+<details>
+  <summary>Earlier projects (2015 – 2024)</summary>
+  <div class="arch">
+    <div><span>3D human skeleton tracking from RGB-D with a 2D detector and depth triangulation (RealSense D455)</span><span>2024</span></div>
+    <div><span>Multi-agent ecosystem simulation in Unity</span><span>2024</span></div>
+    <div><span>Visual servoing on a TurtleBot</span><span>2023</span></div>
+    <div><span>3D reconstruction of a desert environment, comparing NeRF methods on simulated and real data</span><span>2023</span></div>
+    <div><span>VR tours of a robotics lab and a restaurant</span><span>2022</span></div>
+    <div><span>Vision-based pick-and-place with RGB-D object localisation and motion planning</span><span>2022</span></div>
+    <div><span>Vision-based control of a UR5 with deep RL, trained in Gazebo</span><span>2017–18</span></div>
+    <div><span>Quadruped locomotion with RL, kinematic model and agent in C++</span><span>2016–17</span></div>
+    <div><span>Autonomous mini-helicopter simulation with PID control, for Defence Lab Jodhpur</span><span>2016</span></div>
+    <div><span>Quadcopter trajectory tracking with VICON motion capture and ROS</span><span>2016</span></div>
+    <div><span>P3DX control and occupancy-grid mapping with Kinect depth</span><span>2016</span></div>
+    <div><span>Quadruped crawl gait in simulation and on hardware</span><span>2016</span></div>
   </div>
-  <div class="item">
-    <div class="item-head"><div class="item-title">vani: voice dictation for Linux</div><div class="item-date">2026</div></div>
-    <p>A dictation tool for Linux. You say a wake word or press a key, speak, and the text is typed into the active window. The wake word is detected on the local machine.</p>
-    <div class="meta"><a href="https://github.com/sudhirpratapyadav/vani"><i class="fab fa-github"></i>GitHub</a></div>
-  </div>
-  <div class="item">
-    <div class="item-head"><div class="item-title">unity_ros_lidar_3d and manipulation_gym</div><div class="item-date">2023</div></div>
-    <p>A Unity package that simulates a 3D LiDAR and publishes to ROS, and a set of Isaac Gym environments for robot arms.</p>
-    <div class="meta">
-      <a href="https://github.com/sudhirpratapyadav/unity_ros_lidar_3d"><i class="fab fa-github"></i>unity_ros_lidar_3d</a>
-      <a href="https://github.com/sudhirpratapyadav/manipulation_gym"><i class="fab fa-github"></i>manipulation_gym</a>
-    </div>
-  </div>
-  <details>
-    <summary>Earlier projects (2015–2024)</summary>
-    <div class="archive">
-      <div class="a-row"><span>3D human skeleton tracking from RGB-D: 2D detector and depth triangulation, real-time renderer (RealSense D455)</span><span class="a-yr">2024</span></div>
-      <div class="a-row"><span>Multi-agent ecosystem simulation in Unity: organism behaviours, planning, environmental response</span><span class="a-yr">2024</span></div>
-      <div class="a-row"><span>Visual servoing on a TurtleBot: camera-in-hand target tracking and following</span><span class="a-yr">2023</span></div>
-      <div class="a-row"><span>3D reconstruction of a desert environment: comparison of NeRF approaches on simulated and real data</span><span class="a-yr">2023</span></div>
-      <div class="a-row"><span>VR tours of a robotics lab and a restaurant</span><span class="a-yr">2022</span></div>
-      <div class="a-row"><span>Vision-based pick-and-place: RGB-D object localisation and motion planning</span><span class="a-yr">2022</span></div>
-      <div class="a-row"><span>Vision-based control of a UR5 with deep RL: visual servoing agent trained in Gazebo</span><span class="a-yr">2017–18</span></div>
-      <div class="a-row"><span>Quadruped locomotion with RL: kinematic model and agent in C++</span><span class="a-yr">2016–17</span></div>
-      <div class="a-row"><span>Autonomous mini-helicopter simulation: payload-carrying design and PID control, for Defence Lab Jodhpur</span><span class="a-yr">2016</span></div>
-      <div class="a-row"><span>Quadcopter trajectory tracking: PID with VICON motion capture and ROS</span><span class="a-yr">2016</span></div>
-      <div class="a-row"><span>P3DX control and occupancy-grid mapping with Kinect depth</span><span class="a-yr">2016</span></div>
-      <div class="a-row"><span>Quadruped gait planning: crawl gait in simulation and on hardware</span><span class="a-yr">2016</span></div>
-    </div>
-  </details>
-</section>
+</details>
 
-<section>
-  <h2>Skills</h2>
-  <div class="skills">
-    <p><b>Languages:</b> Python, C++, TypeScript</p>
-    <p><b>Robotics:</b> ROS 2, MoveIt, Nav2, Pinocchio, inverse kinematics, impedance and operational-space control, SLAM and VIO, camera calibration</p>
-    <p><b>Robot learning:</b> PyTorch, reinforcement learning (PPO, TD3, SAC), imitation learning (ACT, diffusion policies), VLA policies (GR00T, OpenVLA), sim-to-real transfer</p>
-    <p><b>Simulation:</b> MuJoCo and MuJoCo-Warp, mjlab, Isaac Sim, Gazebo, Unity, Gaussian splatting</p>
-    <p><b>Robots:</b> UR5, Kinova Gen3, xArm6, Franka, FANUC CR-7iA/L, KUKA iiwa14, Unitree G1, Clearpath Husky, quadrupeds, quadcopters</p>
-    <p><b>Hardware:</b> RealSense, ZED, IMU, LiDAR, Jetson, Arduino, CAD and 3D printing</p>
-  </div>
-</section>
+<h2 class="sec" id="education">Education</h2>
+<div class="simple">
+  <div class="edu"><span><b>Ph.D., Robotics and Mobility Systems</b>, IIT Jodhpur. CGPA 10.0/10.</span><span>2023 – present</span></div>
+  <div class="edu"><span><b>B.Tech., Electrical Engineering</b>, IIT Jodhpur. CGPA 8.64/10. Academic Distinction Award, 2016–17.</span><span>2014 – 2018</span></div>
+  <div class="edu"><span>Civil Services Examination preparation</span><span>2018 – 2021</span></div>
+</div>
 
-<section>
-  <h2>Education</h2>
-  <div class="item">
-    <div class="item-head"><div class="item-title">Ph.D., Robotics and Mobility Systems, IIT Jodhpur</div><div class="item-date">2023 – present</div></div>
-    <div class="item-org">CGPA 10.0/10.0</div>
-  </div>
-  <div class="item">
-    <div class="item-head"><div class="item-title">B.Tech., Electrical Engineering, IIT Jodhpur</div><div class="item-date">2014 – 2018</div></div>
-    <div class="item-org">CGPA 8.64/10.0 <span class="sub">· Academic Distinction Award, 2016–17</span></div>
-  </div>
-  <div class="item">
-    <div class="item-head"><div class="item-title">Civil Services Examination preparation</div><div class="item-date">2018 – 2021</div></div>
-  </div>
-</section>
+<h2 class="sec">Skills</h2>
+<div class="simple">
+  <p><b>Languages:</b> Python, C++, TypeScript</p>
+  <p><b>Robotics:</b> ROS 2, MoveIt, Nav2, Pinocchio, inverse kinematics, impedance and operational-space control, SLAM and VIO, camera calibration</p>
+  <p><b>Robot learning:</b> PyTorch, reinforcement learning (PPO, TD3, SAC), imitation learning (ACT, diffusion policies), VLA policies (GR00T, OpenVLA), sim-to-real transfer</p>
+  <p><b>Simulation:</b> MuJoCo and MuJoCo-Warp, mjlab, Isaac Sim, Gazebo, Unity, Gaussian splatting</p>
+  <p><b>Robots:</b> UR5, Kinova Gen3, xArm6, Franka, FANUC CR-7iA/L, KUKA iiwa14, Unitree G1, Clearpath Husky, quadrupeds, quadcopters</p>
+  <p><b>Hardware:</b> RealSense, ZED, IMU, LiDAR, Jetson, Arduino, CAD and 3D printing</p>
+</div>
 
-<section>
-  <h2>Teaching</h2>
-  <div class="item">
-    <p style="margin-top:0">I have been a teaching assistant for Experimental Robotics at IIT Jodhpur and have conducted ROS workshops. I was Head (2015) and Mentor (2016) of the IIT Jodhpur Robotics Club, and a Coursera mentor for the course Robotics: Estimation and Learning (2017).</p>
-  </div>
-</section>
+<h2 class="sec">Teaching</h2>
+<div class="simple"><p>Teaching assistant for Experimental Robotics at IIT Jodhpur. I have conducted ROS workshops, was Head (2015) and Mentor (2016) of the IIT Jodhpur Robotics Club, and was a Coursera mentor for Robotics: Estimation and Learning (2017).</p></div>
 
-<footer>Source on <a href="https://github.com/sudhirpratapyadav/sudhirpratapyadav.github.io">GitHub</a>.</footer>
+<footer>Sudhir Pratap Yadav · <a href="https://github.com/sudhirpratapyadav/sudhirpratapyadav.github.io">Source on GitHub</a></footer>
 </div>
 </body>
 </html>

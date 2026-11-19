@@ -8,171 +8,129 @@
 <meta property="og:title" content="Stereo-inertial SLAM and monocular VIO | Sudhir Pratap Yadav">
 <meta property="og:description" content="AnchorFlow-VIO is an open-source monocular visual-inertial odometry system based on Basalt. I evaluated it on the LaMAria benchmark, and it runs at 84 frames per second on a desktop CPU. I also built ">
 <meta property="og:type" content="website">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-      crossorigin="anonymous" referrerpolicy="no-referrer">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
 <style>
-  :root{
-    --ink:#16161a;
-    --body:#33333b;
-    --muted:#71717f;
-    --accent:#2d325a;
-    --rule:#e2e2e8;
-    --bg:#ffffff;
-    --panel:#f7f7f9;
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --ink:#f0f0f4; --body:#c6c6d0; --muted:#8b8b99;
-      --accent:#a8b0e8; --rule:#2b2b33; --bg:#131318; --panel:#1b1b21;
-    }
-  }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    margin:0; background:var(--bg); color:var(--body);
-    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{ max-width:820px; margin:0 auto; padding:0 22px 90px; }
-  a{ color:var(--accent); text-decoration:none; border-bottom:1px solid transparent; }
-  a:hover{ border-bottom-color:currentColor; }
-
-  /* ---------- header ---------- */
-  header{ padding:60px 0 30px; }
-  .top{ display:flex; gap:26px; align-items:flex-start; flex-wrap:wrap; }
-  .top-text{ flex:1; min-width:260px; }
-  h1{ margin:0; font-size:2.35rem; line-height:1.1; letter-spacing:-.5px; color:var(--ink); font-weight:700; }
-  .tagline{ margin:8px 0 0; font-size:1.06rem; color:var(--accent); font-weight:600; }
-  #pic{
-    width:132px; height:132px; border-radius:50%; object-fit:cover;
-    border:3px solid var(--bg); box-shadow:0 2px 14px rgba(0,0,0,.18); flex:0 0 auto;
-  }
-  .links{ margin-top:16px; display:flex; flex-wrap:wrap; gap:8px 18px; font-size:.92rem; }
-  .links a{ color:var(--muted); }
-  .links i{ width:15px; text-align:center; margin-right:5px; color:var(--accent); }
-
-  .intro{ margin:26px 0 0; font-size:1.05rem; color:var(--body); }
-  .intro em{ color:var(--ink); font-style:normal; font-weight:600; }
-
-  /* ---------- sections ---------- */
-  section{ margin-top:46px; }
-  h2{
-    font-size:.82rem; text-transform:uppercase; letter-spacing:.13em; font-weight:700;
-    color:var(--muted); margin:0 0 18px; padding-bottom:8px; border-bottom:1px solid var(--rule);
-  }
-
-  /* ---------- item ---------- */
-  .item{ margin-bottom:26px; }
-  .item:last-child{ margin-bottom:0; }
-  .item-head{ display:flex; justify-content:space-between; align-items:baseline; gap:14px; flex-wrap:wrap; }
-  .item-title{ font-weight:650; color:var(--ink); font-size:1.02rem; }
-  .item-date{ font-size:.84rem; color:var(--muted); white-space:nowrap; }
-  .item-org{ font-size:.9rem; color:var(--accent); font-weight:600; margin-top:1px; }
-  .item-org .sub{ color:var(--muted); font-weight:400; }
-  .item p{ margin:7px 0 0; font-size:.955rem; }
-  .item ul{ margin:7px 0 0; padding-left:19px; font-size:.955rem; }
-  .item li{ margin-bottom:4px; }
-  .item li::marker{ color:var(--accent); }
-
-  .n{ font-weight:700; color:var(--ink); }
-
-  .meta{ margin-top:8px; font-size:.85rem; }
-  .meta a{ display:inline-block; margin-right:14px; color:var(--muted); }
-  .meta i{ margin-right:4px; }
-
-  /* ---------- highlight panel ---------- */
-  .panel{
-    background:var(--panel); border-left:3px solid var(--accent);
-    padding:16px 18px; border-radius:0 5px 5px 0; margin-bottom:26px;
-  }
-  .panel .item-title{ font-size:1.04rem; }
-
-  /* ---------- skills ---------- */
-  .skills p{ margin:0 0 8px; font-size:.94rem; }
-  .skills b{ color:var(--ink); }
-
-  /* ---------- archive ---------- */
-  details{ margin-top:8px; }
-  summary{ cursor:pointer; color:var(--muted); font-size:.9rem; }
-  summary:hover{ color:var(--accent); }
-  .archive{ margin-top:14px; font-size:.92rem; }
-  .archive .a-row{ padding:5px 0; border-bottom:1px solid var(--rule); display:flex; justify-content:space-between; gap:14px; }
-  .archive .a-row:last-child{ border-bottom:none; }
-  .archive .a-yr{ color:var(--muted); white-space:nowrap; font-size:.85rem; }
-
-  footer{ margin-top:56px; padding-top:20px; border-top:1px solid var(--rule); font-size:.86rem; color:var(--muted); }
-
-  @media (max-width:620px){
-    header{ padding-top:38px; }
-    h1{ font-size:1.9rem; }
-    #pic{ width:96px; height:96px; }
-  }
-
-  /* ---------- video ---------- */
-  video{ display:block; width:100%; max-height:460px; margin-top:12px; border-radius:5px; background:#000; }
-  .vcap{ font-size:.84rem; color:var(--muted); margin-top:5px; }
-
-  video{ display:block; width:100%; max-height:470px; border-radius:5px; background:#000; }
-  .lead{ margin-top:12px; }
-  .vcap{ font-size:.84rem; color:var(--muted); margin-top:5px; }
-  .thumbs{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
-  .thumbs a{ border:none; display:block; }
-  .thumbs img{ width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:4px; display:block; background:var(--panel); }
-  .thumbs a:hover img{ opacity:.85; }
-  .more{ display:inline-block; margin-top:10px; font-size:.9rem; font-weight:600; }
-  .gallery{ display:grid; grid-template-columns:1fr 1fr; gap:22px 18px; margin-top:6px; }
-  .gallery .wide{ grid-column:1 / -1; }
-  .gallery img{ width:100%; border-radius:5px; border:1px solid var(--rule); display:block; }
-  .tasks{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:6px; }
-  .tasks video{ max-height:none; aspect-ratio:4/3; object-fit:cover; }
-  .tasks .vcap{ font-size:.76rem; margin-top:2px; }
-  .back{ display:inline-block; margin-top:34px; font-size:.9rem; }
-  .detail h3{ font-size:1rem; color:var(--ink); margin:24px 0 4px; }
-  .detail p{ margin:0; }
-  .pagelinks{ margin-top:12px; font-size:.9rem; }
-  .pagelinks a{ display:inline-block; margin-right:16px; }
-  @media (max-width:620px){ .gallery, .tasks{ grid-template-columns:1fr 1fr; } .gallery{ grid-template-columns:1fr; } .thumbs{ grid-template-columns:1fr 1fr; } }
+:root{--ink:#111418;--text:#2b3038;--muted:#667085;--line:#e7e9ee;--soft:#f5f6f8;--accent:#1b5fc1;--accent-soft:#eaf1fc}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#fff;color:var(--text);font:15.5px/1.65 Inter,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:940px;margin:0 auto;padding:0 24px 80px}
+nav.top{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+nav.top .in{max-width:940px;margin:0 auto;padding:11px 24px;display:flex;gap:22px;align-items:center;font-size:14px}
+nav.top .brand{font-weight:600;color:var(--ink);margin-right:auto}
+nav.top a{color:var(--muted)} nav.top a:hover{color:var(--ink);text-decoration:none}
+/* hero */
+.hero{display:grid;grid-template-columns:1fr 170px;gap:36px;align-items:center;padding:54px 0 18px}
+.hero h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:40px;line-height:1.1;margin:0;color:var(--ink);letter-spacing:-.3px}
+.hero .role{margin-top:8px;font-size:16px;color:var(--muted)}
+.hero p{margin:16px 0 0}
+.hero img{width:170px;height:170px;border-radius:50%;object-fit:cover}
+.links{margin-top:16px;font-size:14px;display:flex;flex-wrap:wrap;gap:6px 18px}
+.links a{color:var(--ink);font-weight:500} .links i{color:var(--muted);margin-right:6px}
+/* sections */
+h2.sec{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:24px;color:var(--ink);margin:56px 0 6px;scroll-margin-top:60px}
+.sec-note{color:var(--muted);font-size:14px;margin:0 0 10px}
+/* project rows */
+.row{display:grid;grid-template-columns:300px 1fr;gap:26px;padding:22px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:none}
+.row .media{display:block;border-radius:8px;overflow:hidden;background:var(--soft);aspect-ratio:16/10}
+.row .media video,.row .media img{width:100%;height:100%;object-fit:cover;display:block}
+.row h3{margin:0;font-size:18px;line-height:1.35;color:var(--ink);font-weight:600}
+.row h3 a{color:var(--ink)}
+.meta-line{font-size:13px;color:var(--muted);margin-top:3px}
+.row p{margin:8px 0 0;font-size:15px}
+.keys{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:10px}
+.key{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-size:12.5px;color:var(--text)}
+.key b{color:var(--ink)}
+.rlinks{margin-top:10px;font-size:14px;display:flex;flex-wrap:wrap;gap:4px 16px}
+.rlinks a{font-weight:500}
+/* experience */
+.xp{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:18px 0;border-top:1px solid var(--line)}
+.xp:first-of-type{border-top:none}
+.xp .when{font-size:13.5px;color:var(--muted);padding-top:2px}
+.xp h3{margin:0;font-size:16.5px;color:var(--ink);font-weight:600}
+.xp .org{font-size:14px;color:var(--muted)}
+.xp p{margin:8px 0 0}
+.sub{display:grid;grid-template-columns:120px 1fr;gap:16px;margin-top:16px;align-items:start}
+.sub .th{display:block;border-radius:6px;overflow:hidden;aspect-ratio:16/10;background:var(--soft)}
+.sub .th img{width:100%;height:100%;object-fit:cover;display:block}
+.sub b{color:var(--ink)} .sub p{margin:3px 0 0;font-size:14.5px}
+.sub.notimg{grid-template-columns:1fr}
+details{margin-top:14px} summary{cursor:pointer;color:var(--muted);font-size:14px}
+.arch{font-size:14px;margin-top:8px} .arch div{display:flex;justify-content:space-between;gap:14px;padding:6px 0;border-bottom:1px solid var(--line)} .arch span:last-child{color:var(--muted);white-space:nowrap}
+/* small cards */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
+.card{border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.card h4{margin:0;font-size:15px;color:var(--ink)} .card p{margin:6px 0 0;font-size:14px} .card .rlinks{margin-top:8px}
+.simple p{margin:6px 0}
+.simple b{color:var(--ink)}
+.edu{display:flex;justify-content:space-between;gap:12px;padding:6px 0} .edu span:last-child{color:var(--muted);white-space:nowrap;font-size:14px}
+footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+/* project page */
+.pp-head{text-align:center;padding:46px 0 10px}
+.pp-head .crumb{text-align:left;font-size:14px;margin-bottom:22px}
+.pp-head h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:38px;line-height:1.15;margin:0 auto;max-width:760px;color:var(--ink)}
+.pp-head .meta-line{font-size:14.5px;margin-top:10px}
+.btns{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:18px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:#1f2328;color:#fff;border-radius:999px;padding:8px 18px;font-size:14px;font-weight:500}
+.btn:hover{background:#000;text-decoration:none} .btn.light{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+.herov{margin-top:28px} .herov video{width:100%;border-radius:10px;display:block;background:#000;max-height:560px}
+.cap{font-size:13px;color:var(--muted);margin-top:6px;text-align:center}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:28px}
+.stat{background:var(--soft);border-radius:10px;padding:16px 18px}
+.stat .v{font-size:24px;font-weight:700;color:var(--ink);letter-spacing:-.3px}
+.stat .l{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.4}
+.narrow{max-width:760px;margin:0 auto}
+.narrow h2{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:24px;color:var(--ink);margin:44px 0 8px}
+.narrow h3{font-size:16.5px;color:var(--ink);margin:26px 0 4px}
+.narrow p{margin:0}
+.lead{font-size:16.5px}
+.gal{display:grid;grid-template-columns:1fr 1fr;gap:22px 20px;margin-top:10px}
+.gal video,.gal img{width:100%;border-radius:8px;display:block;background:#000}
+.gal img{background:#fff;border:1px solid var(--line)}
+.gal .cap{text-align:left}
+.tasks{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.tasks video{width:100%;border-radius:6px;display:block;aspect-ratio:4/3;object-fit:cover}
+.tasks .cap{text-align:left;font-size:12px;margin-top:3px}
+.others{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:12px}
+.others a{color:var(--ink);font-size:13.5px;font-weight:500;line-height:1.35}
+.others img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:6px;display:block;margin-bottom:6px}
+@media (max-width:720px){
+ .hero{grid-template-columns:1fr;gap:18px}.hero img{width:120px;height:120px;order:-1}
+ .row,.xp{grid-template-columns:1fr;gap:12px}.cards{grid-template-columns:1fr}
+ .gal{grid-template-columns:1fr}.tasks,.others{grid-template-columns:1fr 1fr}
+ nav.top .in a:not(.brand){display:none}
+ .hero h1{font-size:32px}.pp-head h1{font-size:28px}
+}
 </style>
 </head>
 <body>
+<nav class="top"><div class="in"><a class="brand" href="../../">Sudhir Pratap Yadav</a><a href="../../#projects">Projects</a><a href="../../#experience">Experience</a></div></nav>
 <div class="wrap">
-<header style="padding-bottom:10px">
-  <a href="../../">← Sudhir Pratap Yadav</a>
-  <h1 style="margin-top:18px;font-size:1.9rem">Stereo-inertial SLAM and monocular VIO</h1>
-  <div class="tagline" style="font-size:.95rem">Jetson Nano · RealSense D455 · GTSAM · Basalt · 2026</div>
-  <p class="intro">AnchorFlow-VIO is an open-source monocular visual-inertial odometry system based on Basalt. I evaluated it on the LaMAria benchmark, and it runs at 84 frames per second on a desktop CPU. I also built a stereo-inertial SLAM system for a small mobile robot with a Jetson Nano 4&nbsp;GB. It has loop closure, dense mapping and relocalisation.</p>
-  <div class="pagelinks meta"><a href="https://github.com/sudhirpratapyadav/anchorflow-vio"><i class="fab fa-github"></i>anchorflow-vio on GitHub</a></div>
-</header>
-<section style="margin-top:20px">
-<h2>Videos and images</h2>
-<div class="gallery">
-<div class="wide"><video controls playsinline preload="none" poster="media/loop_closure.jpg"><source src="media/loop_closure.mp4" type="video/mp4"></video><div class="vcap">Mapping one floor of a building with loop closure (4 times faster).</div></div>
-<div><video controls loop playsinline preload="none" poster="media/home_slam.jpg"><source src="media/home_slam.mp4" type="video/mp4"></video><div class="vcap">Trajectory and point cloud of a room.</div></div>
-<div><video controls playsinline preload="none" poster="media/home_reconstruction.jpg"><source src="media/home_reconstruction.mp4" type="video/mp4"></video><div class="vcap">Dense reconstruction of a room.</div></div>
-<div><a href="media/slam_map_A_vs_B.png"><img loading="lazy" src="media/slam_map_A_vs_B.png" alt="Maps from two variants of the dense mapping."></a><div class="vcap">Maps from two variants of the dense mapping.</div></div>
-<div><a href="media/loop1_topview.png"><img loading="lazy" src="media/loop1_topview.png" alt="Top view of the test loop."></a><div class="vcap">Top view of the test loop.</div></div>
-<div><a href="media/estimated_trajectories.png"><img loading="lazy" src="media/estimated_trajectories.png" alt="AnchorFlow-VIO: estimated trajectories on LaMAria recordings."></a><div class="vcap">AnchorFlow-VIO: estimated trajectories on LaMAria recordings.</div></div>
-<div><a href="media/phoneslam_mono_inertial.png"><img loading="lazy" src="media/phoneslam_mono_inertial.png" alt="Monocular-inertial SLAM on a phone."></a><div class="vcap">Monocular-inertial SLAM on a phone.</div></div>
+<div class="pp-head">
+  <div class="crumb"><a href="../../">← Sudhir Pratap Yadav</a></div>
+  <h1>Stereo-inertial SLAM and monocular VIO</h1>
+  <div class="meta-line">Jetson Nano · RealSense D455 · GTSAM · Basalt · 2026</div>
+  <div class="btns"><a class="btn" href="https://github.com/sudhirpratapyadav/anchorflow-vio"><i class="fab fa-github"></i>anchorflow-vio on GitHub</a><a class="btn light" href="../../">All projects</a></div>
 </div>
-</section>
-<section class="detail">
-<h2>Details</h2>
-<h3>AnchorFlow-VIO</h3>
-<p>AnchorFlow-VIO uses one grayscale camera and an IMU. It is derived from Basalt and tracks features with optical flow against a fixed template. On the LaMAria training recordings it produces a pose for all 265,694 images and runs at 84.6 frames per second on an Intel i7-10700. I submitted it to the public LaMAria benchmark in October 2026. The code is on GitHub under the MIT licence.</p>
-<h3>SLAM on a Jetson Nano</h3>
-<p>The SLAM system runs on a Jetson Nano 4 GB with a RealSense D455 on a Pioneer P3-DX robot. Visual-inertial odometry (OpenVINS or Basalt) gives the local motion. On top of it there is a GTSAM pose graph with outlier rejection, loop detection from appearance and from geometry, a dense TSDF map, and saving, loading and relocalisation in an old map. A web app shows the map and the camera while the robot moves.</p>
-<h3>Results</h3>
-<p>On a test loop in our building, odometry alone ended 1.47 m away from the start. With loop closure the error was 0.17 m. ORB-SLAM3 gave 0.14 to 0.17 m on the same data after histogram equalisation, and lost tracking five times on the raw images. On a sequence from the Kimera-Multi dataset the trajectory error was reduced from 8.0 m to 2.5 m. The pose graph update takes 85 to 220 ms on the Nano and the application uses about 0.5 GB of memory.</p>
-<h3>Optimisation on the Jetson</h3>
-<p>I profiled the pipeline on the Jetson Nano and reduced the tracking delay from 78 ms to 8 ms. The time to compute one depth cloud went from 2.4 s to about 1.4 s.</p>
-<h3>SLAM on a phone</h3>
-<p>As a separate experiment I ran ORB-SLAM3 in monocular-inertial mode on an Android phone. On a 12.65 m loop the end point was 0.45 m from the start (3.6%).</p>
-</section>
-<a class="back" href="../../">← Back to the main page</a>
+<div class="herov"><video controls playsinline preload="none" poster="media/loop_closure.jpg"><source src="media/loop_closure.mp4" type="video/mp4"></video><div class="cap">Mapping one floor of a building with loop closure (4 times faster).</div></div>
+<div class="stats"><div class="stat"><div class="v">0.17 m</div><div class="l">loop drift with loop closure (1.47 m without)</div></div><div class="stat"><div class="v">8 ms</div><div class="l">tracking delay on the Jetson Nano (was 78 ms)</div></div><div class="stat"><div class="v">84 fps</div><div class="l">AnchorFlow-VIO on a desktop CPU</div></div></div>
+<div class="narrow">
+  <h2>Overview</h2>
+  <p class="lead">AnchorFlow-VIO is an open-source monocular visual-inertial odometry system based on Basalt. I evaluated it on the LaMAria benchmark, and it runs at 84 frames per second on a desktop CPU. I also built a stereo-inertial SLAM system for a small mobile robot with a Jetson Nano 4&nbsp;GB. It has loop closure, dense mapping and relocalisation.</p>
+</div>
+<div style="margin-top:6px"><h2 class="sec" style="font-size:22px">Videos and images</h2><div class="gal"><div><video controls loop playsinline preload="none" poster="media/home_slam.jpg"><source src="media/home_slam.mp4" type="video/mp4"></video><div class="cap">Trajectory and point cloud of a room.</div></div><div><video controls playsinline preload="none" poster="media/home_reconstruction.jpg"><source src="media/home_reconstruction.mp4" type="video/mp4"></video><div class="cap">Dense reconstruction of a room.</div></div><div><a href="media/slam_map_A_vs_B.png"><img loading="lazy" src="media/slam_map_A_vs_B.png" alt="Maps from two variants of the dense mapping."></a><div class="cap">Maps from two variants of the dense mapping.</div></div><div><a href="media/loop1_topview.png"><img loading="lazy" src="media/loop1_topview.png" alt="Top view of the test loop."></a><div class="cap">Top view of the test loop.</div></div><div><a href="media/estimated_trajectories.png"><img loading="lazy" src="media/estimated_trajectories.png" alt="AnchorFlow-VIO: estimated trajectories on LaMAria recordings."></a><div class="cap">AnchorFlow-VIO: estimated trajectories on LaMAria recordings.</div></div><div><a href="media/phoneslam_mono_inertial.png"><img loading="lazy" src="media/phoneslam_mono_inertial.png" alt="Monocular-inertial SLAM on a phone."></a><div class="cap">Monocular-inertial SLAM on a phone.</div></div></div></div>
+<div class="narrow">
+  <h2>Details</h2>
+  <h3>AnchorFlow-VIO</h3><p>AnchorFlow-VIO uses one grayscale camera and an IMU. It is derived from Basalt and tracks features with optical flow against a fixed template. On the LaMAria training recordings it produces a pose for all 265,694 images and runs at 84.6 frames per second on an Intel i7-10700. I submitted it to the public LaMAria benchmark in October 2026. The code is on GitHub under the MIT licence.</p><h3>SLAM on a Jetson Nano</h3><p>The SLAM system runs on a Jetson Nano 4 GB with a RealSense D455 on a Pioneer P3-DX robot. Visual-inertial odometry (OpenVINS or Basalt) gives the local motion. On top of it there is a GTSAM pose graph with outlier rejection, loop detection from appearance and from geometry, a dense TSDF map, and saving, loading and relocalisation in an old map. A web app shows the map and the camera while the robot moves.</p><h3>Results</h3><p>On a test loop in our building, odometry alone ended 1.47 m away from the start. With loop closure the error was 0.17 m. ORB-SLAM3 gave 0.14 to 0.17 m on the same data after histogram equalisation, and lost tracking five times on the raw images. On a sequence from the Kimera-Multi dataset the trajectory error was reduced from 8.0 m to 2.5 m. The pose graph update takes 85 to 220 ms on the Nano and the application uses about 0.5 GB of memory.</p><h3>Optimisation on the Jetson</h3><p>I profiled the pipeline on the Jetson Nano and reduced the tracking delay from 78 ms to 8 ms. The time to compute one depth cloud went from 2.4 s to about 1.4 s.</p><h3>SLAM on a phone</h3><p>As a separate experiment I ran ORB-SLAM3 in monocular-inertial mode on an Android phone. On a 12.65 m loop the end point was 0.45 m from the start (3.6%).</p>
+</div>
+<h2 class="sec" style="font-size:20px">Other projects</h2>
+<div class="others"><a href="../sim-to-real/"><img loading="lazy" src="../sim-to-real/media/preview.jpg" alt="">Sim-to-real manipulation with Gaussian-splat simulation</a><a href="../continual-learning/"><img loading="lazy" src="../continual-learning/media/preview.jpg" alt="">Continual learning for manipulation</a><a href="../quadruped/"><img loading="lazy" src="../quadruped/media/preview.jpg" alt="">Custom quadruped robot</a><a href="../manipulation/"><img loading="lazy" src="../manipulation/media/preview.jpg" alt="">Manipulation control and teleoperation</a><a href="../humanoid/"><img loading="lazy" src="../humanoid/media/preview.jpg" alt="">Humanoid manipulation</a><a href="../mobile-robots/"><img loading="lazy" src="../mobile-robots/media/preview.jpg" alt="">Hospital delivery and inspection robot</a><a href="../simulation/"><img loading="lazy" src="../simulation/media/preview.jpg" alt="">Simulation projects</a></div>
 
-<footer>Source on <a href="https://github.com/sudhirpratapyadav/sudhirpratapyadav.github.io">GitHub</a>.</footer>
+<footer>Sudhir Pratap Yadav · <a href="https://github.com/sudhirpratapyadav/sudhirpratapyadav.github.io">Source on GitHub</a></footer>
 </div>
 </body>
 </html>
